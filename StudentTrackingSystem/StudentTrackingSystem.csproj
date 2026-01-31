@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net9.0-ios;net9.0-android</TargetFrameworks>
+    <OutputType>Exe</OutputType>
+    <UseMaui>true</UseMaui>
+    <SingleProject>true</SingleProject>
+
+    <!-- Uygulama Bilgileri -->
+    <ApplicationId>com.netronyazilim.ogrencibilgisistemi</ApplicationId>
+    <ApplicationTitle>OgrenciBilgiSistemi IOS</ApplicationTitle>
+    <ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>1</ApplicationVersion>
+  </PropertyGroup>
+
+  <!-- iOS Özel Ayarlar -->
+  <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-ios'">
+    <CodesignProvision>Automatic</CodesignProvision>
+    <CodesignKey>Apple Distribution</CodesignKey>
+    <CodesignTeamId>Y275S5K37Q</CodesignTeamId>
+    <BundleIdentifier>com.netronyazilim.ogrencibilgisistemi</BundleIdentifier>
+    <RuntimeIdentifier>ios-arm64</RuntimeIdentifier>
+  </PropertyGroup>
+
+</Project>

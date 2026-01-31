@@ -1,0 +1,176 @@
+using StudentTrackingSystem.Services;
+using StudentTrackingSystem.ViewModels;
+using StudentTrackingSystem.Models;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.Maui.Controls;
+// Border ve Shape bileþenleri için gerekli:
+using Microsoft.Maui.Controls.Shapes;
+
+namespace StudentTrackingSystem.Views
+{
+    public partial class StudentDetailView : ContentPage
+    {
+        private readonly int _studentId;
+        private readonly StudentService _studentService;
+        private DateTime currentWeekStart;
+
+        private readonly Dictionary<int, Color> StatusColors = new()
+        {
+            { 1, Color.FromArgb("#1ABC9C") }, // Geldi
+            { 2, Color.FromArgb("#E74C3C") }, // Gelmedi
+            { 3, Color.FromArgb("#F1C40F") }, // Geç Geldi
+            { 4, Color.FromArgb("#3498DB") }, // Ýzinli
+            { 5, Color.FromArgb("#9B59B6") }, // Raporlu
+            { 6, Color.FromArgb("#34495E") }, // Nöbetçi
+            { 7, Color.FromArgb("#95A5A6") }  // Görevli
+        };
+
+        public StudentDetailView(int studentId)
+        {
+            InitializeComponent();
+            _studentId = studentId;
+            _studentService = new StudentService();
+        }
+
+        protected override async void OnAppearing()
+        {
+            base.OnAppearing();
+            SetCurrentWeek(DateTime.Today);
+            await LoadStudentDetails();
+        }
+
+        private void SetCurrentWeek(DateTime referenceDate)
+        {
+            int diff = (7 + (referenceDate.DayOfWeek - DayOfWeek.Monday)) % 7;
+            currentWeekStart = referenceDate.AddDays(-diff).Date;
+
+            DateTime currentWeekEnd = currentWeekStart.AddDays(6);
+            LblWeekRange.Text = $"{currentWeekStart:dd.MM.yyyy} - {currentWeekEnd:dd.MM.yyyy}";
+
+            _ = LoadWeeklyAttendanceMatrix();
+        }
+
+        private void OnPreviousWeekClicked(object sender, EventArgs e) => SetCurrentWeek(currentWeekStart.AddDays(-7));
+        private void OnNextWeekClicked(object sender, EventArgs e) => SetCurrentWeek(currentWeekStart.AddDays(7));
+
+        private async Task LoadStudentDetails()
+        {
+            try
+            {
+                var details = await _studentService.GetStudentFullDetailsAsync(_studentId);
+                if (details != null)
+                {
+                    var vm = new StudentViewModel();
+                    vm.StudentData.Id = _studentId;
+                    vm.StudentData.FullName = details.ContainsKey("StudentName") ? details["StudentName"] : "Bilinmiyor";
+
+                    string imgName = details.ContainsKey("ImagePath") ? details["ImagePath"] : "user_icon.png";
+                    vm.StudentData.ImagePath = "students/" + imgName.ToLower().Trim();
+                    this.BindingContext = vm;
+
+                    LblClass.Text = details.ContainsKey("ClassName") ? details["ClassName"] : "-";
+                    LblStudentNo.Text = details.ContainsKey("StudentNo") ? details["StudentNo"] : "-";
+                    LblCardNo.Text = details.ContainsKey("CardNo") ? details["CardNo"] : "-";
+                    LblServicePlate.Text = details.ContainsKey("PlateNumber") ? details["PlateNumber"] : "Kullanmýyor";
+                    LblParentName.Text = details.ContainsKey("ParentName") ? details["ParentName"] : "-";
+                    LblParentPhone.Text = details.ContainsKey("ParentPhone") ? details["ParentPhone"] : "-";
+                    LblParentEmail.Text = details.ContainsKey("ParentEmail") ? details["ParentEmail"] : "-";
+                    LblParentAddress.Text = details.ContainsKey("Address") ? details["Address"] : "-";
+                    LblParentJob.Text = details.ContainsKey("ParentJob") ? details["ParentJob"] : "-";
+                    LblParentAddress.Text = details.ContainsKey("ParentWork") ? details["ParentWork"] : "-";
+                    LblTeacherName.Text = details.ContainsKey("TeacherName") ? details["TeacherName"] : "Atanmamýþ";
+
+                }
+            }
+            catch { /**/ }
+        }
+
+        private async Task LoadWeeklyAttendanceMatrix()
+        {
+            try
+            {
+                var weeklyRecords = await _studentService.GetStudentWeeklyAttendanceAsync(_studentId, currentWeekStart, currentWeekStart.AddDays(6));
+
+                // Dinamik kutucuklarý temizle
+                var cellsToRemove = GridAttendanceMatrix.Children
+                    .Cast<View>()
+                    .Where(c => Grid.GetRow(c) > 0 && Grid.GetColumn(c) >= 1 && Grid.GetColumn(c) <= 5)
+                    .ToList();
+
+                foreach (var cell in cellsToRemove)
+                    GridAttendanceMatrix.Children.Remove(cell);
+
+                int totalAbsent = 0;
+                int recordedLessonsCount = 0;
+
+                for (int dayIndex = 0; dayIndex < 5; dayIndex++)
+                {
+                    DateTime targetDate = currentWeekStart.AddDays(dayIndex);
+                    var dayRecord = weeklyRecords?.FirstOrDefault(r => r.CreatedAt.Date == targetDate.Date);
+
+                    for (int lessonIndex = 1; lessonIndex <= 8; lessonIndex++)
+                    {
+                        int statusId = 0;
+                        if (dayRecord != null)
+                        {
+                            var prop = typeof(ClassAttendance).GetProperty($"Lesson{lessonIndex}");
+                            statusId = Convert.ToInt32(prop?.GetValue(dayRecord) ?? 0);
+                        }
+
+                        if (statusId > 0 && StatusColors.ContainsKey(statusId))
+                        {
+                            recordedLessonsCount++;
+
+                            // Hata veren ToolTipProperties kaldýrýldý, Border yapýsý sadeleþtirildi
+                            var box = new Border
+                            {
+                                BackgroundColor = StatusColors[statusId],
+                                StrokeShape = new RoundRectangle { CornerRadius = 4 },
+                                Margin = new Thickness(1),
+                                HeightRequest = 25,
+                                WidthRequest = 25
+                            };
+
+                            GridAttendanceMatrix.Add(box, dayIndex + 1, lessonIndex);
+                            if (statusId == 2) totalAbsent++;
+                        }
+                    }
+                }
+
+                UpdateAttendanceUI(recordedLessonsCount, totalAbsent);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[HATA] Matris: {ex.Message}");
+            }
+        }
+
+        private void UpdateAttendanceUI(int total, int absent)
+        {
+            if (total > 0)
+            {
+                double rate = ((double)(total - absent) / total) * 100;
+                LblAttendanceRate.Text = $"%{Math.Max(0, rate):0}";
+            }
+            else
+            {
+                LblAttendanceRate.Text = "%0";
+            }
+            LblAbsenteeismCount.Text = $"{absent} Ders";
+        }
+
+        private void OnPhoneTapped(object sender, EventArgs e)
+        {
+            try
+            {
+                string phoneNumber = LblParentPhone.Text?.Trim();
+                if (PhoneDialer.Default.IsSupported && !string.IsNullOrEmpty(phoneNumber) && phoneNumber != "-")
+                    PhoneDialer.Default.Open(phoneNumber);
+            }
+            catch { /**/ }
+        }
+    }
+}
