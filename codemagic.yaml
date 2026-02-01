@@ -36,6 +36,19 @@
       - name: Initialize keychain
         script: |
           keychain initialize
+          
+      - name: Map App Store Connect vars
+        script: |
+          export APP_STORE_CONNECT_PRIVATE_KEY="$T_APPSTORE_API_KEY"
+          export APP_STORE_CONNECT_KEY_IDENTIFIER="$T_KEY_ID"
+          export APP_STORE_CONNECT_ISSUER_ID="$T_ISSUER_ID"
+
+      - name: Debug App Store Connect env vars
+        script: |
+          echo "ISSUER len: ${#APP_STORE_CONNECT_ISSUER_ID}"
+          echo "KEY_ID len: ${#APP_STORE_CONNECT_KEY_IDENTIFIER}"
+          echo "P8 len: ${#APP_STORE_CONNECT_PRIVATE_KEY}"
+          echo "$APP_STORE_CONNECT_PRIVATE_KEY" | head -n 1
 
       - name: Fetch signing files (App Store)
         script: |
