@@ -12,12 +12,17 @@
         BUNDLE_ID: com.netronyazilim.ogrencibilgisistemi
         PROJECT_PATH: StudentTrackingSystem/StudentTrackingSystem.csproj
         IOS_TFM: net9.0-ios18.0
+
         DOTNET_PATH: $CM_BUILD_DIR/dotnet
         DOTNET: $CM_BUILD_DIR/dotnet/dotnet
+
+        # p12 şifresi (sabit bir değer kullanıyoruz)
+        P12_PASSWORD: codemagic
 
     scripts:
       - name: Install .NET SDK (9.0)
         script: |
+          set -e
           curl -fsSL https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh
           chmod +x dotnet-install.sh
           ./dotnet-install.sh --install-dir "$DOTNET_PATH" --channel 9.0
@@ -25,49 +30,93 @@
 
       - name: Install MAUI workloads (iOS)
         script: |
+          set -e
           "$DOTNET" workload install ios maui
           "$DOTNET" workload list
 
       - name: Restore
         script: |
+          set -e
           "$DOTNET" restore "$PROJECT_PATH"
 
-      - name: Initialize keychain
-        script: |
-          keychain initialize
-
-      - name: Debug keys presence
+      - name: Debug env vars (length only)
         script: |
           echo "ISSUER len: ${#APP_STORE_CONNECT_ISSUER_ID}"
           echo "KEY_ID len: ${#APP_STORE_CONNECT_KEY_IDENTIFIER}"
           echo "P8 len: ${#APP_STORE_CONNECT_PRIVATE_KEY}"
           echo "CERT key len: ${#CERTIFICATE_PRIVATE_KEY}"
-          echo "$APP_STORE_CONNECT_PRIVATE_KEY" | head -n 1
 
-      - name: Fetch signing files (App Store)
+      - name: Initialize keychain
         script: |
+          set -e
+          keychain initialize
+
+          echo "CM_KEYCHAIN_PATH=$CM_KEYCHAIN_PATH"
+          security default-keychain -s "$CM_KEYCHAIN_PATH"
+          security list-keychains -d user -s "$CM_KEYCHAIN_PATH" login.keychain-db
+          security unlock-keychain -p "$CM_KEYCHAIN_PASSWORD" "$CM_KEYCHAIN_PATH"
+
+      - name: Fetch signing files (App Store) to known dirs
+        script: |
+          set -e
+          CERT_DIR="$CM_BUILD_DIR/signing/certs"
+          PROF_DIR="$CM_BUILD_DIR/signing/profiles"
+          mkdir -p "$CERT_DIR" "$PROF_DIR"
+
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
             --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
             --private-key "$APP_STORE_CONNECT_PRIVATE_KEY" \
             --certificate-key "$CERTIFICATE_PRIVATE_KEY" \
+            --p12-password "$P12_PASSWORD" \
+            --certificates-dir "$CERT_DIR" \
+            --profiles-dir "$PROF_DIR" \
             --create
 
-      - name: Add certificates to keychain + verify
-        script: |
-          keychain add-certificates
-          echo "== Codesigning identities =="
-          security find-identity -v -p codesigning || true
+          echo "== Downloaded signing files =="
+          ls -la "$CERT_DIR" || true
+          ls -la "$PROF_DIR" || true
 
-          COUNT=$(security find-identity -v -p codesigning | grep -c "Apple" || true)
+      - name: Import certs & profiles into keychain (manual)
+        script: |
+          set -e
+
+          CERT_DIR="$CM_BUILD_DIR/signing/certs"
+          PROF_DIR="$CM_BUILD_DIR/signing/profiles"
+
+          P12_PATH="$(ls -1 "$CERT_DIR"/*.p12 2>/dev/null | head -n 1 || true)"
+          if [ -z "$P12_PATH" ]; then
+            echo "ERROR: No .p12 found in $CERT_DIR"
+            exit 1
+          fi
+
+          echo "Using P12: $P12_PATH"
+
+          # Sertifikayı keychain'e import et
+          security import "$P12_PATH" -k "$CM_KEYCHAIN_PATH" -P "$P12_PASSWORD" \
+            -T /usr/bin/codesign -T /usr/bin/security
+
+          # codesign’in private key’i kullanabilmesi için izinleri ayarla
+          security set-key-partition-list -S apple-tool:,apple: -s \
+            -k "$CM_KEYCHAIN_PASSWORD" "$CM_KEYCHAIN_PATH"
+
+          # Provisioning profile'ları doğru klasöre kopyala
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          cp -R "$PROF_DIR"/*.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/" || true
+
+          echo "== Codesigning identities =="
+          security find-identity -v -p codesigning "$CM_KEYCHAIN_PATH" || true
+
+          COUNT=$(security find-identity -v -p codesigning "$CM_KEYCHAIN_PATH" | grep -c "Apple" || true)
           if [ "$COUNT" -eq 0 ]; then
-            echo "ERROR: No codesigning identities found after importing certificates."
+            echo "ERROR: No codesigning identities found in keychain."
             exit 1
           fi
 
       - name: Build IPA (Release)
         script: |
+          set -e
           "$DOTNET" publish "$PROJECT_PATH" -c Release -f "$IOS_TFM" /p:BuildIpa=true
 
       - name: Find IPA
