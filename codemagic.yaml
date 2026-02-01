@@ -38,19 +38,20 @@
 
       - name: Debug keys presence
         script: |
-          echo "T_ISSUER len: ${#T_ISSUER_ID}"
-          echo "T_KEY_ID len: ${#T_KEY_ID}"
-          echo "T_P8 len: ${#T_APPSTORE_API_KEY}"
+          echo "ISSUER len: ${#APP_STORE_CONNECT_ISSUER_ID}"
+          echo "KEY_ID len: ${#APP_STORE_CONNECT_KEY_IDENTIFIER}"
+          echo "P8 len: ${#APP_STORE_CONNECT_PRIVATE_KEY}"
           echo "CERT key len: ${#CERTIFICATE_PRIVATE_KEY}"
-          echo "$T_APPSTORE_API_KEY" | head -n 1
+          echo "$APP_STORE_CONNECT_PRIVATE_KEY" | head -n 1
 
       - name: Fetch signing files (App Store)
         script: |
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
-            --issuer-id "$T_ISSUER_ID" \
-            --key-id "$T_KEY_ID" \
-            --private-key "$T_APPSTORE_API_KEY" \
+            --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
+            --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
+            --private-key "$APP_STORE_CONNECT_PRIVATE_KEY" \
+            --certificate-key "$CERTIFICATE_PRIVATE_KEY" \
             --create
 
       - name: Add certificates to keychain + verify
@@ -59,7 +60,6 @@
           echo "== Codesigning identities =="
           security find-identity -v -p codesigning || true
 
-          # Eğer hiçbir identity yoksa build'e geçmeden patlat
           COUNT=$(security find-identity -v -p codesigning | grep -c "Apple" || true)
           if [ "$COUNT" -eq 0 ]; then
             echo "ERROR: No codesigning identities found after importing certificates."
@@ -79,8 +79,8 @@
 
     publishing:
       app_store_connect:
-        api_key: $T_APPSTORE_API_KEY
-        key_id: $T_KEY_ID
-        issuer_id: $T_ISSUER_ID
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
         submit_to_testflight: true
         submit_to_app_store: false
