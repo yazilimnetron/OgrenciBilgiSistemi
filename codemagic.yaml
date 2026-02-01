@@ -16,7 +16,6 @@
         DOTNET_PATH: $CM_BUILD_DIR/dotnet
         DOTNET: $CM_BUILD_DIR/dotnet/dotnet
 
-        # p12 şifresi (sabit bir değer kullanıyoruz)
         P12_PASSWORD: codemagic
 
     scripts:
@@ -93,15 +92,12 @@
 
           echo "Using P12: $P12_PATH"
 
-          # Sertifikayı keychain'e import et
           security import "$P12_PATH" -k "$CM_KEYCHAIN_PATH" -P "$P12_PASSWORD" \
             -T /usr/bin/codesign -T /usr/bin/security
 
-          # codesign’in private key’i kullanabilmesi için izinleri ayarla
           security set-key-partition-list -S apple-tool:,apple: -s \
             -k "$CM_KEYCHAIN_PASSWORD" "$CM_KEYCHAIN_PATH"
 
-          # Provisioning profile'ları doğru klasöre kopyala
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
           cp -R "$PROF_DIR"/*.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/" || true
 
@@ -117,7 +113,26 @@
       - name: Build IPA (Release)
         script: |
           set -e
-          "$DOTNET" publish "$PROJECT_PATH" -c Release -f "$IOS_TFM" /p:BuildIpa=true
+
+          # Keychain'den codesigning identity bul
+          CODESIGN_IDENTITY=$(security find-identity -v -p codesigning "$CM_KEYCHAIN_PATH" \
+            | grep -oP '(?<=") .+(?=")' | head -n 1)
+          echo "Codesign identity: $CODESIGN_IDENTITY"
+
+          # Provisioning profile UUID'sini bul
+          PROFILE_PATH=$(ls -1 "$HOME/Library/MobileDevice/Provisioning Profiles"/*.mobileprovision | head -n 1)
+          PROFILE_UUID=$(openssl asn1parse -inform der -in "$PROFILE_PATH" -strout \
+            | openssl asn1parse -inform pem | grep -B1 "Name" \
+            | grep -oP 'UTF8String\s*:\s*\K.+' | head -n 1)
+          echo "Profile UUID: $PROFILE_UUID"
+
+          # Build & sign
+          "$DOTNET" publish "$PROJECT_PATH" \
+            -c Release \
+            -f "$IOS_TFM" \
+            /p:BuildIpa=true \
+            /p:CodesignIdentity="$CODESIGN_IDENTITY" \
+            /p:ProvisioningProfile="$PROFILE_UUID"
 
       - name: Find IPA
         script: |
