@@ -50,7 +50,6 @@
           set -e
           keychain initialize
 
-          # Keychain path'i el ile bul
           KEYCHAIN=$(find "$HOME/Library/codemagic-cli-tools/keychains" -name "*.keychain-db" | head -n 1)
           echo "KEYCHAIN=$KEYCHAIN"
 
@@ -63,7 +62,7 @@
           security list-keychains -d user -s "$KEYCHAIN" login.keychain-db
           security unlock-keychain -p "" "$KEYCHAIN"
 
-      - name: Fetch signing files (App Store) to known dirs
+      - name: Fetch signing files (App Store)
         script: |
           set -e
           CERT_DIR="$CM_BUILD_DIR/signing/certs"
@@ -82,25 +81,19 @@
             --create
 
           echo "== Downloaded signing files =="
-          ls -la "$CERT_DIR" || true
-          ls -la "$PROF_DIR" || true
+          ls -la "$CERT_DIR"
+          ls -la "$PROF_DIR"
 
       - name: Import certs & profiles into keychain
         script: |
           set -e
 
-          # Keychain path'i yine bul
           KEYCHAIN=$(find "$HOME/Library/codemagic-cli-tools/keychains" -name "*.keychain-db" | head -n 1)
-          echo "KEYCHAIN=$KEYCHAIN"
 
           CERT_DIR="$CM_BUILD_DIR/signing/certs"
           PROF_DIR="$CM_BUILD_DIR/signing/profiles"
 
-          P12_PATH="$(ls -1 "$CERT_DIR"/*.p12 2>/dev/null | head -n 1 || true)"
-          if [ -z "$P12_PATH" ]; then
-            echo "ERROR: No .p12 found in $CERT_DIR"
-            exit 1
-          fi
+          P12_PATH="$(ls -1 "$CERT_DIR"/*.p12 | head -n 1)"
           echo "Using P12: $P12_PATH"
 
           security import "$P12_PATH" -k "$KEYCHAIN" -P "$P12_PASSWORD" \
@@ -110,16 +103,10 @@
             -k "" "$KEYCHAIN"
 
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          cp "$PROF_DIR"/*.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/" || true
+          cp "$PROF_DIR"/*.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/"
 
           echo "== Codesigning identities =="
           security find-identity -v -p codesigning "$KEYCHAIN"
-
-          COUNT=$(security find-identity -v -p codesigning "$KEYCHAIN" | grep -c "Apple" || true)
-          if [ "$COUNT" -eq 0 ]; then
-            echo "ERROR: No codesigning identities found."
-            exit 1
-          fi
 
       - name: Build IPA (Release)
         script: |
@@ -127,15 +114,30 @@
 
           KEYCHAIN=$(find "$HOME/Library/codemagic-cli-tools/keychains" -name "*.keychain-db" | head -n 1)
 
+          # macOS uyumlu grep ile identity bul
           CODESIGN_IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN" \
-            | grep -oP '(?<=") .+(?=")' | head -n 1)
+            | grep -E -o '"[^"]*"' | head -n 1 | tr -d '"')
           echo "Codesign identity: $CODESIGN_IDENTITY"
 
+          # UUID'yu python ile çıkar (macOS'ta her zaman var, stabil)
           PROFILE_PATH=$(ls -1 "$HOME/Library/MobileDevice/Provisioning Profiles"/*.mobileprovision | head -n 1)
-          PROFILE_UUID=$(openssl asn1parse -inform der -in "$PROFILE_PATH" -strout \
-            | openssl asn1parse -inform pem | grep -B1 "Name" \
-            | grep -oP 'UTF8String\s*:\s*\K.+' | head -n 1)
+          PROFILE_UUID=$(python3 -c "
+import plistlib, sys
+with open('$PROFILE_PATH', 'rb') as f:
+    data = f.read()
+    # plist XML başlangıcını bul
+    start = data.find(b'<?xml')
+    end = data.find(b'</plist>') + len(b'</plist>')
+    plist_data = data[start:end]
+    info = plistlib.loads(plist_data)
+    print(info['UUID'])
+")
           echo "Profile UUID: $PROFILE_UUID"
+
+          if [ -z "$CODESIGN_IDENTITY" ] || [ -z "$PROFILE_UUID" ]; then
+            echo "ERROR: Identity veya UUID bulunamadı"
+            exit 1
+          fi
 
           "$DOTNET" publish "$PROJECT_PATH" \
             -c Release \
