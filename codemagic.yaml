@@ -50,10 +50,18 @@
           set -e
           keychain initialize
 
-          echo "CM_KEYCHAIN_PATH=$CM_KEYCHAIN_PATH"
-          security default-keychain -s "$CM_KEYCHAIN_PATH"
-          security list-keychains -d user -s "$CM_KEYCHAIN_PATH" login.keychain-db
-          security unlock-keychain -p "$CM_KEYCHAIN_PASSWORD" "$CM_KEYCHAIN_PATH"
+          # Keychain path'i el ile bul
+          KEYCHAIN=$(find "$HOME/Library/codemagic-cli-tools/keychains" -name "*.keychain-db" | head -n 1)
+          echo "KEYCHAIN=$KEYCHAIN"
+
+          if [ -z "$KEYCHAIN" ]; then
+            echo "ERROR: Keychain bulunamadı"
+            exit 1
+          fi
+
+          security default-keychain -s "$KEYCHAIN"
+          security list-keychains -d user -s "$KEYCHAIN" login.keychain-db
+          security unlock-keychain -p "" "$KEYCHAIN"
 
       - name: Fetch signing files (App Store) to known dirs
         script: |
@@ -77,9 +85,13 @@
           ls -la "$CERT_DIR" || true
           ls -la "$PROF_DIR" || true
 
-      - name: Import certs & profiles into keychain (manual)
+      - name: Import certs & profiles into keychain
         script: |
           set -e
+
+          # Keychain path'i yine bul
+          KEYCHAIN=$(find "$HOME/Library/codemagic-cli-tools/keychains" -name "*.keychain-db" | head -n 1)
+          echo "KEYCHAIN=$KEYCHAIN"
 
           CERT_DIR="$CM_BUILD_DIR/signing/certs"
           PROF_DIR="$CM_BUILD_DIR/signing/profiles"
@@ -89,24 +101,23 @@
             echo "ERROR: No .p12 found in $CERT_DIR"
             exit 1
           fi
-
           echo "Using P12: $P12_PATH"
 
-          security import "$P12_PATH" -k "$CM_KEYCHAIN_PATH" -P "$P12_PASSWORD" \
+          security import "$P12_PATH" -k "$KEYCHAIN" -P "$P12_PASSWORD" \
             -T /usr/bin/codesign -T /usr/bin/security
 
           security set-key-partition-list -S apple-tool:,apple: -s \
-            -k "$CM_KEYCHAIN_PASSWORD" "$CM_KEYCHAIN_PATH"
+            -k "" "$KEYCHAIN"
 
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          cp -R "$PROF_DIR"/*.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/" || true
+          cp "$PROF_DIR"/*.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/" || true
 
           echo "== Codesigning identities =="
-          security find-identity -v -p codesigning "$CM_KEYCHAIN_PATH" || true
+          security find-identity -v -p codesigning "$KEYCHAIN"
 
-          COUNT=$(security find-identity -v -p codesigning "$CM_KEYCHAIN_PATH" | grep -c "Apple" || true)
+          COUNT=$(security find-identity -v -p codesigning "$KEYCHAIN" | grep -c "Apple" || true)
           if [ "$COUNT" -eq 0 ]; then
-            echo "ERROR: No codesigning identities found in keychain."
+            echo "ERROR: No codesigning identities found."
             exit 1
           fi
 
@@ -114,19 +125,18 @@
         script: |
           set -e
 
-          # Keychain'den codesigning identity bul
-          CODESIGN_IDENTITY=$(security find-identity -v -p codesigning "$CM_KEYCHAIN_PATH" \
+          KEYCHAIN=$(find "$HOME/Library/codemagic-cli-tools/keychains" -name "*.keychain-db" | head -n 1)
+
+          CODESIGN_IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN" \
             | grep -oP '(?<=") .+(?=")' | head -n 1)
           echo "Codesign identity: $CODESIGN_IDENTITY"
 
-          # Provisioning profile UUID'sini bul
           PROFILE_PATH=$(ls -1 "$HOME/Library/MobileDevice/Provisioning Profiles"/*.mobileprovision | head -n 1)
           PROFILE_UUID=$(openssl asn1parse -inform der -in "$PROFILE_PATH" -strout \
             | openssl asn1parse -inform pem | grep -B1 "Name" \
             | grep -oP 'UTF8String\s*:\s*\K.+' | head -n 1)
           echo "Profile UUID: $PROFILE_UUID"
 
-          # Build & sign
           "$DOTNET" publish "$PROJECT_PATH" \
             -c Release \
             -f "$IOS_TFM" \
