@@ -12,8 +12,11 @@
         BUNDLE_ID: com.netronyazilim.ogrencibilgisistemi
         PROJECT_PATH: StudentTrackingSystem/StudentTrackingSystem.csproj
         IOS_TFM: net9.0-ios18.0
+
         DOTNET_PATH: $CM_BUILD_DIR/dotnet
         DOTNET: $CM_BUILD_DIR/dotnet/dotnet
+
+        # p12 şifresi (fetch-signing-files p12 üretirken kullanıyor)
         P12_PASSWORD: codemagic
 
     scripts:
@@ -36,14 +39,30 @@
           set -e
           "$DOTNET" restore "$PROJECT_PATH"
 
+      - name: Debug env vars (length only)
+        script: |
+          echo "ISSUER len: ${#APP_STORE_CONNECT_ISSUER_ID}"
+          echo "KEY_ID len: ${#APP_STORE_CONNECT_KEY_IDENTIFIER}"
+          echo "P8 len: ${#APP_STORE_CONNECT_PRIVATE_KEY}"
+          echo "CERT key len: ${#CERTIFICATE_PRIVATE_KEY}"
+
       - name: Setup iOS signing (automatic)
         script: |
           set -e
 
-          # 1) Keychain (Codemagic CLI halleder)
+          # 1) Keychain oluştur (Codemagic CLI)
           keychain initialize
 
-          # 2) Fetch cert+profile (create if needed)
+          # 2) En yeni keychain dosyasını bul (stabil)
+          KEYCHAIN_DIR="$HOME/Library/codemagic-cli-tools/keychains"
+          KEYCHAIN_PATH="$(ls -t "$KEYCHAIN_DIR"/*.keychain-db | head -n 1)"
+          echo "Using KEYCHAIN_PATH=$KEYCHAIN_PATH"
+
+          # Default keychain yap
+          security default-keychain -s "$KEYCHAIN_PATH"
+          security list-keychains -d user -s "$KEYCHAIN_PATH" login.keychain-db
+
+          # 3) Cert & profile çek (create if needed)
           CERT_DIR="$CM_BUILD_DIR/signing/certs"
           PROF_DIR="$CM_BUILD_DIR/signing/profiles"
           mkdir -p "$CERT_DIR" "$PROF_DIR"
@@ -59,21 +78,34 @@
             --profiles-dir "$PROF_DIR" \
             --create
 
-          # 3) Import p12 to keychain (CM_KEYCHAIN_PATH zaten set edilir)
-          P12_PATH="$(ls -1 "$CERT_DIR"/*.p12 | head -n 1)"
-          security import "$P12_PATH" -k "$CM_KEYCHAIN_PATH" -P "$P12_PASSWORD" \
+          echo "== Downloaded signing files =="
+          ls -la "$CERT_DIR" || true
+          ls -la "$PROF_DIR" || true
+
+          # 4) p12 dosyasını kesin DOSYA olarak bul
+          P12_PATH="$(find "$CERT_DIR" -maxdepth 1 -type f -name "*.p12" | head -n 1)"
+          if [ -z "$P12_PATH" ]; then
+            echo "ERROR: No .p12 found in $CERT_DIR"
+            exit 1
+          fi
+          echo "Using P12: $P12_PATH"
+
+          # 5) p12 import
+          security import "$P12_PATH" -k "$KEYCHAIN_PATH" -P "$P12_PASSWORD" \
             -T /usr/bin/codesign -T /usr/bin/security
 
-          # 4) codesign'in private key'i kullanabilmesi için
+          # 6) Private key izinleri (bazı ortamlarda şart)
           security set-key-partition-list -S apple-tool:,apple: -s \
-            -k "$CM_KEYCHAIN_PASSWORD" "$CM_KEYCHAIN_PATH" || true
+            -k "$P12_PASSWORD" "$KEYCHAIN_PATH" || true
 
-          # 5) Install profiles
+          # 7) Provisioning profile yükle
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
           cp -R "$PROF_DIR"/*.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/" || true
 
-          # 6) Sanity check
-          security find-identity -v -p codesigning "$CM_KEYCHAIN_PATH" | grep -q "Apple"
+          # 8) Kontrol: identity var mı?
+          echo "== Codesigning identities =="
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH" || true
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep -q "Apple"
 
       - name: Build IPA (Release)
         script: |
