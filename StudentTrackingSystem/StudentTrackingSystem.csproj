@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <!-- iOS Özel Ayarlar -->
-  <PropertyGroup Condition="'$(TargetFramework)'=='net8.0-ios'">
+  <PropertyGroup Condition="'$(TargetFramework)'=='net9.0-ios'">
     <CodesignProvision>Automatic</CodesignProvision>
     <CodesignKey>Apple Distribution</CodesignKey>
     <CodesignTeamId>Y275S5K37Q</CodesignTeamId>
