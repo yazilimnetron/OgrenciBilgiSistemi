@@ -9,14 +9,11 @@
         - IOS
       xcode: latest
       vars:
+        BUNDLE_ID: com.netronyazilim.ogrencibilgisistemi
         PROJECT_PATH: StudentTrackingSystem/StudentTrackingSystem.csproj
         IOS_TFM: net9.0-ios18.0
         DOTNET_PATH: $CM_BUILD_DIR/dotnet
         DOTNET: $CM_BUILD_DIR/dotnet/dotnet
-
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.netronyazilim.ogrencibilgisistemi
 
     scripts:
       - name: Install .NET SDK (9.0)
@@ -34,6 +31,21 @@
       - name: Restore
         script: |
           "$DOTNET" restore "$PROJECT_PATH"
+
+      # ✅ Automatic signing'in kritik 3 adımı (Codemagic CLI)
+      - name: Initialize keychain
+        script: |
+          keychain initialize
+
+      - name: Fetch signing files (App Store)
+        script: |
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+
+      - name: Add certificates to keychain
+        script: |
+          keychain add-certificates
 
       - name: Build IPA (Release)
         script: |
