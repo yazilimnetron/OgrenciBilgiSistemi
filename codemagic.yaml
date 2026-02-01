@@ -8,7 +8,7 @@
         DOTNET_VERSION: "9.0.100"
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: "com.netronyazilim.ogrenncibilgisistemi"
+        bundle_identifier: "com.netronyazilim.ogrencibilgisistemi"
     scripts:
       - name: .NET SDK Yükle
         script: |
