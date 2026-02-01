@@ -12,10 +12,8 @@
         BUNDLE_ID: com.netronyazilim.ogrencibilgisistemi
         PROJECT_PATH: StudentTrackingSystem/StudentTrackingSystem.csproj
         IOS_TFM: net9.0-ios18.0
-
         DOTNET_PATH: $CM_BUILD_DIR/dotnet
         DOTNET: $CM_BUILD_DIR/dotnet/dotnet
-
         P12_PASSWORD: codemagic
 
     scripts:
@@ -27,7 +25,7 @@
           ./dotnet-install.sh --install-dir "$DOTNET_PATH" --channel 9.0
           "$DOTNET" --info
 
-      - name: Install MAUI workloads (iOS)
+      - name: Install MAUI workloads
         script: |
           set -e
           "$DOTNET" workload install ios maui
@@ -38,33 +36,16 @@
           set -e
           "$DOTNET" restore "$PROJECT_PATH"
 
-      - name: Debug env vars (length only)
-        script: |
-          echo "ISSUER len: ${#APP_STORE_CONNECT_ISSUER_ID}"
-          echo "KEY_ID len: ${#APP_STORE_CONNECT_KEY_IDENTIFIER}"
-          echo "P8 len: ${#APP_STORE_CONNECT_PRIVATE_KEY}"
-          echo "CERT key len: ${#CERTIFICATE_PRIVATE_KEY}"
-
-      - name: Initialize keychain
+      - name: Setup iOS signing (automatic)
         script: |
           set -e
+
+          # 1) Keychain
           keychain initialize
+          security default-keychain -s "$CM_KEYCHAIN_PATH"
+          security unlock-keychain -p "$CM_KEYCHAIN_PASSWORD" "$CM_KEYCHAIN_PATH"
 
-          KEYCHAIN=$(find "$HOME/Library/codemagic-cli-tools/keychains" -name "*.keychain-db" | head -n 1)
-          echo "KEYCHAIN=$KEYCHAIN"
-
-          if [ -z "$KEYCHAIN" ]; then
-            echo "ERROR: Keychain bulunamadı"
-            exit 1
-          fi
-
-          security default-keychain -s "$KEYCHAIN"
-          security list-keychains -d user -s "$KEYCHAIN" login.keychain-db
-          security unlock-keychain -p "" "$KEYCHAIN"
-
-      - name: Fetch signing files (App Store)
-        script: |
-          set -e
+          # 2) Fetch cert+profile (create if needed)
           CERT_DIR="$CM_BUILD_DIR/signing/certs"
           PROF_DIR="$CM_BUILD_DIR/signing/profiles"
           mkdir -p "$CERT_DIR" "$PROF_DIR"
@@ -80,71 +61,24 @@
             --profiles-dir "$PROF_DIR" \
             --create
 
-          echo "== Downloaded signing files =="
-          ls -la "$CERT_DIR"
-          ls -la "$PROF_DIR"
-
-      - name: Import certs & profiles into keychain
-        script: |
-          set -e
-
-          KEYCHAIN=$(find "$HOME/Library/codemagic-cli-tools/keychains" -name "*.keychain-db" | head -n 1)
-
-          CERT_DIR="$CM_BUILD_DIR/signing/certs"
-          PROF_DIR="$CM_BUILD_DIR/signing/profiles"
-
+          # 3) Import p12 to keychain
           P12_PATH="$(ls -1 "$CERT_DIR"/*.p12 | head -n 1)"
-          echo "Using P12: $P12_PATH"
-
-          security import "$P12_PATH" -k "$KEYCHAIN" -P "$P12_PASSWORD" \
+          security import "$P12_PATH" -k "$CM_KEYCHAIN_PATH" -P "$P12_PASSWORD" \
             -T /usr/bin/codesign -T /usr/bin/security
-
           security set-key-partition-list -S apple-tool:,apple: -s \
-            -k "" "$KEYCHAIN"
+            -k "$CM_KEYCHAIN_PASSWORD" "$CM_KEYCHAIN_PATH"
 
+          # 4) Install profiles
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          cp "$PROF_DIR"/*.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/"
+          cp -R "$PROF_DIR"/*.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/" || true
 
-          echo "== Codesigning identities =="
-          security find-identity -v -p codesigning "$KEYCHAIN"
+          # 5) Sanity check
+          security find-identity -v -p codesigning "$CM_KEYCHAIN_PATH" | grep -q "Apple"
 
       - name: Build IPA (Release)
         script: |
           set -e
-
-          KEYCHAIN=$(find "$HOME/Library/codemagic-cli-tools/keychains" -name "*.keychain-db" | head -n 1)
-
-          # macOS uyumlu grep ile identity bul
-          CODESIGN_IDENTITY=$(security find-identity -v -p codesigning "$KEYCHAIN" \
-            | grep -E -o '"[^"]*"' | head -n 1 | tr -d '"')
-          echo "Codesign identity: $CODESIGN_IDENTITY"
-
-          # UUID'yu python ile çıkar (macOS'ta her zaman var, stabil)
-          PROFILE_PATH=$(ls -1 "$HOME/Library/MobileDevice/Provisioning Profiles"/*.mobileprovision | head -n 1)
-          PROFILE_UUID=$(python3 -c "
-import plistlib, sys
-with open('$PROFILE_PATH', 'rb') as f:
-    data = f.read()
-    # plist XML başlangıcını bul
-    start = data.find(b'<?xml')
-    end = data.find(b'</plist>') + len(b'</plist>')
-    plist_data = data[start:end]
-    info = plistlib.loads(plist_data)
-    print(info['UUID'])
-")
-          echo "Profile UUID: $PROFILE_UUID"
-
-          if [ -z "$CODESIGN_IDENTITY" ] || [ -z "$PROFILE_UUID" ]; then
-            echo "ERROR: Identity veya UUID bulunamadı"
-            exit 1
-          fi
-
-          "$DOTNET" publish "$PROJECT_PATH" \
-            -c Release \
-            -f "$IOS_TFM" \
-            /p:BuildIpa=true \
-            /p:CodesignIdentity="$CODESIGN_IDENTITY" \
-            /p:ProvisioningProfile="$PROFILE_UUID"
+          "$DOTNET" publish "$PROJECT_PATH" -c Release -f "$IOS_TFM" /p:BuildIpa=true
 
       - name: Find IPA
         script: |
