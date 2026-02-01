@@ -18,6 +18,12 @@
         distribution_type: app_store
         bundle_identifier: com.netronyazilim.ogrencibilgisistemi
 
+    integrations:
+      app_store_connect:
+        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
+        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
+        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+
     scripts:
       - name: Install .NET SDK (9.0)
         script: |
@@ -35,66 +41,24 @@
         script: |
           "$DOTNET" restore "$PROJECT_PATH"
 
-      - name: Import iOS signing (from base64url)
-        script: |
-          set -e
-
-          CERT_PATH="$CM_BUILD_DIR/ios_distribution.p12"
-          PROFILE_PATH="$CM_BUILD_DIR/appstore.mobileprovision"
-
-          python3 - <<'PY'
-          import os, base64, pathlib
-
-          def b64url_to_bytes(s: str) -> bytes:
-            # base64url -> base64
-            s = s.strip().replace('-', '+').replace('_', '/')
-            # padding düzelt (====)
-            s += '=' * ((4 - len(s) % 4) % 4)
-            return base64.b64decode(s)
-
-          build_dir = pathlib.Path(os.environ["CM_BUILD_DIR"])
-
-          cert_b = b64url_to_bytes(os.environ["CM_P12_B64URL"])
-          prof_b = b64url_to_bytes(os.environ["CM_PROFILE_B64URL"])
-
-          cert_path = build_dir / "ios_distribution.p12"
-          prof_path = build_dir / "appstore.mobileprovision"
-
-          cert_path.write_bytes(cert_b)
-          prof_path.write_bytes(prof_b)
-
-          print("Wrote:", cert_path, "bytes:", cert_path.stat().st_size)
-          print("Wrote:", prof_path, "bytes:", prof_path.stat().st_size)
-          PY
-
-          KEYCHAIN_PASSWORD=codemagic
-          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-          security set-keychain-settings -lut 21600 build.keychain
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
-          security list-keychains -d user -s build.keychain login.keychain
-          security default-keychain -s build.keychain
-
-          security import "$CERT_PATH" -k build.keychain -P "$P12_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
-          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" build.keychain
-
-          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          cp "$PROFILE_PATH" "$HOME/Library/MobileDevice/Provisioning Profiles/"
-
       - name: Build IPA (Release)
         script: |
-          "$DOTNET" publish "$PROJECT_PATH" -c Release -f "$IOS_TFM" /p:BuildIpa=true
+          "$DOTNET" publish "$PROJECT_PATH" \
+            -c Release \
+            -f "$IOS_TFM" \
+            -p:ArchiveOnBuild=true \
+            -p:RuntimeIdentifier=ios-arm64 \
+            -p:CodesignProvision=Automatic \
+            -p:CodesignKey="Apple Distribution"
 
       - name: Find IPA
         script: |
-          find . -name "*.ipa" -print
+          find "$CM_BUILD_DIR" -name "*.ipa" -print
 
     artifacts:
       - "**/*.ipa"
 
     publishing:
       app_store_connect:
-        api_key: $T_APPSTORE_API_KEY
-        key_id: $T_KEY_ID
-        issuer_id: $T_ISSUER_ID
         submit_to_testflight: true
         submit_to_app_store: false
