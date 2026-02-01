@@ -1,35 +1,52 @@
 ﻿workflows:
   ios-maui-release:
-    name: iOS MAUI Build & Upload to App Store
-    max_build_duration: 60
+    name: iOS MAUI Build & Upload to TestFlight
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+
     environment:
       xcode: latest
       vars:
-        DOTNET_VERSION: "9.0.100"
+        PROJECT_PATH: StudentTrackingSystem/StudentTrackingSystem.csproj
+        IOS_TFM: net9.0-ios17.0
+
+        DOTNET_PATH: $CM_BUILD_DIR/dotnet
+        DOTNET: $CM_BUILD_DIR/dotnet/dotnet
+
       ios_signing:
         distribution_type: app_store
-        bundle_identifier: "com.netronyazilim.ogrencibilgisistemi"
+        bundle_identifier: com.netronyazilim.ogrencibilgisistemi
+
     scripts:
-      - name: .NET SDK Yükle
+      - name: Install .NET SDK (9.0)
         script: |
-          export PATH="$PATH:/usr/local/share/dotnet"
-          dotnet --info
-      
-      - name: Bağımlılıkları Yükle
+          curl -fsSL https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh
+          chmod +x dotnet-install.sh
+          ./dotnet-install.sh --install-dir "$DOTNET_PATH" --channel 9.0
+          "$DOTNET" --info
+
+      - name: Install MAUI workloads (iOS)
         script: |
-          dotnet restore StudentTrackingSystem.sln
-      
-      - name: iOS Build Oluştur
+          "$DOTNET" workload install ios maui
+          "$DOTNET" workload list
+
+      - name: Restore
         script: |
-          dotnet publish StudentTrackingSystem.csproj -f net8.0-ios -c Release -p:ArchiveOnBuild=true -p:RuntimeIdentifier=ios-arm64
-    
+          "$DOTNET" restore "$PROJECT_PATH"
+
+      - name: Build IPA (Release)
+        script: |
+          "$DOTNET" publish "$PROJECT_PATH" -c Release -f "$IOS_TFM" /p:BuildIpa=true
+
+      - name: Find IPA
+        script: |
+          echo "Searching for IPA..."
+          find . -name "*.ipa" -print
+
     artifacts:
-      - build/**/*.ipa
-    
+      - "**/*.ipa"
+
     publishing:
       app_store_connect:
-        api_key: $T_APPSTORE_API_KEY
-        key_id: $T_KEY_ID
-        issuer_id: $T_ISSUER_ID
         submit_to_testflight: true
         submit_to_app_store: false
