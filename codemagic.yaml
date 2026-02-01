@@ -35,7 +35,7 @@
         script: |
           "$DOTNET" restore "$PROJECT_PATH"
 
-      - name: Import iOS signing (from base64)
+      - name: Import iOS signing (from base64url)
         script: |
           set -e
 
@@ -44,13 +44,25 @@
 
           python3 - <<'PY'
           import os, base64, pathlib
-          cert_b64 = os.environ["CM_P12_B64"]
-          prof_b64 = os.environ["CM_PROFILE_B64"]
+
+          def b64url_to_bytes(s: str) -> bytes:
+            # base64url -> base64
+            s = s.strip().replace('-', '+').replace('_', '/')
+            # padding düzelt (====)
+            s += '=' * ((4 - len(s) % 4) % 4)
+            return base64.b64decode(s)
+
           build_dir = pathlib.Path(os.environ["CM_BUILD_DIR"])
+
+          cert_b = b64url_to_bytes(os.environ["CM_P12_B64URL"])
+          prof_b = b64url_to_bytes(os.environ["CM_PROFILE_B64URL"])
+
           cert_path = build_dir / "ios_distribution.p12"
           prof_path = build_dir / "appstore.mobileprovision"
-          cert_path.write_bytes(base64.b64decode(cert_b64))
-          prof_path.write_bytes(base64.b64decode(prof_b64))
+
+          cert_path.write_bytes(cert_b)
+          prof_path.write_bytes(prof_b)
+
           print("Wrote:", cert_path, "bytes:", cert_path.stat().st_size)
           print("Wrote:", prof_path, "bytes:", prof_path.stat().st_size)
           PY
