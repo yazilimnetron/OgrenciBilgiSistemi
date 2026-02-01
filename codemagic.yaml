@@ -40,10 +40,8 @@
         script: |
           set -e
 
-          # 1) Keychain
+          # 1) Keychain (Codemagic CLI halleder)
           keychain initialize
-          security default-keychain -s "$CM_KEYCHAIN_PATH"
-          security unlock-keychain -p "$CM_KEYCHAIN_PASSWORD" "$CM_KEYCHAIN_PATH"
 
           # 2) Fetch cert+profile (create if needed)
           CERT_DIR="$CM_BUILD_DIR/signing/certs"
@@ -61,18 +59,20 @@
             --profiles-dir "$PROF_DIR" \
             --create
 
-          # 3) Import p12 to keychain
+          # 3) Import p12 to keychain (CM_KEYCHAIN_PATH zaten set edilir)
           P12_PATH="$(ls -1 "$CERT_DIR"/*.p12 | head -n 1)"
           security import "$P12_PATH" -k "$CM_KEYCHAIN_PATH" -P "$P12_PASSWORD" \
             -T /usr/bin/codesign -T /usr/bin/security
-          security set-key-partition-list -S apple-tool:,apple: -s \
-            -k "$CM_KEYCHAIN_PASSWORD" "$CM_KEYCHAIN_PATH"
 
-          # 4) Install profiles
+          # 4) codesign'in private key'i kullanabilmesi için
+          security set-key-partition-list -S apple-tool:,apple: -s \
+            -k "$CM_KEYCHAIN_PASSWORD" "$CM_KEYCHAIN_PATH" || true
+
+          # 5) Install profiles
           mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
           cp -R "$PROF_DIR"/*.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/" || true
 
-          # 5) Sanity check
+          # 6) Sanity check
           security find-identity -v -p codesigning "$CM_KEYCHAIN_PATH" | grep -q "Apple"
 
       - name: Build IPA (Release)
