@@ -1,0 +1,35 @@
+﻿workflows:
+  ios-maui-release:
+    name: iOS MAUI Build & Upload to App Store
+    max_build_duration: 60
+    environment:
+      xcode: latest
+      vars:
+        DOTNET_VERSION: "9.0.100"
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: "com.netronyazilim.ogrenncibilgisistemi"
+    scripts:
+      - name: .NET SDK Yükle
+        script: |
+          export PATH="$PATH:/usr/local/share/dotnet"
+          dotnet --info
+      
+      - name: Bağımlılıkları Yükle
+        script: |
+          dotnet restore StudentTrackingSystem.sln
+      
+      - name: iOS Build Oluştur
+        script: |
+          dotnet publish StudentTrackingSystem.csproj -f net8.0-ios -c Release -p:ArchiveOnBuild=true -p:RuntimeIdentifier=ios-arm64
+    
+    artifacts:
+      - build/**/*.ipa
+    
+    publishing:
+      app_store_connect:
+        api_key: $T_APPSTORE_API_KEY
+        key_id: $T_KEY_ID
+        issuer_id: $T_ISSUER_ID
+        submit_to_testflight: true
+        submit_to_app_store: false
