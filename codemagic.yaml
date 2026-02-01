@@ -9,7 +9,6 @@
       vars:
         PROJECT_PATH: StudentTrackingSystem/StudentTrackingSystem.csproj
         IOS_TFM: net9.0-ios18.0
-
         DOTNET_PATH: $CM_BUILD_DIR/dotnet
         DOTNET: $CM_BUILD_DIR/dotnet/dotnet
 
@@ -34,13 +33,27 @@
         script: |
           "$DOTNET" restore "$PROJECT_PATH"
 
+      - name: Import iOS signing (p12 + mobileprovision)
+        script: |
+          set -e
+          KEYCHAIN_PATH=$HOME/Library/Keychains/build.keychain-db
+          KEYCHAIN_PASSWORD=codemagic
+          security create-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security set-keychain-settings -lut 21600 build.keychain
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" build.keychain
+          security list-keychains -d user -s build.keychain login.keychain
+          security default-keychain -s build.keychain
+          security import "$CM_CERTIFICATE" -k build.keychain -P "$P12_PASSWORD" -T /usr/bin/codesign -T /usr/bin/security
+          security set-key-partition-list -S apple-tool:,apple: -s -k "$KEYCHAIN_PASSWORD" build.keychain
+          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
+          cp "$CM_PROVISIONING_PROFILE" "$HOME/Library/MobileDevice/Provisioning Profiles/"
+
       - name: Build IPA (Release)
         script: |
           "$DOTNET" publish "$PROJECT_PATH" -c Release -f "$IOS_TFM" /p:BuildIpa=true
 
       - name: Find IPA
         script: |
-          echo "Searching for IPA..."
           find . -name "*.ipa" -print
 
     artifacts:
