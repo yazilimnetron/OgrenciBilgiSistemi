@@ -48,5 +48,8 @@
 
     publishing:
       app_store_connect:
+        api_key: $T_APPSTORE_API_KEY
+        key_id: $T_KEY_ID
+        issuer_id: $T_ISSUER_ID
         submit_to_testflight: true
         submit_to_app_store: false
