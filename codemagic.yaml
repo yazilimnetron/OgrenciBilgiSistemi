@@ -1,134 +1,43 @@
 ﻿workflows:
   ios-maui-release:
-    name: iOS MAUI Release (IPA + TestFlight)
-    instance_type: mac_mini_m2
-    max_build_duration: 120
+    name: iOS MAUI Release (IPA + TestFlight) - Auto Signing
+    integrations:
+      app_store_connect: NetronASCKey   # UI'da verdiğin API key name
 
     environment:
-      groups:
-        - IOS
       xcode: latest
       vars:
         BUNDLE_ID: com.netronyazilim.ogrencibilgisistemi.ios
         PROJECT_PATH: StudentTrackingSystem/StudentTrackingSystem.csproj
         IOS_TFM: net9.0-ios18.0
 
-        DOTNET_PATH: $CM_BUILD_DIR/dotnet
-        DOTNET: $CM_BUILD_DIR/dotnet/dotnet
-
-        # p12 şifresi (fetch-signing-files p12 üretirken kullanır)
-        P12_PASSWORD: codemagic
+      ios_signing:
+        distribution_type: app_store
+        bundle_identifier: com.netronyazilim.ogrencibilgisistemi.ios
 
     scripts:
-      - name: Install Codemagic CLI tools (if needed)
-        script: |
-          set -e
-          if ! command -v app-store-connect >/dev/null 2>&1; then
-            brew update
-            brew install codemagic-cli-tools
-          fi
-          app-store-connect --version || true
-          keychain --version || true
-
-      - name: Install .NET SDK 9.0
-        script: |
-          set -e
-          curl -fsSL https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh
-          chmod +x dotnet-install.sh
-          ./dotnet-install.sh --install-dir "$DOTNET_PATH" --channel 9.0
-          "$DOTNET" --info
-
-      - name: Install MAUI workloads
-        script: |
-          set -e
-          "$DOTNET" workload install maui-ios maui --skip-manifest-update
-          "$DOTNET" workload list
-
       - name: Restore
         script: |
           set -e
-          "$DOTNET" restore "$PROJECT_PATH"
-
-      - name: Setup iOS signing (App Store / TestFlight)
-        script: |
-          set -e
-
-          # 1) Keychain hazırla
-          keychain initialize
-
-          # 2) API key ve Certificate private key içeriklerini dosyaya yaz
-          #    (ENV değişkenleri "içerik" olduğu için zorunlu)
-          ASC_KEY_PATH="$CM_BUILD_DIR/appstoreconnect_api_key.p8"
-          CERT_KEY_PATH="$CM_BUILD_DIR/ios_distribution_private_key"
-
-          printf "%s" "$APP_STORE_CONNECT_PRIVATE_KEY" > "$ASC_KEY_PATH"
-          printf "%s" "$CERTIFICATE_PRIVATE_KEY" > "$CERT_KEY_PATH"
-
-          # 3) Signing dosyalarını indir / yoksa oluştur (App Store profile + distribution cert)
-          CERT_DIR="$CM_BUILD_DIR/signing/certs"
-          PROF_DIR="$CM_BUILD_DIR/signing/profiles"
-          mkdir -p "$CERT_DIR" "$PROF_DIR"
-
-          app-store-connect fetch-signing-files \
-            --type IOS_APP_STORE \
-            --issuer-id "$APP_STORE_CONNECT_ISSUER_ID" \
-            --key-id "$APP_STORE_CONNECT_KEY_IDENTIFIER" \
-            --private-key "$ASC_KEY_PATH" \
-            --certificate-key "$CERT_KEY_PATH" \
-            --p12-password "$P12_PASSWORD" \
-            --certificates-dir "$CERT_DIR" \
-            --profiles-dir "$PROF_DIR" \
-            --create \
-            "$BUNDLE_ID"
-
-          # 4) p12'yi keychain'e ekle (glob destekler)
-          keychain add-certificates --certificate "$CERT_DIR/*.p12" --certificate-password "$P12_PASSWORD"
-
-          # 5) Provisioning profile’ı doğru klasöre kopyala
-          mkdir -p "$HOME/Library/MobileDevice/Provisioning Profiles"
-          cp -R "$PROF_DIR"/*.mobileprovision "$HOME/Library/MobileDevice/Provisioning Profiles/" || true
-
-          # 6) Kontrol
-          echo "== Codesigning identities =="
-          security find-identity -v -p codesigning | head -n 20
+          dotnet --info
+          dotnet restore "$PROJECT_PATH"
 
       - name: Build IPA (Release) + Auto build number
         script: |
           set -e
-
-          # BUILD_NUMBER -> iOS CFBundleVersion (ApplicationVersion)
-          "$DOTNET" publish "$PROJECT_PATH" \
+          dotnet publish "$PROJECT_PATH" \
             -c Release \
             -f "$IOS_TFM" \
             /p:RuntimeIdentifier=ios-arm64 \
             /p:ArchiveOnBuild=true \
             /p:BuildIpa=true \
-            /p:ApplicationVersion=$BUILD_NUMBER
-
-      - name: Locate IPA
-        script: |
-          set -e
-          echo "Searching IPA..."
-          find "$CM_BUILD_DIR" -type f -name "*.ipa" -print
-          IPA_PATH="$(find "$CM_BUILD_DIR" -type f -name "*.ipa" | head -n 1)"
-          if [ -z "$IPA_PATH" ]; then
-            echo "ERROR: IPA not found."
-            exit 1
-          fi
-          mkdir -p "$CM_BUILD_DIR/build/ios"
-          cp "$IPA_PATH" "$CM_BUILD_DIR/build/ios/app.ipa"
-          echo "IPA copied: $CM_BUILD_DIR/build/ios/app.ipa"
+            /p:ApplicationVersion=$CM_BUILD_NUMBER
 
     artifacts:
-      - build/ios/*.ipa
-      - $HOME/Library/Logs/DiagnosticReports/*
-      - $HOME/Library/Developer/Xcode/DerivedData/**/Logs/**
+      - "**/*.ipa"
 
     publishing:
       app_store_connect:
-        # API key içeriği env var'dan gelir (dokümandaki yöntem)
-        api_key: $APP_STORE_CONNECT_PRIVATE_KEY
-        key_id: $APP_STORE_CONNECT_KEY_IDENTIFIER
-        issuer_id: $APP_STORE_CONNECT_ISSUER_ID
+        auth: integration
         submit_to_testflight: true
         submit_to_app_store: false
