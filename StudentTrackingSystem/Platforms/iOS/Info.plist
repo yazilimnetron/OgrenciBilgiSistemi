@@ -2,19 +2,20 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-  <!-- Uygulama Adı -->
-  <key>Ogrenci Bilgi Sistemi</key>
-  <string>Benim Uygulamam</string>
 
-  <!-- Bundle ID -->
-  <key>com.netronyazilim.ogrencibilgisistemi</key>
-  <string>com.firmaniz.benimuygulamam</string>
+  <!-- Buraya SADECE ihtiyaç duyduğun izin / özel anahtarları ekle. Örnekler: -->
 
-  <!-- Versiyon -->
-  <key>CFBundleShortVersionString</key>
-  <string>1.0</string>
-  <key>CFBundleVersion</key>
-  <string>1</string>
+  <!-- Kamera kullanıyorsan aç -->
+  <!--
+  <key>NSCameraUsageDescription</key>
+  <string>Öğrenci fotoğrafı çekebilmek için kamera izni gerekiyor.</string>
+  -->
+
+  <!-- Fotoğraf galerisi kullanıyorsan aç -->
+  <!--
+  <key>NSPhotoLibraryUsageDescription</key>
+  <string>Fotoğraf seçebilmek için galeri izni gerekiyor.</string>
+  -->
 
 </dict>
 </plist>
