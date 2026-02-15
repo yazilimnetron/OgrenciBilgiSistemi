@@ -5,7 +5,7 @@
     <SingleProject>true</SingleProject>
     <OutputType>Exe</OutputType>
 
-    <ApplicationId>com.netronyazilim.ogrencibilgisistemi.ios</ApplicationId>
+    <ApplicationId>com.netronyazilim.ogrencibilgisistemi</ApplicationId>
     <ApplicationTitle>OgrenciBilgiSistemi iOS</ApplicationTitle>
 
     <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
