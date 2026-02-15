@@ -1,20 +1,18 @@
 ﻿workflows:
   ios-maui-release:
-    name: iOS MAUI Release (IPA + TestFlight) - Auto Signing (Fixed)
+    name: iOS MAUI Release - Auto Signing
     instance_type: mac_mini_m2
     max_build_duration: 120
 
     integrations:
-      app_store_connect: "Codemagic API Key"
+      app_store_connect: "Codemagic API Key"  # ⬅️ Yukarıda verdiğiniz isim
 
     environment:
       xcode: latest
-
       vars:
         BUNDLE_ID: com.netronyazilim.ogrencibilgisistemi
         PROJECT_PATH: StudentTrackingSystem/StudentTrackingSystem.csproj
         IOS_TFM: net9.0-ios18.0
-
         DOTNET_PATH: $CM_BUILD_DIR/dotnet
         DOTNET: $CM_BUILD_DIR/dotnet/dotnet
 
@@ -23,27 +21,6 @@
         bundle_identifier: com.netronyazilim.ogrencibilgisistemi
 
     scripts:
-      - name: Install Codemagic CLI tools (pip)
-        script: |
-          set -e
-          python3 --version
-          python3 -m pip --version
-
-          USER_BASE="$(python3 -m site --user-base)"
-          export PATH="$USER_BASE/bin:$PATH"
-
-          python3 -m pip install --upgrade --user pip
-          python3 -m pip install --upgrade --user codemagic-cli-tools
-
-          echo "== CLI tools =="
-          which keychain || true
-          which xcode-project || true
-          which app-store-connect || true
-
-          keychain --version || true
-          xcode-project --version || true
-          app-store-connect --version || true
-
       - name: Install .NET SDK 9.0
         script: |
           set -e
@@ -63,46 +40,29 @@
           set -e
           "$DOTNET" restore "$PROJECT_PATH"
 
-      - name: Setup signing in keychain (MUST)
+      - name: Setup iOS code signing (Automatic)
         script: |
           set -e
-
-          USER_BASE="$(python3 -m site --user-base)"
-          export PATH="$USER_BASE/bin:$PATH"
-
+          # Codemagic CLI tools
+          python3 -m pip install --upgrade codemagic-cli-tools
+          
+          # Keychain hazırlığı
           keychain initialize
-
-          echo "== BEFORE: identities =="
-          security find-identity -v -p codesigning || true
-
-          # 1) Codemagic environment'daki signing assets'i çekmeyi dene (komut sürüme göre değişebilir)
-          if xcode-project --help | grep -q "fetch-signing-files"; then
-            echo "Using: xcode-project fetch-signing-files"
-            xcode-project fetch-signing-files --platform ios --type app_store --bundle-id "$BUNDLE_ID"
-          else
-            echo "xcode-project fetch-signing-files not found in this version. Skipping fetch."
-          fi
-
-          # 2) Sertifikaları keychain'e import et (kritik!)
-          if keychain --help | grep -q "add-certificates"; then
-            keychain add-certificates
-          else
-            echo "keychain add-certificates not available."
-          fi
-
-          # 3) Provisioning profilleri uygula
+          
+          # 🎯 Otomatik sertifika + profile oluştur/indir
+          app-store-connect fetch-signing-files "$BUNDLE_ID" \
+            --type IOS_APP_STORE \
+            --create
+          
+          # Keychain'e ekle ve uygula
+          keychain add-certificates
           xcode-project use-profiles
+          
+          # Doğrulama
+          echo "=== Code Signing Identities ==="
+          security find-identity -v -p codesigning
 
-          echo "== AFTER: identities =="
-          security find-identity -v -p codesigning | head -n 50 || true
-
-          # Apple Distribution identity zorunlu
-          if ! security find-identity -v -p codesigning | grep -q "Apple Distribution"; then
-            echo "ERROR: Apple Distribution identity not found in keychain after signing setup."
-            exit 1
-          fi
-
-      - name: Build IPA (Release) + auto build number
+      - name: Build IPA (Release)
         script: |
           set -e
           "$DOTNET" publish "$PROJECT_PATH" \
