@@ -3,10 +3,10 @@
     name: iOS MAUI Release - Auto Signing
     instance_type: mac_mini_m2
     max_build_duration: 120
-
+    
     integrations:
-      app_store_connect: "Codemagic API Key"  # ⬅️ Yukarıda verdiğiniz isim
-
+      app_store_connect: "Codemagic API Key"
+    
     environment:
       xcode: latest
       vars:
@@ -15,11 +15,11 @@
         IOS_TFM: net9.0-ios18.0
         DOTNET_PATH: $CM_BUILD_DIR/dotnet
         DOTNET: $CM_BUILD_DIR/dotnet/dotnet
-
+      
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.netronyazilim.ogrencibilgisistemi
-
+    
     scripts:
       - name: Install .NET SDK 9.0
         script: |
@@ -28,40 +28,40 @@
           chmod +x dotnet-install.sh
           ./dotnet-install.sh --install-dir "$DOTNET_PATH" --channel 9.0
           "$DOTNET" --info
-
+      
       - name: Install MAUI workloads
         script: |
           set -e
           "$DOTNET" workload install maui-ios maui --skip-manifest-update
           "$DOTNET" workload list
-
+      
       - name: Restore
         script: |
           set -e
           "$DOTNET" restore "$PROJECT_PATH"
-
+      
       - name: Setup iOS code signing (Automatic)
         script: |
           set -e
-          # Codemagic CLI tools
+          set -x
+          
           python3 -m pip install --upgrade codemagic-cli-tools
           
-          # Keychain hazırlığı
           keychain initialize
           
-          # 🎯 Otomatik sertifika + profile oluştur/indir
+          echo "=== Bundle ID: $BUNDLE_ID ==="
+          
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
-            --create
+            --create \
+            --verbose
           
-          # Keychain'e ekle ve uygula
           keychain add-certificates
           xcode-project use-profiles
           
-          # Doğrulama
           echo "=== Code Signing Identities ==="
-          security find-identity -v -p codesigning
-
+          security find-identity -v -p codesigning | head -20
+      
       - name: Build IPA (Release)
         script: |
           set -e
@@ -72,10 +72,10 @@
             /p:ArchiveOnBuild=true \
             /p:BuildIpa=true \
             /p:ApplicationVersion=$CM_BUILD_NUMBER
-
+    
     artifacts:
       - "**/*.ipa"
-
+    
     publishing:
       app_store_connect:
         auth: integration

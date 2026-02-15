@@ -4,11 +4,20 @@
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
     <OutputType>Exe</OutputType>
-
     <ApplicationId>com.netronyazilim.ogrencibilgisistemi</ApplicationId>
-    <ApplicationTitle>OgrenciBilgiSistemi iOS</ApplicationTitle>
-
+    <ApplicationTitle>Öğrenci Bilgi Sistemi</ApplicationTitle>
     <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
+    
+    <!-- iOS Specific -->
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.2</SupportedOSPlatformVersion>
+    
+    <!-- Android Specific -->
+    <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.0" />
+  </ItemGroup>
 </Project>
