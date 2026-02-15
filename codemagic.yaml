@@ -4,6 +4,9 @@
     instance_type: mac_mini_m2
     max_build_duration: 120
 
+    integrations:
+      app_store_connect: Codemagic API Key
+
     environment:
       xcode: latest
       vars:
@@ -57,6 +60,7 @@
           echo "== Codesigning identities =="
           security find-identity -v -p codesigning | head -n 30
 
+          # Identity yoksa burada net fail verelim
           if ! security find-identity -v -p codesigning | grep -q "Apple Distribution"; then
             echo "ERROR: Apple Distribution identity not found in keychain."
             exit 1
