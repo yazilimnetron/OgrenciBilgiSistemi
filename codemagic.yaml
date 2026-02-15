@@ -1,6 +1,6 @@
 ﻿workflows:
   ios-maui-release:
-    name: iOS MAUI Release (IPA + TestFlight) - Auto Signing
+    name: iOS MAUI Release (IPA + TestFlight) - Team Auto Signing
     instance_type: mac_mini_m2
     max_build_duration: 120
 
@@ -9,10 +9,12 @@
 
     environment:
       xcode: latest
+
       vars:
         BUNDLE_ID: com.netronyazilim.ogrencibilgisistemi
         PROJECT_PATH: StudentTrackingSystem/StudentTrackingSystem.csproj
         IOS_TFM: net9.0-ios18.0
+
         DOTNET_PATH: $CM_BUILD_DIR/dotnet
         DOTNET: $CM_BUILD_DIR/dotnet/dotnet
 
@@ -21,22 +23,6 @@
         bundle_identifier: com.netronyazilim.ogrencibilgisistemi
 
     scripts:
-      - name: Install Codemagic CLI tools (pip) + verify
-        script: |
-          set -e
-          python3 --version
-          python3 -m pip --version
-          USER_BASE="$(python3 -m site --user-base)"
-          export PATH="$USER_BASE/bin:$PATH"
-          python3 -m pip install --upgrade --user pip
-          python3 -m pip install --upgrade --user codemagic-cli-tools
-          echo "== CLI tools =="
-          which app-store-connect
-          which keychain
-          which xcode-project
-          keychain --version || true
-          xcode-project --version || true
-
       - name: Install .NET SDK 9.0
         script: |
           set -e
@@ -56,43 +42,17 @@
           set -e
           "$DOTNET" restore "$PROJECT_PATH"
 
-      - name: Fetch signing files + apply iOS signing (App Store)
+      - name: Apply iOS signing (use Team profiles)
         script: |
           set -e
-          USER_BASE="$(python3 -m site --user-base)"
-          export PATH="$USER_BASE/bin:$PATH"
 
+          # Codemagic CLI tools: keychain + xcode-project (genelde imajda hazır)
+          # Eğer komutlar yoksa bu adım hata verir; o durumda ayrıca pip kurulum adımı ekleriz.
           keychain initialize
-
-          echo "== Certificates before =="
-          app-store-connect certificates list || true
-
-          echo "== Profiles before =="
-          app-store-connect profiles list || true
-
-          # App Store signing files (profile + related cert metadata)
-          app-store-connect fetch-signing-files "$BUNDLE_ID" \
-            --type IOS_APP_STORE \
-            --create
-
-          echo "== Certificates after =="
-          app-store-connect certificates list || true
-
-          echo "== Profiles after =="
-          app-store-connect profiles list || true
-
-          # import certs (must include private key to produce Apple Distribution identity)
-          keychain add-certificates
-
-          echo "== Codesigning identities (after add-certificates) =="
-          security find-identity -v -p codesigning | head -n 80
-
-          if ! security find-identity -v -p codesigning | grep -q "Apple Distribution"; then
-            echo "ERROR: Apple Distribution identity not found in keychain. (No matching certificate+private key)"
-            exit 1
-          fi
-
           xcode-project use-profiles
+
+          echo "== Codesigning identities =="
+          security find-identity -v -p codesigning | head -n 80
 
       - name: Build IPA (Release) + auto build number
         script: |
