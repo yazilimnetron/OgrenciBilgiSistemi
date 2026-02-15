@@ -5,7 +5,7 @@
     max_build_duration: 120
 
     integrations:
-      app_store_connect: CodemagicKey   # Codemagic UI'da verdiğin API key name
+      app_store_connect: CodemagicKey  # UI'da verdiğin App Store Connect API key adı
 
     environment:
       xcode: latest
@@ -18,8 +18,11 @@
         DOTNET: $CM_BUILD_DIR/dotnet/dotnet
 
       ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.netronyazilim.ogrencibilgisistemi
+        # ✅ Burayı reference ile kilitliyoruz
+        certificates:
+          - CodemagicKey
+        provisioning_profiles:
+          - CodemagicKey
 
     scripts:
       - name: Install .NET SDK 9.0
