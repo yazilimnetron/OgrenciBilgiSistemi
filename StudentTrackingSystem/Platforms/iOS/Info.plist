@@ -2,20 +2,56 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+    <!-- App Transport Security -->
+    <key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+    </dict>
 
-  <!-- Buraya SADECE ihtiyaç duyduğun izin / özel anahtarları ekle. Örnekler: -->
+    <!-- iPhone Orientation Support -->
+    <key>UISupportedInterfaceOrientations</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
 
-  <!-- Kamera kullanıyorsan aç -->
-  <!--
-  <key>NSCameraUsageDescription</key>
-  <string>Öğrenci fotoğrafı çekebilmek için kamera izni gerekiyor.</string>
-  -->
+    <!-- iPad Orientation Support -->
+    <key>UISupportedInterfaceOrientations~ipad</key>
+    <array>
+        <string>UIInterfaceOrientationPortrait</string>
+        <string>UIInterfaceOrientationPortraitUpsideDown</string>
+        <string>UIInterfaceOrientationLandscapeLeft</string>
+        <string>UIInterfaceOrientationLandscapeRight</string>
+    </array>
 
-  <!-- Fotoğraf galerisi kullanıyorsan aç -->
-  <!--
-  <key>NSPhotoLibraryUsageDescription</key>
-  <string>Fotoğraf seçebilmek için galeri izni gerekiyor.</string>
-  -->
+    <!-- Status Bar Style -->
+    <key>UIStatusBarStyle</key>
+    <string>UIStatusBarStyleDefault</string>
 
+    <!-- Launch Screen -->
+    <key>UILaunchStoryboardName</key>
+    <string>LaunchScreen</string>
+
+    <!-- İHTİYAÇ DUYDUĞUNUZ İZİNLER (Kullanıyorsanız açın) -->
+    
+    <!-- Kamera -->
+    <!--
+    <key>NSCameraUsageDescription</key>
+    <string>Öğrenci fotoğrafı çekebilmek için kamera izni gerekiyor.</string>
+    -->
+
+    <!-- Fotoğraf Galerisi -->
+    <!--
+    <key>NSPhotoLibraryUsageDescription</key>
+    <string>Fotoğraf seçebilmek için galeri izni gerekiyor.</string>
+    -->
+
+    <!-- Konum (Gerekirse) -->
+    <!--
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>Konumunuzu kullanmak için izin gerekiyor.</string>
+    -->
 </dict>
 </plist>
