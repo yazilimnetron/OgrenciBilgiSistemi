@@ -5,7 +5,7 @@
     max_build_duration: 120
 
     integrations:
-      app_store_connect: Codemagic API Key
+      app_store_connect: "Codemagic API Key"
 
     environment:
       xcode: latest
@@ -31,6 +31,7 @@
           fi
           xcode-project --version || true
           keychain --version || true
+          fetch-signing-files --version || true
 
       - name: Install .NET SDK 9.0
         script: |
@@ -51,16 +52,26 @@
           set -e
           "$DOTNET" restore "$PROJECT_PATH"
 
-      - name: Apply iOS signing to keychain (auto signing)
+      - name: Fetch signing files + apply iOS signing (auto)
         script: |
           set -e
+
+          # 1) Yeni keychain
           keychain initialize
+
+          # 2) Apple Developer Portal'dan App Store sertifika + profile çek (yoksa oluştur)
+          fetch-signing-files \
+            --platform ios \
+            --type app_store \
+            --bundle-id "$BUNDLE_ID" \
+            --create
+
+          # 3) Çekilenleri projeye uygula
           xcode-project use-profiles
 
           echo "== Codesigning identities =="
-          security find-identity -v -p codesigning | head -n 30
+          security find-identity -v -p codesigning | head -n 50
 
-          # Identity yoksa burada net fail verelim
           if ! security find-identity -v -p codesigning | grep -q "Apple Distribution"; then
             echo "ERROR: Apple Distribution identity not found in keychain."
             exit 1
