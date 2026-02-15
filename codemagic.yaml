@@ -9,12 +9,10 @@
 
     environment:
       xcode: latest
-
       vars:
         BUNDLE_ID: com.netronyazilim.ogrencibilgisistemi
         PROJECT_PATH: StudentTrackingSystem/StudentTrackingSystem.csproj
         IOS_TFM: net9.0-ios18.0
-
         DOTNET_PATH: $CM_BUILD_DIR/dotnet
         DOTNET: $CM_BUILD_DIR/dotnet/dotnet
 
@@ -26,16 +24,12 @@
       - name: Install Codemagic CLI tools (pip) + verify
         script: |
           set -e
-
           python3 --version
           python3 -m pip --version
-
           USER_BASE="$(python3 -m site --user-base)"
           export PATH="$USER_BASE/bin:$PATH"
-
           python3 -m pip install --upgrade --user pip
           python3 -m pip install --upgrade --user codemagic-cli-tools
-
           echo "== CLI tools =="
           which app-store-connect
           which keychain
@@ -65,15 +59,10 @@
       - name: Fetch signing files + apply iOS signing (App Store)
         script: |
           set -e
-
           USER_BASE="$(python3 -m site --user-base)"
           export PATH="$USER_BASE/bin:$PATH"
 
-          # 1) Keychain
           keychain initialize
-
-          echo "== fetch-signing-files help (debug) =="
-          app-store-connect fetch-signing-files --help | head -n 220
 
           echo "== Certificates before =="
           app-store-connect certificates list || true
@@ -81,7 +70,7 @@
           echo "== Profiles before =="
           app-store-connect profiles list || true
 
-          # 2) Create/Fetch profile + certificate (App Store)
+          # App Store signing files (profile + related cert metadata)
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create
@@ -92,19 +81,18 @@
           echo "== Profiles after =="
           app-store-connect profiles list || true
 
-          # 3) Sertifikaları keychain'e ekle
+          # import certs (must include private key to produce Apple Distribution identity)
           keychain add-certificates
 
-          # 4) Projeye profilleri uygula
-          xcode-project use-profiles
-
-          echo "== Codesigning identities =="
+          echo "== Codesigning identities (after add-certificates) =="
           security find-identity -v -p codesigning | head -n 80
 
           if ! security find-identity -v -p codesigning | grep -q "Apple Distribution"; then
-            echo "ERROR: Apple Distribution identity not found in keychain."
+            echo "ERROR: Apple Distribution identity not found in keychain. (No matching certificate+private key)"
             exit 1
           fi
+
+          xcode-project use-profiles
 
       - name: Build IPA (Release) + auto build number
         script: |
