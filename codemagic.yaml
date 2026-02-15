@@ -9,6 +9,7 @@
 
     environment:
       xcode: latest
+
       vars:
         BUNDLE_ID: com.netronyazilim.ogrencibilgisistemi
         PROJECT_PATH: StudentTrackingSystem/StudentTrackingSystem.csproj
@@ -29,19 +30,16 @@
           python3 --version
           python3 -m pip --version
 
-          # pip --user bin yolunu PATH'e ekle (macOS)
           USER_BASE="$(python3 -m site --user-base)"
           export PATH="$USER_BASE/bin:$PATH"
 
-          # Kur / güncelle
+          python3 -m pip install --upgrade --user pip
           python3 -m pip install --upgrade --user codemagic-cli-tools
 
           echo "== CLI tools =="
           which app-store-connect
           which keychain
           which xcode-project
-
-          app-store-connect --help | head -n 5 || true
           keychain --version || true
           xcode-project --version || true
 
@@ -74,10 +72,25 @@
           # 1) Keychain
           keychain initialize
 
-          # 2) Signing dosyalarını çek/oluştur (App Store)
+          echo "== fetch-signing-files help (debug) =="
+          app-store-connect fetch-signing-files --help | head -n 220
+
+          echo "== Certificates before =="
+          app-store-connect certificates list || true
+
+          echo "== Profiles before =="
+          app-store-connect profiles list || true
+
+          # 2) Create/Fetch profile + certificate (App Store)
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create
+
+          echo "== Certificates after =="
+          app-store-connect certificates list || true
+
+          echo "== Profiles after =="
+          app-store-connect profiles list || true
 
           # 3) Sertifikaları keychain'e ekle
           keychain add-certificates
@@ -86,7 +99,7 @@
           xcode-project use-profiles
 
           echo "== Codesigning identities =="
-          security find-identity -v -p codesigning | head -n 50
+          security find-identity -v -p codesigning | head -n 80
 
           if ! security find-identity -v -p codesigning | grep -q "Apple Distribution"; then
             echo "ERROR: Apple Distribution identity not found in keychain."
