@@ -1,8 +1,11 @@
 ﻿workflows:
   ios-maui-release:
     name: iOS MAUI Release (IPA + TestFlight) - Auto Signing
+    instance_type: mac_mini_m2
+    max_build_duration: 120
+
     integrations:
-      app_store_connect: CodemagicKey   # UI'da verdiğin API key name
+      app_store_connect: CodemagicKey   # Codemagic UI'da verdiğin API key name
 
     environment:
       xcode: latest
@@ -11,21 +14,37 @@
         PROJECT_PATH: StudentTrackingSystem/StudentTrackingSystem.csproj
         IOS_TFM: net9.0-ios18.0
 
+        DOTNET_PATH: $CM_BUILD_DIR/dotnet
+        DOTNET: $CM_BUILD_DIR/dotnet/dotnet
+
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.netronyazilim.ogrencibilgisistemi
 
     scripts:
+      - name: Install .NET SDK 9.0
+        script: |
+          set -e
+          curl -fsSL https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh
+          chmod +x dotnet-install.sh
+          ./dotnet-install.sh --install-dir "$DOTNET_PATH" --channel 9.0
+          "$DOTNET" --info
+
+      - name: Install MAUI workloads
+        script: |
+          set -e
+          "$DOTNET" workload install maui-ios maui --skip-manifest-update
+          "$DOTNET" workload list
+
       - name: Restore
         script: |
           set -e
-          dotnet --info
-          dotnet restore "$PROJECT_PATH"
+          "$DOTNET" restore "$PROJECT_PATH"
 
       - name: Build IPA (Release) + Auto build number
         script: |
           set -e
-          dotnet publish "$PROJECT_PATH" \
+          "$DOTNET" publish "$PROJECT_PATH" \
             -c Release \
             -f "$IOS_TFM" \
             /p:RuntimeIdentifier=ios-arm64 \
