@@ -9,6 +9,7 @@
 
     environment:
       xcode: latest
+
       vars:
         BUNDLE_ID: com.netronyazilim.ogrencibilgisistemi
         PROJECT_PATH: StudentTrackingSystem/StudentTrackingSystem.csproj
@@ -22,28 +23,47 @@
         bundle_identifier: com.netronyazilim.ogrencibilgisistemi
 
     scripts:
-      - name: Install Codemagic CLI tools (needed for keychain/use-profiles)
+      - name: Prepare PATH + install Codemagic CLI tools
         script: |
           set -e
-          if ! command -v xcode-project >/dev/null 2>&1; then
+          export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+          echo "== Brew =="
+          brew --version
+
+          # fetch-signing-files yoksa kur
+          if ! command -v fetch-signing-files >/dev/null 2>&1; then
             brew update
             brew install codemagic-cli-tools
           fi
+
+          export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
+          echo "== CLI tools =="
+          which fetch-signing-files || true
+          which xcode-project || true
+          which keychain || true
+
+          fetch-signing-files --version || true
           xcode-project --version || true
           keychain --version || true
-          fetch-signing-files --version || true
 
       - name: Install .NET SDK 9.0
         script: |
           set -e
+          export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
           curl -fsSL https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh
           chmod +x dotnet-install.sh
           ./dotnet-install.sh --install-dir "$DOTNET_PATH" --channel 9.0
+
           "$DOTNET" --info
 
       - name: Install MAUI workloads
         script: |
           set -e
+          export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
+
           "$DOTNET" workload install maui-ios maui --skip-manifest-update
           "$DOTNET" workload list
 
@@ -55,18 +75,19 @@
       - name: Fetch signing files + apply iOS signing (auto)
         script: |
           set -e
+          export PATH="/opt/homebrew/bin:/usr/local/bin:$PATH"
 
-          # 1) Yeni keychain
+          # 1) Keychain
           keychain initialize
 
-          # 2) Apple Developer Portal'dan App Store sertifika + profile çek (yoksa oluştur)
+          # 2) Apple Developer Portal’dan sertifika + App Store profile çek/oluştur
           fetch-signing-files \
             --platform ios \
             --type app_store \
             --bundle-id "$BUNDLE_ID" \
             --create
 
-          # 3) Çekilenleri projeye uygula
+          # 3) Xcode projesine uygula
           xcode-project use-profiles
 
           echo "== Codesigning identities =="
@@ -77,7 +98,7 @@
             exit 1
           fi
 
-      - name: Build IPA (Release) + Auto build number
+      - name: Build IPA (Release) + auto build number
         script: |
           set -e
           "$DOTNET" publish "$PROJECT_PATH" \
@@ -90,6 +111,8 @@
 
     artifacts:
       - "**/*.ipa"
+      - "**/*.app"
+      - "$CM_BUILD_DIR/**/publish/*.ipa"
 
     publishing:
       app_store_connect:
