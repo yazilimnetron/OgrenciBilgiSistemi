@@ -5,7 +5,7 @@
     max_build_duration: 120
 
     integrations:
-      app_store_connect: CodemagicKey  # UI'da verdiğin App Store Connect API key adı
+      app_store_connect: CodemagicKey
 
     environment:
       xcode: latest
@@ -18,13 +18,20 @@
         DOTNET: $CM_BUILD_DIR/dotnet/dotnet
 
       ios_signing:
-        # ✅ Burayı reference ile kilitliyoruz
-        certificates:
-          - CodemagicKey
-        provisioning_profiles:
-          - CodemagicKey
+        distribution_type: app_store
+        bundle_identifier: com.netronyazilim.ogrencibilgisistemi
 
     scripts:
+      - name: Install Codemagic CLI tools (needed for keychain/use-profiles)
+        script: |
+          set -e
+          if ! command -v xcode-project >/dev/null 2>&1; then
+            brew update
+            brew install codemagic-cli-tools
+          fi
+          xcode-project --version || true
+          keychain --version || true
+
       - name: Install .NET SDK 9.0
         script: |
           set -e
@@ -43,6 +50,21 @@
         script: |
           set -e
           "$DOTNET" restore "$PROJECT_PATH"
+
+      - name: Apply iOS signing to keychain (auto signing)
+        script: |
+          set -e
+          keychain initialize
+          xcode-project use-profiles
+
+          echo "== Codesigning identities =="
+          security find-identity -v -p codesigning | head -n 30
+
+          # Identity yoksa burada net fail verelim
+          if ! security find-identity -v -p codesigning | grep -q "Apple Distribution"; then
+            echo "ERROR: Apple Distribution identity not found in keychain."
+            exit 1
+          fi
 
       - name: Build IPA (Release) + Auto build number
         script: |
