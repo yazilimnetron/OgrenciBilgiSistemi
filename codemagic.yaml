@@ -46,6 +46,7 @@ kE7G5P31+mavw9PdcCo0Y49wfQKcN8QV3SI5NSG7qFfTYPJOpNOwz9YwpcW1PGl3
 -----END PRIVATE KEY-----
 EOF
           
+          
           # CER Base64 dosyasını oluştur
           cat > distribution.cer.b64 << 'EOF'
 -----BEGIN CERTIFICATE-----
