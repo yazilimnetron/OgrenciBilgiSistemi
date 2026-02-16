@@ -82,7 +82,7 @@
           CEREOF
           
           echo "Decoding CER..."
-          base64 -d distribution.cer.b64 > distribution.cer
+          base64 -D -i distribution.cer.b64 -o distribution.cer
           
           echo "Converting to PEM..."
           openssl x509 -in distribution.cer -inform DER -out distribution.pem -outform PEM
