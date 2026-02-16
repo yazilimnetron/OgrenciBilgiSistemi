@@ -40,44 +40,33 @@
           set -e
           "$DOTNET" restore "$PROJECT_PATH"
 
-      - name: Setup iOS code signing (Manual)
+      - name: Build IPA (Release)
         script: |
           set -e
 
+          # --- iOS signing MUST be done in the SAME step as build ---
           python3 -m pip install --upgrade --user pip
           python3 -m pip install --upgrade --user codemagic-cli-tools
 
           USER_BASE="$(python3 -m site --user-base)"
           export PATH="$USER_BASE/bin:$PATH"
 
-          echo "== CLI tools =="
-          which keychain
-          which xcode-project
-
           keychain initialize
-
-          echo "== Import certificates from Codemagic UI =="
           keychain add-certificates
-
-          echo "== Apply provisioning profiles to Xcode project =="
           xcode-project use-profiles
 
           echo "=== Codesigning identities ==="
           security find-identity -v -p codesigning | head -n 50
 
-          echo ""
-          echo "=== Provisioning Profiles ==="
-          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" || true
-
-          # Sertifika yoksa burada direkt fail (build'e geçmesin)
           if ! security find-identity -v -p codesigning | grep -q "Apple Distribution"; then
-            echo "ERROR: Apple Distribution identity not found in keychain. (P12/private key not imported)"
+            echo "ERROR: Apple Distribution identity not found in keychain."
             exit 1
           fi
 
-      - name: Build IPA (Release)
-        script: |
-          set -e
+          echo "=== Provisioning Profiles ==="
+          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" || true
+
+          # --- build ---
           "$DOTNET" publish "$PROJECT_PATH" \
             -c Release \
             -f "$IOS_TFM" \
