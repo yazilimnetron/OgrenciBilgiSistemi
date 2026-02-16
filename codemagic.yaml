@@ -3,10 +3,10 @@
     name: iOS MAUI Release - Manual Signing
     instance_type: mac_mini_m2
     max_build_duration: 120
-    
+
     integrations:
       app_store_connect: "Codemagic API Key"
-    
+
     environment:
       xcode: latest
       vars:
@@ -15,11 +15,11 @@
         IOS_TFM: net9.0-ios18.0
         DOTNET_PATH: $CM_BUILD_DIR/dotnet
         DOTNET: $CM_BUILD_DIR/dotnet/dotnet
-      
+
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.netronyazilim.ogrencibilgisistemi
-    
+
     scripts:
       - name: Install .NET SDK 9.0
         script: |
@@ -28,33 +28,53 @@
           chmod +x dotnet-install.sh
           ./dotnet-install.sh --install-dir "$DOTNET_PATH" --channel 9.0
           "$DOTNET" --info
-      
+
       - name: Install MAUI workloads
         script: |
           set -e
           "$DOTNET" workload install maui-ios maui --skip-manifest-update
           "$DOTNET" workload list
-      
+
       - name: Restore NuGet packages
         script: |
           set -e
           "$DOTNET" restore "$PROJECT_PATH"
-      
+
       - name: Setup iOS code signing (Manual)
         script: |
           set -e
-          python3 -m pip install --upgrade codemagic-cli-tools
-          
+
+          python3 -m pip install --upgrade --user pip
+          python3 -m pip install --upgrade --user codemagic-cli-tools
+
+          USER_BASE="$(python3 -m site --user-base)"
+          export PATH="$USER_BASE/bin:$PATH"
+
+          echo "== CLI tools =="
+          which keychain
+          which xcode-project
+
           keychain initialize
+
+          echo "== Import certificates from Codemagic UI =="
           keychain add-certificates
+
+          echo "== Apply provisioning profiles to Xcode project =="
           xcode-project use-profiles
-          
-          echo "=== Certificates ==="
-          security find-identity -v -p codesigning
+
+          echo "=== Codesigning identities ==="
+          security find-identity -v -p codesigning | head -n 50
+
           echo ""
           echo "=== Provisioning Profiles ==="
-          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/"
-      
+          ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" || true
+
+          # Sertifika yoksa burada direkt fail (build'e geçmesin)
+          if ! security find-identity -v -p codesigning | grep -q "Apple Distribution"; then
+            echo "ERROR: Apple Distribution identity not found in keychain. (P12/private key not imported)"
+            exit 1
+          fi
+
       - name: Build IPA (Release)
         script: |
           set -e
@@ -65,10 +85,10 @@
             /p:ArchiveOnBuild=true \
             /p:BuildIpa=true \
             /p:ApplicationVersion=$CM_BUILD_NUMBER
-    
+
     artifacts:
       - "**/*.ipa"
-    
+
     publishing:
       app_store_connect:
         auth: integration
