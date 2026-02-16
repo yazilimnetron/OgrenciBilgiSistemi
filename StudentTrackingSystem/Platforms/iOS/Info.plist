@@ -2,14 +2,14 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <!-- App Transport Security -->
+    <!-- Network İzinleri -->
     <key>NSAppTransportSecurity</key>
     <dict>
         <key>NSAllowsArbitraryLoads</key>
         <true/>
     </dict>
 
-    <!-- iPhone Orientation Support -->
+    <!-- iPhone Yönlendirme -->
     <key>UISupportedInterfaceOrientations</key>
     <array>
         <string>UIInterfaceOrientationPortrait</string>
@@ -17,7 +17,7 @@
         <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
 
-    <!-- iPad Orientation Support -->
+    <!-- iPad Yönlendirme -->
     <key>UISupportedInterfaceOrientations~ipad</key>
     <array>
         <string>UIInterfaceOrientationPortrait</string>
@@ -26,7 +26,7 @@
         <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
 
-    <!-- Status Bar Style -->
+    <!-- Durum Çubuğu -->
     <key>UIStatusBarStyle</key>
     <string>UIStatusBarStyleDefault</string>
 
@@ -36,19 +36,19 @@
 
     <!-- İHTİYAÇ DUYDUĞUNUZ İZİNLER (Kullanıyorsanız açın) -->
     
-    <!-- Kamera -->
+    <!-- Kamera İzni -->
     <!--
     <key>NSCameraUsageDescription</key>
-    <string>Öğrenci fotoğrafı çekebilmek için kamera izni gerekiyor.</string>
+    <string>Fotoğraf çekmek için kamera izni gerekiyor.</string>
     -->
 
-    <!-- Fotoğraf Galerisi -->
+    <!-- Galeri İzni -->
     <!--
     <key>NSPhotoLibraryUsageDescription</key>
-    <string>Fotoğraf seçebilmek için galeri izni gerekiyor.</string>
+    <string>Fotoğraf seçmek için galeri izni gerekiyor.</string>
     -->
 
-    <!-- Konum (Gerekirse) -->
+    <!-- Konum İzni -->
     <!--
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>Konumunuzu kullanmak için izin gerekiyor.</string>

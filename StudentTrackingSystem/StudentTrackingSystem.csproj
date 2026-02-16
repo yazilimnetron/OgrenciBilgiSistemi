@@ -1,21 +1,25 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net9.0-android;net9.0-ios18.0</TargetFrameworks>
+    <TargetFrameworks>net9.0-android;net9.0-ios</TargetFrameworks>
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
     <OutputType>Exe</OutputType>
+    
+    <!-- Bundle ID - Apple Developer'da kaydettiğiniz ile AYNI olmalı -->
     <ApplicationId>com.netronyazilim.ogrencibilgisistemi</ApplicationId>
-    <ApplicationTitle>Öğrenci Bilgi Sistemi</ApplicationTitle>
+    
+    <ApplicationTitle>OgrenciBilgiSistemi IOS</ApplicationTitle>
     <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
     <ApplicationVersion>1</ApplicationVersion>
     
-    <!-- iOS Specific -->
+    <!-- iOS Minimum Version -->
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.2</SupportedOSPlatformVersion>
     
-    <!-- Android Specific -->
+    <!-- Android Minimum Version -->
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
   </PropertyGroup>
 
+  <!-- .NET 9 MAUI için zorunlu -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.0" />
     <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.0" />

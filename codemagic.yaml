@@ -1,26 +1,37 @@
 ﻿workflows:
-  ios-maui-release:
-    name: iOS MAUI Release - Auto Signing
+  ios-release:
+    name: iOS Release - App Store
     instance_type: mac_mini_m2
     max_build_duration: 120
     
+    # API Key entegrasyonu
     integrations:
-      app_store_connect: "Codemagic API Key"
+      app_store_connect: "Codemagic API Key"  # Yukarıda verdiğiniz isim
     
     environment:
       xcode: latest
+      
       vars:
+        # Bundle ID - .csproj ve Apple Developer'da kaydettiğiniz ile AYNI
         BUNDLE_ID: com.netronyazilim.ogrencibilgisistemi
+        
+        # Proje yolu
         PROJECT_PATH: StudentTrackingSystem/StudentTrackingSystem.csproj
-        IOS_TFM: net9.0-ios18.0
+        
+        # iOS Target Framework (.csproj'deki ile eşleşmeli)
+        IOS_TFM: net9.0-ios
+        
+        # .NET yolu
         DOTNET_PATH: $CM_BUILD_DIR/dotnet
         DOTNET: $CM_BUILD_DIR/dotnet/dotnet
       
+      # Otomatik kod imzalama
       ios_signing:
         distribution_type: app_store
         bundle_identifier: com.netronyazilim.ogrencibilgisistemi
     
     scripts:
+      # 1. .NET SDK Kurulumu
       - name: Install .NET SDK 9.0
         script: |
           set -e
@@ -29,40 +40,51 @@
           ./dotnet-install.sh --install-dir "$DOTNET_PATH" --channel 9.0
           "$DOTNET" --info
       
+      # 2. MAUI Workload Kurulumu
       - name: Install MAUI workloads
         script: |
           set -e
           "$DOTNET" workload install maui-ios maui --skip-manifest-update
           "$DOTNET" workload list
       
-      - name: Restore
+      # 3. NuGet Paketlerini Geri Yükle
+      - name: Restore NuGet packages
         script: |
           set -e
           "$DOTNET" restore "$PROJECT_PATH"
       
-      - name: Setup iOS code signing (Automatic)
+      # 4. iOS Kod İmzalama (Otomatik)
+      - name: Setup iOS code signing
         script: |
           set -e
-          set -x
+          set -x  # Debug mode
           
+          # Codemagic CLI tools
           python3 -m pip install --upgrade codemagic-cli-tools
           
+          # Keychain hazırla
           keychain initialize
           
           echo "=== Bundle ID: $BUNDLE_ID ==="
           
+          # Otomatik sertifika + provisioning profile oluştur/indir
           app-store-connect fetch-signing-files "$BUNDLE_ID" \
             --type IOS_APP_STORE \
             --create \
             --verbose
           
+          # Keychain'e ekle
           keychain add-certificates
+          
+          # Profilleri uygula
           xcode-project use-profiles
           
+          # Doğrulama
           echo "=== Code Signing Identities ==="
           security find-identity -v -p codesigning | head -20
       
-      - name: Build IPA (Release)
+      # 5. IPA Build
+      - name: Build IPA
         script: |
           set -e
           "$DOTNET" publish "$PROJECT_PATH" \
@@ -73,11 +95,13 @@
             /p:BuildIpa=true \
             /p:ApplicationVersion=$CM_BUILD_NUMBER
     
+    # Build çıktıları
     artifacts:
       - "**/*.ipa"
     
+    # TestFlight'a otomatik yükleme
     publishing:
       app_store_connect:
         auth: integration
         submit_to_testflight: true
-        submit_to_app_store: false
+        submit_to_app_store: false  # Manuel App Store onayı için false
