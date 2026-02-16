@@ -30,72 +30,36 @@
         distribution_type: app_store
         bundle_identifier: com.netronyazilim.ogrencibilgisistemi
     
-    scripts:
-      # 1. .NET SDK Kurulumu
-      - name: Install .NET SDK 9.0
-        script: |
-          set -e
-          curl -fsSL https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh
-          chmod +x dotnet-install.sh
-          ./dotnet-install.sh --install-dir "$DOTNET_PATH" --channel 9.0
-          "$DOTNET" --info
+scripts:
+  - name: Generate CSR and Private Key
+    script: |
+      set -e
       
-      # 2. MAUI Workload Kurulumu
-      - name: Install MAUI workloads
-        script: |
-          set -e
-          "$DOTNET" workload install maui-ios maui --skip-manifest-update
-          "$DOTNET" workload list
+      # CSR ve Private Key oluştur
+      openssl req -new -newkey rsa:2048 -nodes \
+        -keyout distribution.key \
+        -out distribution.csr \
+        -subj "/emailAddress=yazilinmetron@gmail.com/CN=Netron Yazilim/C=TR"
       
-      # 3. NuGet Paketlerini Geri Yükle
-      - name: Restore NuGet packages
-        script: |
-          set -e
-          "$DOTNET" restore "$PROJECT_PATH"
+      echo ""
+      echo "==============================================="
+      echo "    COPY THIS CSR - SAVE TO distribution.csr"
+      echo "==============================================="
+      cat distribution.csr
+      echo "==============================================="
+      echo ""
       
-      # 4. iOS Kod İmzalama (Otomatik)
-      - name: Setup iOS code signing
-        script: |
-          set -e
-          set -x  # Debug mode
-          
-          # Codemagic CLI tools
-          python3 -m pip install --upgrade codemagic-cli-tools
-          
-          # Keychain hazırla
-          keychain initialize
-          
-          echo "=== Bundle ID: $BUNDLE_ID ==="
-          
-          # Otomatik sertifika + provisioning profile oluştur/indir
-          app-store-connect fetch-signing-files "$BUNDLE_ID" \
-            --type IOS_APP_STORE \
-            --create \
-            --verbose
-          
-          # Keychain'e ekle
-          keychain add-certificates
-          
-          # Profilleri uygula
-          xcode-project use-profiles
-          
-          # Doğrulama
-          echo "=== Code Signing Identities ==="
-          security find-identity -v -p codesigning | head -20
+      echo ""
+      echo "==============================================="
+      echo "    COPY THIS PRIVATE KEY - SAVE SECURELY!"
+      echo "==============================================="
+      cat distribution.key
+      echo "==============================================="
+      echo ""
       
-      # 5. IPA Build
-      - name: Build IPA
-        script: |
-          set -e
-          "$DOTNET" publish "$PROJECT_PATH" \
-            -c Release \
-            -f "$IOS_TFM" \
-            /p:RuntimeIdentifier=ios-arm64 \
-            /p:ArchiveOnBuild=true \
-            /p:BuildIpa=true \
-            /p:ApplicationVersion=$CM_BUILD_NUMBER
-    
-    # Build çıktıları
+      echo "✅ DONE! Copy both blocks above."
+      # echo "Next: Upload CSR to Apple Developer Portal"
+      # echo "Next: Upload CSR to Apple Developer Portal"
     artifacts:
       - "**/*.ipa"
     
