@@ -1,71 +1,46 @@
 ﻿workflows:
-  ios-release:
-    name: iOS Release - App Store
+  ios-generate-csr:
+    name: Generate CSR and Private Key
     instance_type: mac_mini_m2
-    max_build_duration: 120
-    
-    # API Key entegrasyonu
-    integrations:
-      app_store_connect: "Codemagic API Key"  # Yukarıda verdiğiniz isim
+    max_build_duration: 30
     
     environment:
       xcode: latest
-      
-      vars:
-        # Bundle ID - .csproj ve Apple Developer'da kaydettiğiniz ile AYNI
-        BUNDLE_ID: com.netronyazilim.ogrencibilgisistemi
-        
-        # Proje yolu
-        PROJECT_PATH: StudentTrackingSystem/StudentTrackingSystem.csproj
-        
-        # iOS Target Framework (.csproj'deki ile eşleşmeli)
-        IOS_TFM: net9.0-ios
-        
-        # .NET yolu
-        DOTNET_PATH: $CM_BUILD_DIR/dotnet
-        DOTNET: $CM_BUILD_DIR/dotnet/dotnet
-      
-      # Otomatik kod imzalama
-      ios_signing:
-        distribution_type: app_store
-        bundle_identifier: com.netronyazilim.ogrencibilgisistemi
     
-scripts:
-  - name: Generate CSR and Private Key
-    script: |
-      set -e
-      
-      # CSR ve Private Key oluştur
-      openssl req -new -newkey rsa:2048 -nodes \
-        -keyout distribution.key \
-        -out distribution.csr \
-        -subj "/emailAddress=yazilinmetron@gmail.com/CN=Netron Yazilim/C=TR"
-      
-      echo ""
-      echo "==============================================="
-      echo "    COPY THIS CSR - SAVE TO distribution.csr"
-      echo "==============================================="
-      cat distribution.csr
-      echo "==============================================="
-      echo ""
-      
-      echo ""
-      echo "==============================================="
-      echo "    COPY THIS PRIVATE KEY - SAVE SECURELY!"
-      echo "==============================================="
-      cat distribution.key
-      echo "==============================================="
-      echo ""
-      
-      echo "✅ DONE! Copy both blocks above."
-      # echo "Next: Upload CSR to Apple Developer Portal"
-      # echo "Next: Upload CSR to Apple Developer Portal"
-    artifacts:
-      - "**/*.ipa"
-    
-    # TestFlight'a otomatik yükleme
-    publishing:
-      app_store_connect:
-        auth: integration
-        submit_to_testflight: true
-        submit_to_app_store: false  # Manuel App Store onayı için false
+    scripts:
+      - name: Generate CSR and Private Key
+        script: |
+          set -e
+          
+          echo "🔐 Generating CSR and Private Key..."
+          
+          # CSR ve Private Key oluştur
+          openssl req -new -newkey rsa:2048 -nodes \
+            -keyout distribution.key \
+            -out distribution.csr \
+            -subj "/emailAddress=yazilinmetron@gmail.com/CN=Netron Yazilim/C=TR"
+          
+          echo ""
+          echo "==============================================="
+          echo "    COPY THIS CSR - SAVE TO distribution.csr"
+          echo "==============================================="
+          cat distribution.csr
+          echo "==============================================="
+          echo ""
+          
+          echo ""
+          echo "==============================================="
+          echo "    COPY THIS PRIVATE KEY - SAVE SECURELY!"
+          echo "==============================================="
+          cat distribution.key
+          echo "==============================================="
+          echo ""
+          
+          echo "✅ DONE! Copy both blocks above."
+          echo ""
+          echo "NEXT STEPS:"
+          echo "1. Copy the CSR block (including BEGIN/END lines)"
+          echo "2. Save it to a file named: distribution.csr"
+          echo "3. Copy the PRIVATE KEY block (including BEGIN/END lines)"
+          echo "4. Save it to a file named: distribution.key"
+          echo "5. Upload distribution.csr to Apple Developer Portal"
