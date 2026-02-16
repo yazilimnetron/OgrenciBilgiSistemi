@@ -3,17 +3,17 @@
     name: Create P12 Certificate
     instance_type: mac_mini_m2
     max_build_duration: 30
-    
+
     environment:
       xcode: latest
-    
+
     scripts:
       - name: Create P12 from CER and Private Key
         script: |
           set -e
-          
+
           echo "Creating P12 certificate..."
-          
+
           cat > distribution.key <<'KEYEOF'
           -----BEGIN PRIVATE KEY-----
           MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDU/396FKur9pVk
@@ -44,8 +44,8 @@
           55SqLytLQkweKaYtMRx5Aw==
           -----END PRIVATE KEY-----
           KEYEOF
-          
-          cat > distribution.cer.b64 <<'CEREOF'
+
+          cat > distribution.pem <<'PEMEOF'
           -----BEGIN CERTIFICATE-----
           MIIFyzCCBLOgAwIBAgIQCGm9ylo2sXIoYHGtM7OVLjANBgkqhkiG9w0BAQsFADB1
           MUQwQgYDVQQDDDtBcHBsZSBXb3JsZHdpZGUgRGV2ZWxvcGVyIFJlbGF0aW9ucyBD
@@ -79,22 +79,16 @@
           ++WVvq1dua9DpcHmrC8yE949FFf5sy3hvtN4iYCV7ZltR4qdkmpCV/4MKmZvr18l
           Kuu10KcDsjTl2yP5ohGV14c4rWwMtbdFvN2+VQJHE3xVuoeoHHcSR5/k7pS0SXk=
           -----END CERTIFICATE-----
-          CEREOF
-          
-          echo "Decoding CER..."
-          base64 -D -i distribution.cer.b64 -o distribution.cer
-          
-          echo "Converting to PEM..."
-          openssl x509 -in distribution.cer -inform DER -out distribution.pem -outform PEM
-          
+          PEMEOF
+
           echo "Creating P12..."
           openssl pkcs12 -export -inkey distribution.key -in distribution.pem -out distribution.p12 -password pass:Codemagic2026
-          
+
           echo ""
           echo "========================================"
           echo "P12 BASE64 - COPY EVERYTHING BELOW"
           echo "========================================"
-          base64 distribution.p12
+          base64 -i distribution.p12
           echo "========================================"
           echo ""
           echo "Password: Codemagic2026"
