@@ -12,10 +12,9 @@
         script: |
           set -e
           
-          echo "🔐 Creating P12 certificate..."
+          echo "Creating P12 certificate..."
           
-          # Private Key dosyasını oluştur
-          cat > distribution.key << 'EOF'
+          cat > distribution.key << 'KEYEOF'
 -----BEGIN PRIVATE KEY-----
 MIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQDU/396FKur9pVk
 CbB0HOzbL+MlX9D1gMEyNeGQfTW2o8kNVqQdrbcrgIkDRsy/ehyKMJX0DACWelhv
@@ -44,11 +43,9 @@ budal5RWZUiesfvZU5esIBHyaiAD4uX/MjgNOFp51kLL2SyAzc48PISICg6O7Ac/
 kE7G5P31+mavw9PdcCo0Y49wfQKcN8QV3SI5NSG7qFfTYPJOpNOwz9YwpcW1PGl3
 55SqLytLQkweKaYtMRx5Aw==
 -----END PRIVATE KEY-----
-EOF
+KEYEOF
           
-          
-          # CER Base64 dosyasını oluştur
-          cat > distribution.cer.b64 << 'EOF'
+          cat > distribution.cer.b64 << 'CEREOF'
 -----BEGIN CERTIFICATE-----
 MIIFyzCCBLOgAwIBAgIQCGm9ylo2sXIoYHGtM7OVLjANBgkqhkiG9w0BAQsFADB1
 MUQwQgYDVQQDDDtBcHBsZSBXb3JsZHdpZGUgRGV2ZWxvcGVyIFJlbGF0aW9ucyBD
@@ -82,32 +79,22 @@ AKOajsUO085Wcka9g4QkPE0kBp0yeRLfZiNO4igsgjPUuLUbwPTooRVXKP0ZS0io
 ++WVvq1dua9DpcHmrC8yE949FFf5sy3hvtN4iYCV7ZltR4qdkmpCV/4MKmZvr18l
 Kuu10KcDsjTl2yP5ohGV14c4rWwMtbdFvN2+VQJHE3xVuoeoHHcSR5/k7pS0SXk=
 -----END CERTIFICATE-----
-EOF
+CEREOF
           
-          echo "📦 Decoding CER file..."
+          echo "Decoding CER..."
           base64 -d distribution.cer.b64 > distribution.cer
           
-          echo "🔄 Converting CER to PEM..."
+          echo "Converting to PEM..."
           openssl x509 -in distribution.cer -inform DER -out distribution.pem -outform PEM
           
-          echo "🔐 Creating P12 file..."
-          openssl pkcs12 -export \
-            -inkey distribution.key \
-            -in distribution.pem \
-            -out distribution.p12 \
-            -password pass:Codemagic2026
+          echo "Creating P12..."
+          openssl pkcs12 -export -inkey distribution.key -in distribution.pem -out distribution.p12 -password pass:Codemagic2026
           
           echo ""
-          echo "==============================================="
-          echo "    P12 CERTIFICATE (BASE64) - COPY THIS"
-          echo "==============================================="
+          echo "========================================"
+          echo "P12 BASE64 - COPY EVERYTHING BELOW"
+          echo "========================================"
           base64 distribution.p12
-          echo "==============================================="
+          echo "========================================"
           echo ""
-          echo "✅ P12 created successfully!"
           echo "Password: Codemagic2026"
-          echo ""
-          echo "NEXT STEPS:"
-          echo "1. Copy the BASE64 block above"
-          echo "2. Save it to a text file"
-          echo "3. Decode it to get distribution.p12"
