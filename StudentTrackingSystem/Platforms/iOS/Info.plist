@@ -2,22 +2,23 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <!-- Network İzinleri -->
-    <key>NSAppTransportSecurity</key>
-    <dict>
-        <key>NSAllowsArbitraryLoads</key>
-        <true/>
-    </dict>
-
-    <!-- iPhone Yönlendirme -->
+    <key>LSRequiresIPhoneOS</key>
+    <true/>
+    <key>UIDeviceFamily</key>
+    <array>
+        <integer>1</integer>
+        <integer>2</integer>
+    </array>
+    <key>UIRequiredDeviceCapabilities</key>
+    <array>
+        <string>arm64</string>
+    </array>
     <key>UISupportedInterfaceOrientations</key>
     <array>
         <string>UIInterfaceOrientationPortrait</string>
         <string>UIInterfaceOrientationLandscapeLeft</string>
         <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
-
-    <!-- iPad Yönlendirme -->
     <key>UISupportedInterfaceOrientations~ipad</key>
     <array>
         <string>UIInterfaceOrientationPortrait</string>
@@ -25,33 +26,21 @@
         <string>UIInterfaceOrientationLandscapeLeft</string>
         <string>UIInterfaceOrientationLandscapeRight</string>
     </array>
-
-    <!-- Durum Çubuğu -->
-    <key>UIStatusBarStyle</key>
-    <string>UIStatusBarStyleDefault</string>
-
-    <!-- Launch Screen -->
-    <key>UILaunchStoryboardName</key>
-    <string>LaunchScreen</string>
-
-    <!-- İHTİYAÇ DUYDUĞUNUZ İZİNLER (Kullanıyorsanız açın) -->
-    
-    <!-- Kamera İzni -->
-    <!--
-    <key>NSCameraUsageDescription</key>
-    <string>Fotoğraf çekmek için kamera izni gerekiyor.</string>
-    -->
-
-    <!-- Galeri İzni -->
-    <!--
-    <key>NSPhotoLibraryUsageDescription</key>
-    <string>Fotoğraf seçmek için galeri izni gerekiyor.</string>
-    -->
-
-    <!-- Konum İzni -->
-    <!--
-    <key>NSLocationWhenInUseUsageDescription</key>
-    <string>Konumunuzu kullanmak için izin gerekiyor.</string>
-    -->
+    <key>XSAppIconAssets</key>
+    <string>Assets.xcassets/appicon.appiconset</string>
+    <key>CFBundleIconName</key>
+    <string>AppIcon</string>
+    <key>CFBundleIcons</key>
+    <dict>
+        <key>CFBundlePrimaryIcon</key>
+        <dict>
+            <key>CFBundleIconFiles</key>
+            <array>
+                <string>AppIcon</string>
+            </array>
+            <key>CFBundleIconName</key>
+            <string>AppIcon</string>
+        </dict>
+    </dict>
 </dict>
 </plist>
