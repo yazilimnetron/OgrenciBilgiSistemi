@@ -38,7 +38,8 @@
       - name: Restore NuGet packages
         script: |
           set -e
-          "$DOTNET" restore "$PROJECT_PATH"
+          "$DOTNET" restore "$PROJECT_PATH" \
+            /p:TargetFramework=net9.0-ios18.0
 
       - name: Setup iOS code signing
         script: |
@@ -73,11 +74,10 @@
             fi
           done
 
-          # Build + Sign
+          # Build + Sign (--no-restore YOK!)
           "$DOTNET" publish "$PROJECT_PATH" \
             -c Release \
             -f "$IOS_TFM" \
-            --no-restore \
             /p:RuntimeIdentifier=ios-arm64 \
             /p:ArchiveOnBuild=true \
             /p:BuildIpa=true \
