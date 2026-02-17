@@ -38,8 +38,7 @@
       - name: Restore NuGet packages
         script: |
           set -e
-          "$DOTNET" restore "$PROJECT_PATH" \
-            /p:TargetFrameworks="net9.0-android;net9.0-ios18.0"
+          "$DOTNET" restore "$PROJECT_PATH"
 
       - name: Setup iOS code signing
         script: |
@@ -74,7 +73,7 @@
             fi
           done
 
-          # iOS için restore
+          # iOS için ayrıca restore
           "$DOTNET" restore "$PROJECT_PATH" -f "$IOS_TFM"
 
           # Build + Sign
