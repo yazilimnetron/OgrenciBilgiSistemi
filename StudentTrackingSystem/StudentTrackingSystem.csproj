@@ -4,6 +4,8 @@
     <UseMaui>true</UseMaui>
     <SingleProject>true</SingleProject>
     <OutputType>Exe</OutputType>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
     <ApplicationId>com.netronyazilim.ogrencibilgisistemi</ApplicationId>
     <ApplicationTitle>OgrenciBilgiSistemi IOS</ApplicationTitle>
     <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
@@ -14,5 +16,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Maui.Controls" Version="9.0.0" />
     <PackageReference Include="Microsoft.Maui.Controls.Compatibility" Version="9.0.0" />
+    <PackageReference Include="CommunityToolkit.Maui" Version="9.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
   </ItemGroup>
 </Project>
