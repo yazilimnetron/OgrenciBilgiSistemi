@@ -40,40 +40,50 @@
           set -e
           "$DOTNET" restore "$PROJECT_PATH"
 
-      - name: Build IPA (Release)
+      - name: Setup iOS code signing
         script: |
           set -e
-
-          # --- iOS signing MUST be done in the SAME step as build ---
-          python3 -m pip install --upgrade --user pip
-          python3 -m pip install --upgrade --user codemagic-cli-tools
-
-          USER_BASE="$(python3 -m site --user-base)"
-          export PATH="$USER_BASE/bin:$PATH"
+          python3 -m pip install --upgrade codemagic-cli-tools
 
           keychain initialize
           keychain add-certificates
           xcode-project use-profiles
 
-          echo "=== Codesigning identities ==="
-          security find-identity -v -p codesigning | head -n 50
-
-          if ! security find-identity -v -p codesigning | grep -q "Apple Distribution"; then
-            echo "ERROR: Apple Distribution identity not found in keychain."
-            exit 1
-          fi
-
-          echo "=== Provisioning Profiles ==="
+          echo "=== Certificates ==="
+          security find-identity -v -p codesigning
+          echo "=== Profiles ==="
           ls -la "$HOME/Library/MobileDevice/Provisioning Profiles/" || true
 
-          # --- build ---
+      - name: Build IPA (Release)
+        script: |
+          set -e
+
+          # Signing identity'yi bul
+          SIGNING_IDENTITY=$(security find-identity -v -p codesigning | grep "Apple Distribution" | head -1 | awk -F'"' '{print $2}')
+          echo "Signing identity: $SIGNING_IDENTITY"
+
+          # Profile UUID bul
+          PROFILES_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+          PROFILE_UUID=""
+          for f in "$PROFILES_DIR"/*.mobileprovision; do
+            UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" /dev/stdin <<< $(security cms -D -i "$f") 2>/dev/null || true)
+            APPID=$(/usr/libexec/PlistBuddy -c "Print :Entitlements:application-identifier" /dev/stdin <<< $(security cms -D -i "$f") 2>/dev/null || true)
+            if echo "$APPID" | grep -q "$BUNDLE_ID"; then
+              PROFILE_UUID="$UUID"
+              echo "Found profile UUID: $PROFILE_UUID"
+              break
+            fi
+          done
+
           "$DOTNET" publish "$PROJECT_PATH" \
             -c Release \
             -f "$IOS_TFM" \
             /p:RuntimeIdentifier=ios-arm64 \
             /p:ArchiveOnBuild=true \
             /p:BuildIpa=true \
-            /p:ApplicationVersion=$CM_BUILD_NUMBER
+            /p:ApplicationVersion=$CM_BUILD_NUMBER \
+            /p:CodesignKey="$SIGNING_IDENTITY" \
+            /p:CodesignProvision="$PROFILE_UUID"
 
     artifacts:
       - "**/*.ipa"
