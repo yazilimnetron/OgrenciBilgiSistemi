@@ -38,17 +38,16 @@
       - name: Restore NuGet packages
         script: |
           set -e
-          "$DOTNET" restore "$PROJECT_PATH"
+          "$DOTNET" restore "$PROJECT_PATH" \
+            /p:TargetFrameworks="net9.0-android;net9.0-ios18.0"
 
       - name: Setup iOS code signing
         script: |
           set -e
           python3 -m pip install --upgrade codemagic-cli-tools
-
           keychain initialize
           keychain add-certificates
           xcode-project use-profiles
-
           echo "=== Certificates ==="
           security find-identity -v -p codesigning
           echo "=== Profiles ==="
@@ -58,7 +57,7 @@
         script: |
           set -e
 
-          # Signing identity'yi bul
+          # Signing identity bul
           SIGNING_IDENTITY=$(security find-identity -v -p codesigning | grep "Apple Distribution" | head -1 | awk -F'"' '{print $2}')
           echo "Signing identity: $SIGNING_IDENTITY"
 
@@ -75,6 +74,10 @@
             fi
           done
 
+          # iOS için restore
+          "$DOTNET" restore "$PROJECT_PATH" -f "$IOS_TFM"
+
+          # Build + Sign
           "$DOTNET" publish "$PROJECT_PATH" \
             -c Release \
             -f "$IOS_TFM" \
