@@ -73,13 +73,11 @@
             fi
           done
 
-          # iOS için ayrıca restore
-          "$DOTNET" publish ... --no-restore 
-
           # Build + Sign
           "$DOTNET" publish "$PROJECT_PATH" \
             -c Release \
             -f "$IOS_TFM" \
+            --no-restore \
             /p:RuntimeIdentifier=ios-arm64 \
             /p:ArchiveOnBuild=true \
             /p:BuildIpa=true \
