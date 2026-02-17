@@ -54,5 +54,7 @@
             <string>appicon</string>
         </dict>
     </dict>
+    <key>UILaunchScreen</key>
+    <dict/>
 </dict>
 </plist>
