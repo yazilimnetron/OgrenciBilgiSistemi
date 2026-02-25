@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFrameworks>net9.0-android;net9.0-ios18.0</TargetFrameworks>
     <UseMaui>true</UseMaui>
@@ -8,8 +8,8 @@
     <Nullable>enable</Nullable>
     <ApplicationId>com.netronyazilim.ogrencibilgisistemi</ApplicationId>
     <ApplicationTitle>OgrenciBilgiSistemi IOS</ApplicationTitle>
-    <ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
-    <ApplicationVersion>2</ApplicationVersion>
+    <ApplicationDisplayVersion>1.1.0</ApplicationDisplayVersion>
+    <ApplicationVersion>3</ApplicationVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">14.2</SupportedOSPlatformVersion>
     <SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'android'">21.0</SupportedOSPlatformVersion>
   </PropertyGroup>
