@@ -81,7 +81,7 @@
 
           # App Store'da zaten 1 var; CM_BUILD_NUMBER offset ile her build
           # önceki versiyondan yüksek olacak şekilde hesaplanır.
-          APP_BUILD_NUMBER=$(($CM_BUILD_NUMBER + 1))
+          APP_BUILD_NUMBER=$(($CM_BUILD_NUMBER + 4))
           echo "CFBundleVersion: $APP_BUILD_NUMBER"
 
           # Build + Sign (--no-restore YOK!)
@@ -144,7 +144,7 @@
         script: |
           set -e
 
-          APP_BUILD_NUMBER=$(($CM_BUILD_NUMBER + 1))
+          APP_BUILD_NUMBER=$(($CM_BUILD_NUMBER + 4))
           echo "Build number: $APP_BUILD_NUMBER"
 
           if [ -z "$CM_KEYSTORE_PATH" ]; then
