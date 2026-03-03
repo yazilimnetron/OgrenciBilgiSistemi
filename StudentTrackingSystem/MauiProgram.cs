@@ -27,7 +27,9 @@ namespace StudentTrackingSystem
             builder.Services.AddSingleton<UnitService>();
 
             // Sayfa kayıtları
+            // LoginView ve ClassListView Shell tarafından DI ile çözümleniyor
             builder.Services.AddTransient<LoginView>();
+            builder.Services.AddTransient<ClassListView>();
 
 #if DEBUG
             builder.Logging.AddDebug();

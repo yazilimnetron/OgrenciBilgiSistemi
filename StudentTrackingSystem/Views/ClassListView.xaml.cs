@@ -19,13 +19,13 @@ namespace StudentTrackingSystem.Views
         #endregion
 
         #region Yapıcı Metot
-        public ClassListView()
+        public ClassListView(ClassService classService)
         {
             try
             {
                 InitializeComponent();
-                // API tabanlı yeni ClassService başlatılıyor
-                _classService = new ClassService();
+                // DI üzerinden gelen singleton ClassService kullanılıyor
+                _classService = classService;
             }
             catch (Exception ex)
             {

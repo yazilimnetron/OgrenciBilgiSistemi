@@ -1,4 +1,4 @@
-#region Kütüphane Tanýmlamalarý
+#region Kï¿½tï¿½phane Tanï¿½mlamalarï¿½
 using StudentTrackingSystem.Models;
 using StudentTrackingSystem.Services;
 using StudentTrackingSystem.ViewModels;
@@ -8,13 +8,13 @@ namespace StudentTrackingSystem.Views;
 
 public partial class StudentListView : ContentPage
 {
-    #region Özel Deðiþkenler ve Servisler
+    #region ï¿½zel Deï¿½iï¿½kenler ve Servisler
     private readonly StudentService _studentService;
     private int _classId;
     private List<StudentViewModel> _studentViewModels;
     #endregion
 
-    #region Yapýcý Metot (Constructor)
+    #region Yapï¿½cï¿½ Metot (Constructor)
     public StudentListView(int classId, string className)
     {
         try
@@ -24,14 +24,14 @@ public partial class StudentListView : ContentPage
             _classId = classId;
             LblClassName.Text = className;
 
-            // Veri yüklemeyi tetikle
+            // Veri yï¿½klemeyi tetikle
             LoadStudents();
         }
         catch { /**/ }
     }
     #endregion
 
-    #region Veri Yükleme Ýþlemleri
+    #region Veri Yï¿½kleme ï¿½ï¿½lemleri
     private async void LoadStudents()
     {
         try
@@ -42,7 +42,7 @@ public partial class StudentListView : ContentPage
             _studentViewModels = students.Select(s => new StudentViewModel
             {
                 StudentData = s,
-                SelectedStatusId = 1 // Varsayýlan: Geldi
+                SelectedStatusId = 1 // Varsayï¿½lan: Geldi
             }).ToList();
 
             StudentCollection.ItemsSource = _studentViewModels;
@@ -51,7 +51,7 @@ public partial class StudentListView : ContentPage
     }
     #endregion
 
-    #region Kullanýcý Etkileþimleri
+    #region Kullanï¿½cï¿½ Etkileï¿½imleri
     private async void OnPeriodChanged(object sender, EventArgs e)
     {
         try
@@ -59,11 +59,11 @@ public partial class StudentListView : ContentPage
             if (PeriodPicker.SelectedIndex == -1) return;
             int lessonNumber = PeriodPicker.SelectedIndex + 1;
 
-            // O ders saatine ait kayýtlý yoklama var mý?
+            // O ders saatine ait kayï¿½tlï¿½ yoklama var mï¿½?
             var existingAttendance = await _studentService.GetExistingAttendanceAsync(_classId, lessonNumber);
             bool hasData = existingAttendance != null && existingAttendance.Count > 0;
 
-            // Arayüz kontrollerini güncelle
+            // Arayï¿½z kontrollerini gï¿½ncelle
             StatusWarningFrame.IsVisible = hasData;
             BtnSave.IsVisible = !hasData;
             BtnUpdate.IsVisible = hasData;
@@ -72,7 +72,7 @@ public partial class StudentListView : ContentPage
             {
                 foreach (var vm in _studentViewModels)
                 {
-                    // Eðer veritabanýnda bu öðrenci için o ders saatinde kayýt varsa onu getir, yoksa 'Geldi' yap
+                    // Eï¿½er veritabanï¿½nda bu ï¿½ï¿½renci iï¿½in o ders saatinde kayï¿½t varsa onu getir, yoksa 'Geldi' yap
                     if (hasData && existingAttendance.TryGetValue(vm.StudentData.Id, out int statusId))
                         vm.SelectedStatusId = statusId;
                     else
@@ -90,8 +90,8 @@ public partial class StudentListView : ContentPage
 
     private async void OnUpdateAttendanceClicked(object sender, EventArgs e)
     {
-        // Güncelleme butonu týklandýðýnda onay alarak iþlemi baþlatýr
-        bool confirm = await DisplayAlert("Onay", "Mevcut yoklama kaydýný deðiþtirmek istediðinize emin misiniz?", "Evet", "Hayýr");
+        // Gï¿½ncelleme butonu tï¿½klandï¿½ï¿½ï¿½nda onay alarak iï¿½lemi baï¿½latï¿½r
+        bool confirm = await DisplayAlert("Onay", "Mevcut yoklama kaydï¿½nï¿½ deï¿½iï¿½tirmek istediï¿½inize emin misiniz?", "Evet", "Hayï¿½r");
         if (confirm)
         {
             await ProcessAttendance(isUpdate: true);
@@ -99,7 +99,7 @@ public partial class StudentListView : ContentPage
     }
 
     /// <summary>
-    /// Hem Kaydet hem de Güncelleme iþlemini yöneten merkezi metot
+    /// Hem Kaydet hem de Gï¿½ncelleme iï¿½lemini yï¿½neten merkezi metot
     /// </summary>
     private async Task ProcessAttendance(bool isUpdate)
     {
@@ -107,7 +107,7 @@ public partial class StudentListView : ContentPage
         {
             if (PeriodPicker.SelectedIndex == -1)
             {
-                await DisplayAlert("Uyarý", "Lütfen önce ders saatini seçiniz!", "Tamam");
+                await DisplayAlert("Uyarï¿½", "Lï¿½tfen ï¿½nce ders saatini seï¿½iniz!", "Tamam");
                 return;
             }
 
@@ -116,17 +116,18 @@ public partial class StudentListView : ContentPage
                 .Select(vm => (vm.StudentData.Id, vm.SelectedStatusId))
                 .ToList();
 
-            // Kayýt veya Güncelleme iþlemini gerçekleþtir
-            await _studentService.SaveBulkAttendanceAsync(attendanceData, _classId, 1, lessonNumber);
+            // Kayï¿½t veya Gï¿½ncelleme iï¿½lemini gerï¿½ekleï¿½tir
+            // GiriÅŸ yapan Ã¶ÄŸretmenin ID'si UserSession Ã¼zerinden alÄ±nÄ±r
+            await _studentService.SaveBulkAttendanceAsync(attendanceData, _classId, UserSession.UserId, lessonNumber);
 
-            string message = isUpdate ? "Yoklama güncellendi." : "Yoklama baþarýyla kaydedildi.";
+            string message = isUpdate ? "Yoklama gï¿½ncellendi." : "Yoklama baï¿½arï¿½yla kaydedildi.";
             await DisplayAlert("Bilgi", message, "Tamam");
 
             await Navigation.PopAsync();
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Hata", $"Ýþlem sýrasýnda sorun çýktý: {ex.Message}", "Tamam");
+            await DisplayAlert("Hata", $"ï¿½ï¿½lem sï¿½rasï¿½nda sorun ï¿½ï¿½ktï¿½: {ex.Message}", "Tamam");
         }
     }
 
@@ -159,7 +160,7 @@ public partial class StudentListView : ContentPage
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Hata", "Öðrenci detaylarý yüklenemedi: " + ex.Message, "Tamam");
+            await DisplayAlert("Hata", "ï¿½ï¿½renci detaylarï¿½ yï¿½klenemedi: " + ex.Message, "Tamam");
         }
     }
     #endregion

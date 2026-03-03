@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-// Border ve Shape bileþenleri için gerekli:
+// Border ve Shape bileï¿½enleri iï¿½in gerekli:
 using Microsoft.Maui.Controls.Shapes;
 
 namespace StudentTrackingSystem.Views
@@ -21,11 +21,11 @@ namespace StudentTrackingSystem.Views
         {
             { 1, Color.FromArgb("#1ABC9C") }, // Geldi
             { 2, Color.FromArgb("#E74C3C") }, // Gelmedi
-            { 3, Color.FromArgb("#F1C40F") }, // Geç Geldi
-            { 4, Color.FromArgb("#3498DB") }, // Ýzinli
+            { 3, Color.FromArgb("#F1C40F") }, // Geï¿½ Geldi
+            { 4, Color.FromArgb("#3498DB") }, // ï¿½zinli
             { 5, Color.FromArgb("#9B59B6") }, // Raporlu
-            { 6, Color.FromArgb("#34495E") }, // Nöbetçi
-            { 7, Color.FromArgb("#95A5A6") }  // Görevli
+            { 6, Color.FromArgb("#34495E") }, // Nï¿½betï¿½i
+            { 7, Color.FromArgb("#95A5A6") }  // Gï¿½revli
         };
 
         public StudentDetailView(int studentId)
@@ -74,14 +74,14 @@ namespace StudentTrackingSystem.Views
                     LblClass.Text = details.ContainsKey("ClassName") ? details["ClassName"] : "-";
                     LblStudentNo.Text = details.ContainsKey("StudentNo") ? details["StudentNo"] : "-";
                     LblCardNo.Text = details.ContainsKey("CardNo") ? details["CardNo"] : "-";
-                    LblServicePlate.Text = details.ContainsKey("PlateNumber") ? details["PlateNumber"] : "Kullanmýyor";
+                    LblServicePlate.Text = details.ContainsKey("PlateNumber") ? details["PlateNumber"] : "Kullanmï¿½yor";
                     LblParentName.Text = details.ContainsKey("ParentName") ? details["ParentName"] : "-";
                     LblParentPhone.Text = details.ContainsKey("ParentPhone") ? details["ParentPhone"] : "-";
                     LblParentEmail.Text = details.ContainsKey("ParentEmail") ? details["ParentEmail"] : "-";
                     LblParentAddress.Text = details.ContainsKey("Address") ? details["Address"] : "-";
                     LblParentJob.Text = details.ContainsKey("ParentJob") ? details["ParentJob"] : "-";
-                    LblParentAddress.Text = details.ContainsKey("ParentWork") ? details["ParentWork"] : "-";
-                    LblTeacherName.Text = details.ContainsKey("TeacherName") ? details["TeacherName"] : "Atanmamýþ";
+                    LblParentWork.Text = details.ContainsKey("ParentWork") ? details["ParentWork"] : "-";
+                    LblTeacherName.Text = details.ContainsKey("TeacherName") ? details["TeacherName"] : "Atanmamï¿½ï¿½";
 
                 }
             }
@@ -94,7 +94,7 @@ namespace StudentTrackingSystem.Views
             {
                 var weeklyRecords = await _studentService.GetStudentWeeklyAttendanceAsync(_studentId, currentWeekStart, currentWeekStart.AddDays(6));
 
-                // Dinamik kutucuklarý temizle
+                // Dinamik kutucuklarï¿½ temizle
                 var cellsToRemove = GridAttendanceMatrix.Children
                     .Cast<View>()
                     .Where(c => Grid.GetRow(c) > 0 && Grid.GetColumn(c) >= 1 && Grid.GetColumn(c) <= 5)
@@ -124,7 +124,7 @@ namespace StudentTrackingSystem.Views
                         {
                             recordedLessonsCount++;
 
-                            // Hata veren ToolTipProperties kaldýrýldý, Border yapýsý sadeleþtirildi
+                            // Hata veren ToolTipProperties kaldï¿½rï¿½ldï¿½, Border yapï¿½sï¿½ sadeleï¿½tirildi
                             var box = new Border
                             {
                                 BackgroundColor = StatusColors[statusId],

@@ -10,12 +10,13 @@ namespace StudentTrackingSystem.Views
     {
         private readonly LoginService _loginService;
 
-        public LoginView()
+        public LoginView(LoginService loginService)
         {
             try
             {
                 InitializeComponent();
-                _loginService = new LoginService();
+                // DI üzerinden gelen singleton LoginService kullanılıyor
+                _loginService = loginService;
                 _ = LoadSavedCredentialsAsync();
             }
             catch (Exception ex)
