@@ -1,4 +1,4 @@
-#region K�t�phane Tan�mlamalar�
+#region Kütüphane Tanımlamaları
 using StudentTrackingSystem.Models;
 using StudentTrackingSystem.Services;
 using StudentTrackingSystem.ViewModels;
@@ -8,13 +8,13 @@ namespace StudentTrackingSystem.Views;
 
 public partial class StudentListView : ContentPage
 {
-    #region �zel De�i�kenler ve Servisler
+    #region Özel Değişkenler ve Servisler
     private readonly StudentService _studentService;
     private int _classId;
     private List<StudentViewModel> _studentViewModels;
     #endregion
 
-    #region Yap�c� Metot (Constructor)
+    #region Yapıcı Metot (Constructor)
     public StudentListView(int classId, string className)
     {
         try
@@ -24,14 +24,14 @@ public partial class StudentListView : ContentPage
             _classId = classId;
             LblClassName.Text = className;
 
-            // Veri y�klemeyi tetikle
+            // Veri yüklemeyi tetikle
             LoadStudents();
         }
         catch { /**/ }
     }
     #endregion
 
-    #region Veri Y�kleme ��lemleri
+    #region Veri Yükleme İşlemleri
     private async void LoadStudents()
     {
         try
@@ -42,7 +42,7 @@ public partial class StudentListView : ContentPage
             _studentViewModels = students.Select(s => new StudentViewModel
             {
                 StudentData = s,
-                SelectedStatusId = 1 // Varsay�lan: Geldi
+                SelectedStatusId = 1 // Varsayılan: Geldi
             }).ToList();
 
             StudentCollection.ItemsSource = _studentViewModels;
@@ -51,7 +51,7 @@ public partial class StudentListView : ContentPage
     }
     #endregion
 
-    #region Kullan�c� Etkile�imleri
+    #region Kullanıcı Etkileşimleri
     private async void OnPeriodChanged(object sender, EventArgs e)
     {
         try
@@ -59,11 +59,11 @@ public partial class StudentListView : ContentPage
             if (PeriodPicker.SelectedIndex == -1) return;
             int lessonNumber = PeriodPicker.SelectedIndex + 1;
 
-            // O ders saatine ait kay�tl� yoklama var m�?
+            // O ders saatine ait kayıtlı yoklama var mı?
             var existingAttendance = await _studentService.GetExistingAttendanceAsync(_classId, lessonNumber);
             bool hasData = existingAttendance != null && existingAttendance.Count > 0;
 
-            // Aray�z kontrollerini g�ncelle
+            // Arayüz kontrollerini güncelle
             StatusWarningFrame.IsVisible = hasData;
             BtnSave.IsVisible = !hasData;
             BtnUpdate.IsVisible = hasData;
@@ -72,7 +72,7 @@ public partial class StudentListView : ContentPage
             {
                 foreach (var vm in _studentViewModels)
                 {
-                    // E�er veritaban�nda bu ��renci i�in o ders saatinde kay�t varsa onu getir, yoksa 'Geldi' yap
+                    // Eğer veritabanında bu öğrenci için o ders saatinde kayıt varsa onu getir, yoksa 'Geldi' yap
                     if (hasData && existingAttendance.TryGetValue(vm.StudentData.Id, out int statusId))
                         vm.SelectedStatusId = statusId;
                     else
@@ -90,8 +90,8 @@ public partial class StudentListView : ContentPage
 
     private async void OnUpdateAttendanceClicked(object sender, EventArgs e)
     {
-        // G�ncelleme butonu t�kland���nda onay alarak i�lemi ba�lat�r
-        bool confirm = await DisplayAlert("Onay", "Mevcut yoklama kayd�n� de�i�tirmek istedi�inize emin misiniz?", "Evet", "Hay�r");
+        // Güncelleme butonu tıklandığında onay alarak işlemi başlatır
+        bool confirm = await DisplayAlert("Onay", "Mevcut yoklama kaydını değiştirmek istediğinize emin misiniz?", "Evet", "Hayır");
         if (confirm)
         {
             await ProcessAttendance(isUpdate: true);
@@ -99,7 +99,7 @@ public partial class StudentListView : ContentPage
     }
 
     /// <summary>
-    /// Hem Kaydet hem de G�ncelleme i�lemini y�neten merkezi metot
+    /// Hem Kaydet hem de Güncelleme işlemini yöneten merkezi metot
     /// </summary>
     private async Task ProcessAttendance(bool isUpdate)
     {
@@ -107,7 +107,7 @@ public partial class StudentListView : ContentPage
         {
             if (PeriodPicker.SelectedIndex == -1)
             {
-                await DisplayAlert("Uyar�", "L�tfen �nce ders saatini se�iniz!", "Tamam");
+                await DisplayAlert("Uyarı", "Lütfen önce ders saatini seçiniz!", "Tamam");
                 return;
             }
 
@@ -116,18 +116,18 @@ public partial class StudentListView : ContentPage
                 .Select(vm => (vm.StudentData.Id, vm.SelectedStatusId))
                 .ToList();
 
-            // Kay�t veya G�ncelleme i�lemini ger�ekle�tir
+            // Kayıt veya Güncelleme işlemini gerçekleştir
             // Giriş yapan öğretmenin ID'si UserSession üzerinden alınır
             await _studentService.SaveBulkAttendanceAsync(attendanceData, _classId, UserSession.UserId, lessonNumber);
 
-            string message = isUpdate ? "Yoklama g�ncellendi." : "Yoklama ba�ar�yla kaydedildi.";
+            string message = isUpdate ? "Yoklama güncellendi." : "Yoklama başarıyla kaydedildi.";
             await DisplayAlert("Bilgi", message, "Tamam");
 
             await Navigation.PopAsync();
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Hata", $"��lem s�ras�nda sorun ��kt�: {ex.Message}", "Tamam");
+            await DisplayAlert("Hata", $"İşlem sırasında sorun çıktı: {ex.Message}", "Tamam");
         }
     }
 
@@ -160,7 +160,7 @@ public partial class StudentListView : ContentPage
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Hata", "��renci detaylar� y�klenemedi: " + ex.Message, "Tamam");
+            await DisplayAlert("Hata", "Öğrenci detayları yüklenemedi: " + ex.Message, "Tamam");
         }
     }
     #endregion
