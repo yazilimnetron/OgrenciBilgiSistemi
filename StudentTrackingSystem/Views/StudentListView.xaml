@@ -256,8 +256,8 @@
             <Grid>
                 <Button x:Name="BtnSave" Text="YOKLAMAYI KAYDET" HeightRequest="55" CornerRadius="12" 
                         BackgroundColor="#1ABC9C" TextColor="White" Clicked="OnSaveAttendanceClicked" />
-                <Button x:Name="BtnUpdate" Text="YOKLAMAYI GÜNCELLE" IsVisible="False" HeightRequest="55" 
-                        CornerRadius="12" BackgroundColor="#2196F3" TextColor="White" Clicked="OnSaveAttendanceClicked" />
+                <Button x:Name="BtnUpdate" Text="YOKLAMAYI GÜNCELLE" IsVisible="False" HeightRequest="55"
+                        CornerRadius="12" BackgroundColor="#2196F3" TextColor="White" Clicked="OnUpdateAttendanceClicked" />
             </Grid>
         </Border>
     </Grid>

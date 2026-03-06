@@ -6,6 +6,7 @@ namespace StudentTrackingSystem.Models
     {
         public int Id { get; set; }
         public string Username { get; set; }
+        public string? FullName { get; set; }
         public bool IsAdmin { get; set; }
         public bool IsActive { get; set; }
         public int? UnitId { get; set; }

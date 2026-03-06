@@ -48,9 +48,14 @@ namespace StudentTrackingSystem.Services
                     if (user != null)
                     {
                         // Oturum bilgilerini SecureStorage'a kaydet
+                        // API FullName dönüyorsa onu, yoksa Username'i kullan
+                        string displayName = !string.IsNullOrWhiteSpace(user.FullName)
+                            ? user.FullName
+                            : user.Username;
+
                         await UserSession.SetSessionAsync(
                             userId: user.Id,
-                            fullName: user.Username,
+                            fullName: displayName,
                             unitId: user.UnitId,
                             authToken: token
                         );
