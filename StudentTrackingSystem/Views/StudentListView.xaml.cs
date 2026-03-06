@@ -20,7 +20,7 @@ public partial class StudentListView : ContentPage
         try
         {
             InitializeComponent();
-            _studentService = new StudentService();
+            _studentService = IPlatformApplication.Current.Services.GetRequiredService<StudentService>();
             _classId = classId;
             LblClassName.Text = className;
 

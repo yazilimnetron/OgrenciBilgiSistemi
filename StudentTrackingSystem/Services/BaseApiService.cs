@@ -5,6 +5,9 @@ namespace StudentTrackingSystem.Services
 {
     public class BaseApiService
     {
+        // 401 alındığında tüm aboneleri uyarır (App.xaml.cs login'e yönlendirir)
+        public static event Action OnSessionExpired;
+
         protected readonly HttpClient _httpClient;
 
         // API URL Yapılandırması - HTTPS zorunlu
@@ -63,8 +66,9 @@ namespace StudentTrackingSystem.Services
 
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                // Token süresi dolmuş veya geçersiz - oturumu temizle
+                // Token süresi dolmuş veya geçersiz - oturumu temizle ve login'e yönlendir
                 await UserSession.ClearSessionAsync();
+                OnSessionExpired?.Invoke();
             }
 
             var errorContent = await response.Content.ReadAsStringAsync();

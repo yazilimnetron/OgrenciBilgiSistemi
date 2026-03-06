@@ -1,4 +1,5 @@
 ﻿using Microsoft.Maui.Handlers;                                                      // MAUI kontrol işleyicileri için gerekli kütüphane eklenir.
+using StudentTrackingSystem.Services;                                               // BaseApiService.OnSessionExpired olayı için gerekli.
 
 namespace StudentTrackingSystem;                                                    // Uygulamanın ana isim uzayı tanımlanır.
 
@@ -7,6 +8,15 @@ public partial class App : Application                                          
     public App()                                                                    // Sınıfın yapıcı metodu (constructor).
     {                                                                               // Metot bloğu başlangıcı.
         InitializeComponent();                                                      // XAML arayüz bileşenleri yüklenir.
+
+        // 401 alındığında otomatik login ekranına yönlendir
+        BaseApiService.OnSessionExpired += async () =>
+        {
+            await MainThread.InvokeOnMainThreadAsync(async () =>
+            {
+                await Shell.Current.GoToAsync("///LoginView");
+            });
+        };
 
         #region Platform Bazlı Kontrol Özelleştirmeleri (Handler Mapping)
 

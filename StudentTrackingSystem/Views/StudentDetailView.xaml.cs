@@ -32,7 +32,7 @@ namespace StudentTrackingSystem.Views
         {
             InitializeComponent();
             _studentId = studentId;
-            _studentService = new StudentService();
+            _studentService = IPlatformApplication.Current.Services.GetRequiredService<StudentService>();
         }
 
         protected override async void OnAppearing()

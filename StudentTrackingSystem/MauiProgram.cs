@@ -2,6 +2,8 @@ using Microsoft.Extensions.Logging;
 using CommunityToolkit.Maui;
 using StudentTrackingSystem.Services;
 using StudentTrackingSystem.Views;
+using System.Reflection;
+using System.Text.Json;
 
 namespace StudentTrackingSystem
 {
@@ -9,6 +11,9 @@ namespace StudentTrackingSystem
     {
         public static MauiApp CreateMauiApp()
         {
+            // appsettings.json'dan API URL'ini oku ve Preferences'a kaydet
+            YukleApiAyarlari();
+
             var builder = MauiApp.CreateBuilder();
 
             builder
@@ -36,6 +41,38 @@ namespace StudentTrackingSystem
 #endif
 
             return builder.Build();
+        }
+
+        /// <summary>
+        /// Gömülü appsettings.json dosyasını okur ve ApiBaseUrl değerini Preferences'a yazar.
+        /// Her okul kurulumunda sadece bu JSON dosyasındaki IP değiştirilir.
+        /// </summary>
+        private static void YukleApiAyarlari()
+        {
+            try
+            {
+                var assembly = Assembly.GetExecutingAssembly();
+                var kaynak = assembly.GetManifestResourceNames()
+                    .FirstOrDefault(r => r.EndsWith("appsettings.json"));
+
+                if (kaynak == null) return;
+
+                using var stream = assembly.GetManifestResourceStream(kaynak);
+                if (stream == null) return;
+
+                using var reader = new StreamReader(stream);
+                var json = reader.ReadToEnd();
+
+                var ayarlar = JsonSerializer.Deserialize<Dictionary<string, string>>(json);
+                if (ayarlar != null && ayarlar.TryGetValue("ApiBaseUrl", out var apiUrl) && !string.IsNullOrWhiteSpace(apiUrl))
+                {
+                    Preferences.Default.Set("ApiBaseUrl", apiUrl);
+                }
+            }
+            catch
+            {
+                // Okuma başarısız olursa BaseApiService'teki varsayılan URL kullanılır
+            }
         }
     }
 }
