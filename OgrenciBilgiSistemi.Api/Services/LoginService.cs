@@ -18,7 +18,7 @@ namespace OgrenciBilgiSistemi.Api.Services
         /// Kullanıcı adıyla kullanıcıyı bulur, ardından PasswordHasher ile şifreyi doğrular.
         /// Düz metin SQL karşılaştırması yapılmaz; hash doğrulaması C# katmanında gerçekleşir.
         /// </summary>
-        public async Task<KullaniciDto?> AuthenticateAsync(string kullaniciAdi, string sifre)
+        public async Task<KullaniciModel?> AuthenticateAsync(string kullaniciAdi, string sifre)
         {
             // 1) Kullanıcıyı sadece KullaniciAdi ile sorgula; şifre SQL'de karşılaştırılmaz.
             const string query = @"
@@ -34,7 +34,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                   AND K.KullaniciDurum = 1";
 
             string?        storedHash = null;
-            KullaniciDto?  found      = null;
+            KullaniciModel?  found      = null;
 
             try
             {
@@ -48,7 +48,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                 if (await reader.ReadAsync())
                 {
                     storedHash = reader["Sifre"]?.ToString();
-                    found = new KullaniciDto
+                    found = new KullaniciModel
                     {
                         KullaniciId   = (int)reader["KullaniciId"],
                         KullaniciAdi  = reader["KullaniciAdi"].ToString() ?? string.Empty,
@@ -67,7 +67,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                 return null;
 
             // 2) Hash doğrulaması — MVC uygulaması ile aynı PasswordHasher kullanılır.
-            var hasher = new PasswordHasher<KullaniciDto>();
+            var hasher = new PasswordHasher<KullaniciModel>();
             var result = hasher.VerifyHashedPassword(found, storedHash, sifre);
 
             if (result == PasswordVerificationResult.Failed)

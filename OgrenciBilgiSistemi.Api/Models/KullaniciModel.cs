@@ -1,6 +1,6 @@
 namespace OgrenciBilgiSistemi.Api.Models
 {
-    public class KullaniciDto
+    public class KullaniciModel
     {
         public int KullaniciId { get; set; }
         public string KullaniciAdi { get; set; } = string.Empty;

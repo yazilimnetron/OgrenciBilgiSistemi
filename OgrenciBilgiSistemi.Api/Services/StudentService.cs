@@ -13,9 +13,9 @@ namespace OgrenciBilgiSistemi.Api.Services
                 ?? throw new InvalidOperationException("DefaultConnection bağlantı dizesi eksik.");
         }
 
-        public async Task<List<OgrenciDto>> GetStudentsByClassIdAsync(int sinifId)
+        public async Task<List<OgrenciModel>> GetStudentsByClassIdAsync(int sinifId)
         {
-            var ogrenciler = new List<OgrenciDto>();
+            var ogrenciler = new List<OgrenciModel>();
             try
             {
                 await using var conn = new SqlConnection(_connectionString);
@@ -32,7 +32,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                 while (await reader.ReadAsync())
                 {
                     string rawFileName = reader["OgrenciGorsel"]?.ToString() ?? string.Empty;
-                    ogrenciler.Add(new OgrenciDto
+                    ogrenciler.Add(new OgrenciModel
                     {
                         OgrenciId     = (int)reader["OgrenciId"],
                         OgrenciAdSoyad = reader["OgrenciAdSoyad"]?.ToString() ?? string.Empty,
@@ -47,7 +47,7 @@ namespace OgrenciBilgiSistemi.Api.Services
             return ogrenciler;
         }
 
-        public async Task<OgrenciDto?> GetStudentByIdAsync(int ogrenciId)
+        public async Task<OgrenciModel?> GetStudentByIdAsync(int ogrenciId)
         {
             try
             {
@@ -64,7 +64,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                 await using var reader = await cmd.ExecuteReaderAsync();
                 if (await reader.ReadAsync())
                 {
-                    return new OgrenciDto
+                    return new OgrenciModel
                     {
                         OgrenciId      = (int)reader["OgrenciId"],
                         OgrenciAdSoyad = reader["OgrenciAdSoyad"]?.ToString() ?? string.Empty,
@@ -215,10 +215,10 @@ namespace OgrenciBilgiSistemi.Api.Services
             return detaylar;
         }
 
-        public async Task<List<SinifYoklamaDto>> GetStudentWeeklyAttendanceAsync(
+        public async Task<List<SinifYoklamaModel>> GetStudentWeeklyAttendanceAsync(
             int ogrenciId, DateTime baslangic, DateTime bitis)
         {
-            var kayitlar = new List<SinifYoklamaDto>();
+            var kayitlar = new List<SinifYoklamaModel>();
             try
             {
                 await using var conn = new SqlConnection(_connectionString);
@@ -242,7 +242,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                 await using var reader = await cmd.ExecuteReaderAsync();
                 while (await reader.ReadAsync())
                 {
-                    kayitlar.Add(new SinifYoklamaDto
+                    kayitlar.Add(new SinifYoklamaModel
                     {
                         SinifYoklamaId    = (int)reader["SinifYoklamaId"],
                         OgrenciId         = (int)reader["OgrenciId"],

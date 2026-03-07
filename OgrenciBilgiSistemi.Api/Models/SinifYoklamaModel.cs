@@ -1,6 +1,6 @@
 namespace OgrenciBilgiSistemi.Api.Models
 {
-    public class SinifYoklamaDto
+    public class SinifYoklamaModel
     {
         public int SinifYoklamaId { get; set; }
         public int OgrenciId { get; set; }

@@ -1,8 +1,8 @@
 namespace OgrenciBilgiSistemi.Api.Models
 {
-    public class BirimOgrenciSayisiDto
+    public class BirimOgrenciSayisiModel
     {
-        public BirimDto Birim { get; set; } = new();
+        public BirimModel Birim { get; set; } = new();
         public int OgrenciSayisi { get; set; }
     }
 }

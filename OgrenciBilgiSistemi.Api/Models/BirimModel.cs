@@ -1,6 +1,6 @@
 namespace OgrenciBilgiSistemi.Api.Models
 {
-    public class BirimDto
+    public class BirimModel
     {
         public int BirimId { get; set; }
         public string BirimAd { get; set; } = string.Empty;

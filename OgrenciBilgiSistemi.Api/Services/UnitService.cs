@@ -16,7 +16,7 @@ namespace OgrenciBilgiSistemi.Api.Services
         /// <summary>
         /// Verilen ID'ye göre birimi getirir. Bulunamazsa null döner.
         /// </summary>
-        public async Task<BirimDto?> GetUnitByIdAsync(int birimId)
+        public async Task<BirimModel?> GetUnitByIdAsync(int birimId)
         {
             try
             {
@@ -30,7 +30,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                 await using var reader = await cmd.ExecuteReaderAsync();
                 if (await reader.ReadAsync())
                 {
-                    return new BirimDto
+                    return new BirimModel
                     {
                         BirimId      = (int)reader["BirimId"],
                         BirimAd      = reader["BirimAd"]?.ToString() ?? string.Empty,

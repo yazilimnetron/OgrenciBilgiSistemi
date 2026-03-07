@@ -56,7 +56,7 @@ namespace OgrenciBilgiSistemi.Api.Controllers
         /// <summary>
         /// Kullanıcı bilgilerini claim olarak içeren imzalı JWT token üretir.
         /// </summary>
-        private string GenerateJwtToken(KullaniciDto kullanici)
+        private string GenerateJwtToken(KullaniciModel kullanici)
         {
             var secretKey = _configuration["Jwt:SecretKey"]
                 ?? throw new InvalidOperationException("Jwt:SecretKey yapılandırılmamış.");
