@@ -11,7 +11,7 @@ public partial class StudentListView : ContentPage
     #region Özel Değişkenler ve Servisler
     private readonly StudentService _studentService;
     private int _classId;
-    private List<StudentViewModel> _studentViewModels;
+    private List<OgrenciViewModel> _studentViewModels;
     #endregion
 
     #region Yapıcı Metot (Constructor)
@@ -39,9 +39,9 @@ public partial class StudentListView : ContentPage
             var students = await _studentService.GetStudentsByClassIdAsync(_classId);
             if (students == null) return;
 
-            _studentViewModels = students.Select(s => new StudentViewModel
+            _studentViewModels = students.Select(s => new OgrenciViewModel
             {
-                StudentData = s,
+                OgrenciData = s,
                 SelectedStatusId = 1 // Varsayılan: Geldi
             }).ToList();
 
@@ -73,7 +73,7 @@ public partial class StudentListView : ContentPage
                 foreach (var vm in _studentViewModels)
                 {
                     // Eğer veritabanında bu öğrenci için o ders saatinde kayıt varsa onu getir, yoksa 'Geldi' yap
-                    if (hasData && existingAttendance.TryGetValue(vm.StudentData.Id, out int statusId))
+                    if (hasData && existingAttendance.TryGetValue(vm.OgrenciData.Id, out int statusId))
                         vm.SelectedStatusId = statusId;
                     else
                         vm.SelectedStatusId = 1;
@@ -113,7 +113,7 @@ public partial class StudentListView : ContentPage
 
             int lessonNumber = PeriodPicker.SelectedIndex + 1;
             var attendanceData = _studentViewModels
-                .Select(vm => (vm.StudentData.Id, vm.SelectedStatusId))
+                .Select(vm => (vm.OgrenciData.Id, vm.SelectedStatusId))
                 .ToList();
 
             // Kayıt veya Güncelleme işlemini gerçekleştir
@@ -135,7 +135,7 @@ public partial class StudentListView : ContentPage
     {
         try
         {
-            if (sender is Border border && border.BindingContext is StudentViewModel vm && e.Parameter != null)
+            if (sender is Border border && border.BindingContext is OgrenciViewModel vm && e.Parameter != null)
             {
                 if (int.TryParse(e.Parameter.ToString(), out int statusId))
                 {
@@ -151,11 +151,11 @@ public partial class StudentListView : ContentPage
         try
         {
             var visualElement = sender as VisualElement;
-            var selectedStudent = visualElement?.BindingContext as StudentViewModel;
+            var selectedStudent = visualElement?.BindingContext as OgrenciViewModel;
 
-            if (selectedStudent?.StudentData != null)
+            if (selectedStudent?.OgrenciData != null)
             {
-                await Navigation.PushAsync(new StudentDetailView(selectedStudent.StudentData.Id));
+                await Navigation.PushAsync(new StudentDetailView(selectedStudent.OgrenciData.Id));
             }
         }
         catch (Exception ex)

@@ -1,17 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Text.Json.Serialization;
 
 namespace StudentTrackingSystem.Models
 {
-    public class Teacher
+    public class Ogretmen
     {
+        [JsonPropertyName("ogretmenId")]
         public int Id { get; set; }
+
+        [JsonPropertyName("ogretmenAdSoyad")]
         public string FullName { get; set; }
+
+        [JsonPropertyName("ogretmenGorsel")]
         public string? ImagePath { get; set; }
-        public bool IsActive { get; set; }  
+
+        [JsonPropertyName("ogretmenDurum")]
+        public bool IsActive { get; set; }
+
+        [JsonPropertyName("birimId")]
         public int? UnitId { get; set; }
+
+        [JsonPropertyName("ogretmenKartNo")]
+        public string? CardNumber { get; set; }
     }
 }

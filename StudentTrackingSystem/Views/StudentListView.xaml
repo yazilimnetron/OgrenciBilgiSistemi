@@ -92,9 +92,9 @@
                             <Grid ColumnDefinitions="Auto, *, Auto" ColumnSpacing="12" VerticalOptions="Center">
                                 <Border Grid.Column="0" StrokeShape="RoundRectangle 20" HeightRequest="40" 
                                         WidthRequest="40" StrokeThickness="0" BackgroundColor="#E0E0E0">
-                                    <Image Aspect="AspectFill" Source="{Binding StudentData.ImagePath, TargetNullValue='user_icon.png', FallbackValue='user_icon.png'}" />
+                                    <Image Aspect="AspectFill" Source="{Binding OgrenciData.ImagePath, TargetNullValue='user_icon.png', FallbackValue='user_icon.png'}" />
                                 </Border>
-                                <Label Grid.Column="1" Text="{Binding StudentData.FullName}" FontSize="16" 
+                                <Label Grid.Column="1" Text="{Binding OgrenciData.FullName}" FontSize="16" 
                                        FontFamily="OpenSansSemibold" TextColor="#2C3E50" VerticalOptions="Center" LineBreakMode="TailTruncation" />
                                 <Frame Grid.Column="2" Padding="0" HeightRequest="30" WidthRequest="30" CornerRadius="15" 
                                        BackgroundColor="#007BFF" HasShadow="False" BorderColor="Transparent" HorizontalOptions="End" VerticalOptions="Center">

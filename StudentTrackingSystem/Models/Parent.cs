@@ -1,24 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 
 namespace StudentTrackingSystem.Models
 {
     #region Veli Veri Modeli Tanımı
-    public class Parent
+    public class OgrenciVeli
     {
+        [JsonPropertyName("ogrenciVeliId")]
         public int Id { get; set; }
+
+        [JsonPropertyName("veliAdSoyad")]
         public string? FullName { get; set; }
+
+        [JsonPropertyName("veliTelefon")]
         public string? PhoneNumber { get; set; }
+
+        [JsonPropertyName("veliAdres")]
         public string? Address { get; set; }
-        public string? Occupation { get; set; } 
-        public string? Workplace { get; set; } 
+
+        [JsonPropertyName("veliMeslek")]
+        public string? Occupation { get; set; }
+
+        [JsonPropertyName("veliIsYeri")]
+        public string? Workplace { get; set; }
+
+        [JsonPropertyName("veliEmail")]
         public string? Email { get; set; }
+
+        [JsonPropertyName("veliYakinlik")]
         public int? RelationshipType { get; set; }
+
+        [JsonPropertyName("veliDurum")]
         public bool IsActive { get; set; }
     }
     #endregion

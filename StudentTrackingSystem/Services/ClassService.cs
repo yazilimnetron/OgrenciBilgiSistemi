@@ -32,11 +32,13 @@ namespace StudentTrackingSystem.Services
         }
     }
 
-    // API'den gelen veriyi karşılamak için geçici DTO tanımı
-    // (Bunu ayrı bir dosyaya da alabilirsin)
+    // API'nin BirimOgrenciSayisiModel yapısını karşılayan DTO
     public class UnitWithCountDto
     {
-        public Unit UnitData { get; set; }
+        [System.Text.Json.Serialization.JsonPropertyName("birim")]
+        public Birim UnitData { get; set; }
+
+        [System.Text.Json.Serialization.JsonPropertyName("ogrenciSayisi")]
         public int StudentCount { get; set; }
     }
 }

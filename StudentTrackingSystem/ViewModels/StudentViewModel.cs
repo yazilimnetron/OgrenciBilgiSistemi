@@ -5,18 +5,18 @@ using Microsoft.Maui.Graphics;
 
 namespace StudentTrackingSystem.ViewModels
 {
-    public class StudentViewModel : INotifyPropertyChanged
+    public class OgrenciViewModel : INotifyPropertyChanged
     {
         #region Gizli Değişkenler
-        private Student _studentData;
+        private Ogrenci _studentData;
         private int _selectedStatusId = 1;
         private int _serviceStatusId = 0;
         #endregion
 
         #region Kamu Özellikleri
-        public Student StudentData
+        public Ogrenci OgrenciData
         {
-            get => _studentData ??= new Student();
+            get => _studentData ??= new Ogrenci();
             set => SetProperty(ref _studentData, value);
         }
 
@@ -84,9 +84,9 @@ namespace StudentTrackingSystem.ViewModels
         }
         #endregion
 
-        public StudentViewModel()
+        public OgrenciViewModel()
         {
-            _studentData = new Student();
+            _studentData = new Ogrenci();
         }
     }
 }

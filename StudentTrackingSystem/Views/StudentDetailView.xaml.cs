@@ -63,12 +63,12 @@ namespace StudentTrackingSystem.Views
                 var details = await _studentService.GetStudentFullDetailsAsync(_studentId);
                 if (details != null)
                 {
-                    var vm = new StudentViewModel();
-                    vm.StudentData.Id = _studentId;
-                    vm.StudentData.FullName = details.ContainsKey("StudentName") ? details["StudentName"] : "Bilinmiyor";
+                    var vm = new OgrenciViewModel();
+                    vm.OgrenciData.Id = _studentId;
+                    vm.OgrenciData.FullName = details.ContainsKey("StudentName") ? details["StudentName"] : "Bilinmiyor";
 
                     string imgName = details.ContainsKey("ImagePath") ? details["ImagePath"] : "user_icon.png";
-                    vm.StudentData.ImagePath = "students/" + imgName.ToLower().Trim();
+                    vm.OgrenciData.ImagePath = "students/" + imgName.ToLower().Trim();
                     this.BindingContext = vm;
 
                     LblClass.Text = details.ContainsKey("ClassName") ? details["ClassName"] : "-";

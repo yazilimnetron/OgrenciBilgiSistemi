@@ -27,13 +27,13 @@ namespace StudentTrackingSystem.Services
         /// <summary>
         /// Belirli bir sınıfa (BirimId) ait aktif öğrencileri getirir.
         /// </summary>
-        public async Task<List<Student>> GetStudentsByClassIdAsync(int classId)
+        public async Task<List<Ogrenci>> GetStudentsByClassIdAsync(int classId)
         {
             try
             {
                 // API Ucu: GET api/students/class/{classId}
-                var response = await _httpClient.GetFromJsonAsync<List<Student>>($"{BaseUrl}students/class/{classId}");
-                return response ?? new List<Student>();
+                var response = await _httpClient.GetFromJsonAsync<List<Ogrenci>>($"{BaseUrl}students/class/{classId}");
+                return response ?? new List<Ogrenci>();
             }
             catch (Exception ex)
             {
@@ -114,15 +114,15 @@ namespace StudentTrackingSystem.Services
         /// <summary>
         /// Belirli bir tarih aralığında öğrencinin haftalık yoklama geçmişini getirir.
         /// </summary>
-        public async Task<List<ClassAttendance>> GetStudentWeeklyAttendanceAsync(int studentId, DateTime start, DateTime end)
+        public async Task<List<SinifYoklama>> GetStudentWeeklyAttendanceAsync(int studentId, DateTime start, DateTime end)
         {
             try
             {
                 // Query String parametreleri ile istek atılıyor
                 // API Ucu: GET api/students/{id}/weekly-attendance?start=...&end=...
                 string url = $"{BaseUrl}students/{studentId}/weekly-attendance?start={start:yyyy-MM-dd}&end={end:yyyy-MM-dd}";
-                var response = await _httpClient.GetFromJsonAsync<List<ClassAttendance>>(url);
-                return response ?? new List<ClassAttendance>();
+                var response = await _httpClient.GetFromJsonAsync<List<SinifYoklama>>(url);
+                return response ?? new List<SinifYoklama>();
             }
             catch (Exception ex)
             {

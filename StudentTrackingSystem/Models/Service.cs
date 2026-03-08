@@ -1,17 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.ComponentModel;
-using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 
 namespace StudentTrackingSystem.Models
 {
-    public class Service
+    public class Servis
     {
+        [JsonPropertyName("servisId")]
         public int Id { get; set; }
+
+        [JsonPropertyName("plaka")]
         public string PlateNumber { get; set; }
+
+        [JsonPropertyName("kullaniciId")]
         public int UserId { get; set; }
     }
 }

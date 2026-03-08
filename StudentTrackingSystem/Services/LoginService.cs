@@ -26,7 +26,7 @@ namespace StudentTrackingSystem.Services
                     var root = doc.RootElement;
 
                     string token = null;
-                    User user = null;
+                    Kullanici user = null;
 
                     // Token varsa al
                     if (root.TryGetProperty("token", out var tokenElement))
@@ -37,12 +37,12 @@ namespace StudentTrackingSystem.Services
                     // User nesnesini çöz (iç içe "user" alanı veya doğrudan root)
                     if (root.TryGetProperty("user", out var userElement))
                     {
-                        user = JsonSerializer.Deserialize<User>(userElement.GetRawText(), _jsonOptions);
+                        user = JsonSerializer.Deserialize<Kullanici>(userElement.GetRawText(), _jsonOptions);
                     }
                     else
                     {
                         // API doğrudan User nesnesi dönüyorsa (geriye uyumluluk)
-                        user = JsonSerializer.Deserialize<User>(responseString, _jsonOptions);
+                        user = JsonSerializer.Deserialize<Kullanici>(responseString, _jsonOptions);
                     }
 
                     if (user != null)

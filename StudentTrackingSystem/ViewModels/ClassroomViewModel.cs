@@ -10,14 +10,14 @@ namespace StudentTrackingSystem.ViewModels
     public class ClassroomViewModel : INotifyPropertyChanged
     {
         #region Veri Alanları
-        private Models.Unit _classroomData;
+        private Models.Birim _classroomData;
         private int _studentCount;
         #endregion
 
         #region Kamu Özellikleri
-        public Models.Unit ClassroomData
+        public Models.Birim ClassroomData
         {
-            get => _classroomData ??= new Models.Unit();
+            get => _classroomData ??= new Models.Birim();
             set
             {
                 if (_classroomData != value)
@@ -68,7 +68,7 @@ namespace StudentTrackingSystem.ViewModels
         #region Yapıcı Metot
         public ClassroomViewModel()
         {
-            _classroomData = new Models.Unit();
+            _classroomData = new Models.Birim();
             _studentCount = 0;
         }
         #endregion

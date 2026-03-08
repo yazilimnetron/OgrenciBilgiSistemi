@@ -20,9 +20,9 @@
                 <Border.Shadow>
                     <Shadow Brush="Black" Offset="0,10" Radius="20" Opacity="0.15" />
                 </Border.Shadow>
-                <Image x:Name="ImgStudent" Aspect="AspectFill" Source="{Binding StudentData.ImagePath}" />
+                <Image x:Name="ImgStudent" Aspect="AspectFill" Source="{Binding OgrenciData.ImagePath}" />
             </Border>
-            <Label Text="{Binding StudentData.FullName}" FontSize="26" FontAttributes="Bold" TextColor="#2C3E50" HorizontalOptions="Center" />
+            <Label Text="{Binding OgrenciData.FullName}" FontSize="26" FontAttributes="Bold" TextColor="#2C3E50" HorizontalOptions="Center" />
             <Label x:Name="LblClass" FontSize="16" TextColor="#7F8C8D" HorizontalOptions="Center" />
         </VerticalStackLayout>
 
