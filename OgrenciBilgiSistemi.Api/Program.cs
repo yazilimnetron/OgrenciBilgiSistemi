@@ -21,24 +21,15 @@ if (string.IsNullOrWhiteSpace(jwtKey))
         "appsettings.Development.json veya ortam değişkeni kullanın.");
 
 // --------------------
-// CORS — yalnızca yapılandırılmış originler
+// CORS — mobil istemciler dahil tüm originlere izin ver
 // --------------------
-var allowedOrigins = builder.Configuration
-    .GetSection("Cors:AllowedOrigins")
-    .Get<string[]>() ?? Array.Empty<string>();
-
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("ConfiguredOrigins", policy =>
     {
-        if (allowedOrigins.Length > 0)
-            policy.WithOrigins(allowedOrigins)
-                  .AllowAnyMethod()
-                  .AllowAnyHeader();
-        else
-            policy.WithOrigins("http://localhost:3000", "http://localhost:5173")
-                  .AllowAnyMethod()
-                  .AllowAnyHeader();
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
     });
 });
 
