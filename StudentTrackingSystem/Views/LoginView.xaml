@@ -183,6 +183,29 @@
                             </Button.Shadow>
                         </Button>
 
+                        <Border Stroke="#1ABC9C"
+                                StrokeThickness="1.5"
+                                StrokeShape="RoundRectangle 12"
+                                BackgroundColor="Transparent"
+                                HeightRequest="55"
+                                Margin="0,4,0,0">
+                            <Button x:Name="BtnDemoLogin"
+                                    Text="Demo Hesabı ile Görüntüle"
+                                    Clicked="BtnDemoLogin_Clicked"
+                                    HeightRequest="55"
+                                    CornerRadius="12"
+                                    FontAttributes="Bold"
+                                    BackgroundColor="Transparent"
+                                    TextColor="#1ABC9C" />
+                        </Border>
+
+                        <Label Text="Demo hesabı; uygulamayı incelemek isteyenlere önceden hazırlanmış örnek verilerle tam erişim sunar."
+                               FontSize="11"
+                               TextColor="#95A5A6"
+                               HorizontalOptions="Center"
+                               HorizontalTextAlignment="Center"
+                               Margin="0,-5,0,0" />
+
                     </VerticalStackLayout>
                 </Border>
 

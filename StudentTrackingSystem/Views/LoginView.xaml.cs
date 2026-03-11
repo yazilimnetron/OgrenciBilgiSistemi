@@ -136,5 +136,45 @@ namespace StudentTrackingSystem.Views
             try { ChkRememberMe.IsChecked = !ChkRememberMe.IsChecked; }
             catch { /**/ }
         }
+
+        // Demo hesap bilgileri — yalnızca inceleme/tanıtım amaçlıdır
+        private const string DemoUsername = "demo";
+        private const string DemoPassword = "Demo@123";
+
+        private async void BtnDemoLogin_Clicked(object sender, EventArgs e)
+        {
+            try
+            {
+                BtnDemoLogin.IsEnabled = false;
+                BtnLogin.IsEnabled = false;
+                BtnDemoLogin.Text = "Bağlanıyor...";
+
+                bool isSuccess = await _loginService.LoginAsUserAsync(DemoUsername, DemoPassword);
+
+                if (isSuccess)
+                {
+                    await Shell.Current.GoToAsync("///ClassListView");
+                }
+                else
+                {
+                    await DisplayAlert("Demo Hesabı",
+                        "Demo hesabına şu anda erişilemiyor. Lütfen daha sonra tekrar deneyin.",
+                        "Tamam");
+                }
+            }
+            catch (Exception ex)
+            {
+                await DisplayAlert("Bağlantı Hatası",
+                    "Sunucuya erişilemedi. Lütfen internet bağlantınızı kontrol edin.",
+                    "Tamam");
+                System.Diagnostics.Debug.WriteLine($"Demo Login Hatası: {ex.Message}");
+            }
+            finally
+            {
+                BtnDemoLogin.IsEnabled = true;
+                BtnLogin.IsEnabled = true;
+                BtnDemoLogin.Text = "Demo Hesabı ile Görüntüle";
+            }
+        }
     }
 }
