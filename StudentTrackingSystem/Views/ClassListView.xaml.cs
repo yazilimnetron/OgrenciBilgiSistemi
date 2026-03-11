@@ -53,6 +53,10 @@ namespace StudentTrackingSystem.Views
                 }
                 #endregion
 
+                // Demo modunda sarı banner'ı göster
+                if (DemoBanner != null)
+                    DemoBanner.IsVisible = UserSession.IsDemoMode;
+
                 // Liste seçimi temizleniyor (Geri dönüldüğünde tekrar tıklanabilmesi için)
                 if (ClassCollection != null)
                 {

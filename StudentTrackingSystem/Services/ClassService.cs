@@ -1,4 +1,4 @@
-﻿using System.Net.Http.Json;
+using System.Net.Http.Json;
 using StudentTrackingSystem.Models;
 using StudentTrackingSystem.ViewModels;
 
@@ -8,6 +8,10 @@ namespace StudentTrackingSystem.Services
     {
         public async Task<List<ClassroomViewModel>> GetAllClassesWithStudentCountAsync()
         {
+            // Demo modunda API çağrısı yapılmaz, sahte sınıf listesi döndürülür
+            if (UserSession.IsDemoMode)
+                return GetDemoClasses();
+
             try
             {
                 // API'deki 'api/Class/all-with-count' endpoint'ine istek atıyoruz
@@ -29,6 +33,26 @@ namespace StudentTrackingSystem.Services
             }
 
             return new List<ClassroomViewModel>();
+        }
+
+        /// <summary>
+        /// Apple App Store incelemesi için sahte sınıf listesi döndürür.
+        /// </summary>
+        private List<ClassroomViewModel> GetDemoClasses()
+        {
+            return new List<ClassroomViewModel>
+            {
+                new ClassroomViewModel
+                {
+                    ClassroomData = new Birim { Id = -1, Name = "4-A Şubesi", IsActive = true, IsClass = true },
+                    StudentCount = 5
+                },
+                new ClassroomViewModel
+                {
+                    ClassroomData = new Birim { Id = -2, Name = "5-B Şubesi", IsActive = true, IsClass = true },
+                    StudentCount = 5
+                }
+            };
         }
     }
 

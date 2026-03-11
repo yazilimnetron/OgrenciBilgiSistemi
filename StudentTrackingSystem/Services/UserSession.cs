@@ -14,6 +14,12 @@ namespace StudentTrackingSystem.Services
         private static string _authToken;
         private static bool _isLoaded;
 
+        /// <summary>
+        /// Apple App Store incelemesi için demo modunu belirtir.
+        /// Demo modunda API çağrıları yapılmaz, sahte veriler gösterilir.
+        /// </summary>
+        public static bool IsDemoMode { get; private set; }
+
         // SecureStorage anahtarları
         private const string KeyUserId = "session_user_id";
         private const string KeyFullName = "session_full_name";
@@ -24,6 +30,20 @@ namespace StudentTrackingSystem.Services
 
         // Oturum zaman aşımı (8 saat)
         private static readonly TimeSpan SessionTimeout = TimeSpan.FromHours(8);
+
+        /// <summary>
+        /// Apple App Store incelemesi için demo modunu etkinleştirir.
+        /// API çağrısı yapılmadan sahte bir oturum oluşturulur.
+        /// </summary>
+        public static void SetDemoMode()
+        {
+            IsDemoMode = true;
+            _userId = -1;
+            _fullName = "Demo Kullanıcı";
+            _unitId = -1;
+            _authToken = "demo-token";
+            _isLoaded = true;
+        }
 
         /// <summary>
         /// Giriş başarılı olduğunda tüm oturum bilgilerini SecureStorage'a kaydeder.
@@ -110,6 +130,7 @@ namespace StudentTrackingSystem.Services
             _serviceId = null;
             _authToken = null;
             _isLoaded = false;
+            IsDemoMode = false;
 
             try
             {

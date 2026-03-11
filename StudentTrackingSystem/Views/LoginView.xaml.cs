@@ -136,5 +136,22 @@ namespace StudentTrackingSystem.Views
             try { ChkRememberMe.IsChecked = !ChkRememberMe.IsChecked; }
             catch { /**/ }
         }
+
+        /// <summary>
+        /// Apple App Store incelemesi için demo modunda giriş yapar.
+        /// API çağrısı yapılmaz, sahte verilerle uygulama gezilebilinir.
+        /// </summary>
+        private async void BtnDemoLogin_Clicked(object sender, EventArgs e)
+        {
+            try
+            {
+                UserSession.SetDemoMode();
+                await Shell.Current.GoToAsync("///ClassListView");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Demo Giriş Hatası: {ex.Message}");
+            }
+        }
     }
 }

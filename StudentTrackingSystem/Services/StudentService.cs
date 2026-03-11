@@ -29,6 +29,10 @@ namespace StudentTrackingSystem.Services
         /// </summary>
         public async Task<List<Ogrenci>> GetStudentsByClassIdAsync(int classId)
         {
+            // Demo modunda API çağrısı yapılmaz, sahte öğrenci listesi döndürülür
+            if (UserSession.IsDemoMode)
+                return GetDemoStudents(classId);
+
             try
             {
                 // API Ucu: GET api/students/class/{classId}
@@ -46,6 +50,10 @@ namespace StudentTrackingSystem.Services
         /// </summary>
         public async Task<Dictionary<string, string>> GetStudentFullDetailsAsync(int studentId)
         {
+            // Demo modunda sahte detay bilgisi döndürülür
+            if (UserSession.IsDemoMode)
+                return GetDemoStudentDetails(studentId);
+
             try
             {
                 // API Ucu: GET api/students/{id}/details
@@ -67,6 +75,10 @@ namespace StudentTrackingSystem.Services
         /// </summary>
         public async Task<Dictionary<int, int>> GetExistingAttendanceAsync(int classId, int lessonNumber)
         {
+            // Demo modunda boş yoklama döndürülür (tüm öğrenciler bekleme durumunda)
+            if (UserSession.IsDemoMode)
+                return new Dictionary<int, int>();
+
             try
             {
                 // API Ucu: GET api/students/attendance/{classId}/{lessonNumber}
@@ -84,6 +96,10 @@ namespace StudentTrackingSystem.Services
         /// </summary>
         public async Task SaveBulkAttendanceAsync(IEnumerable<(int StudentId, int StatusId)> attendanceData, int classId, int teacherId, int lessonNumber)
         {
+            // Demo modunda API'ye istek gönderilmez, sessizce başarılı sayılır
+            if (UserSession.IsDemoMode)
+                return;
+
             try
             {
                 // API tarafındaki TopluYoklamaGuncelleDto yapısına uygun anonim nesne oluşturuluyor
@@ -116,6 +132,10 @@ namespace StudentTrackingSystem.Services
         /// </summary>
         public async Task<List<SinifYoklama>> GetStudentWeeklyAttendanceAsync(int studentId, DateTime start, DateTime end)
         {
+            // Demo modunda boş yoklama geçmişi döndürülür
+            if (UserSession.IsDemoMode)
+                return new List<SinifYoklama>();
+
             try
             {
                 // Query String parametreleri ile istek atılıyor
@@ -128,6 +148,43 @@ namespace StudentTrackingSystem.Services
             {
                 throw new Exception($"Haftalık yoklama geçmişi yüklenemedi: {ex.Message}");
             }
+        }
+
+        #endregion
+
+        #region Demo Modu Verileri
+
+        /// <summary>
+        /// Apple App Store incelemesi için sahte öğrenci listesi döndürür.
+        /// </summary>
+        private List<Ogrenci> GetDemoStudents(int classId)
+        {
+            int baseId = classId == -1 ? -100 : -200;
+            string sinifAdi = classId == -1 ? "4-A Şubesi" : "5-B Şubesi";
+
+            return new List<Ogrenci>
+            {
+                new Ogrenci { Id = baseId - 1, FullName = "Ahmet Yılmaz", StudentNumber = 101, IsActive = true, UnitId = classId, ExitStatus = 0, ClassName = sinifAdi, ParentFullName = "Mehmet Yılmaz", ParentPhoneNumber = "0532 111 22 33" },
+                new Ogrenci { Id = baseId - 2, FullName = "Ayşe Kaya", StudentNumber = 102, IsActive = true, UnitId = classId, ExitStatus = 1, ClassName = sinifAdi, ParentFullName = "Fatma Kaya", ParentPhoneNumber = "0533 222 33 44" },
+                new Ogrenci { Id = baseId - 3, FullName = "Mehmet Demir", StudentNumber = 103, IsActive = true, UnitId = classId, ExitStatus = 2, ClassName = sinifAdi, ParentFullName = "Ali Demir", ParentPhoneNumber = "0534 333 44 55" },
+                new Ogrenci { Id = baseId - 4, FullName = "Zeynep Çelik", StudentNumber = 104, IsActive = true, UnitId = classId, ExitStatus = 0, ClassName = sinifAdi, ParentFullName = "Hatice Çelik", ParentPhoneNumber = "0535 444 55 66" },
+                new Ogrenci { Id = baseId - 5, FullName = "Can Şahin", StudentNumber = 105, IsActive = true, UnitId = classId, ExitStatus = 1, ClassName = sinifAdi, ParentFullName = "Hüseyin Şahin", ParentPhoneNumber = "0536 555 66 77" }
+            };
+        }
+
+        /// <summary>
+        /// Apple App Store incelemesi için sahte öğrenci detay bilgisi döndürür.
+        /// </summary>
+        private Dictionary<string, string> GetDemoStudentDetails(int studentId)
+        {
+            return new Dictionary<string, string>
+            {
+                { "ogrenciAdSoyad", "Demo Öğrenci" },
+                { "birimAd", "Demo Sınıf" },
+                { "veliAdSoyad", "Demo Veli" },
+                { "veliTelefon", "0532 000 00 00" },
+                { "servisAdi", "Demo Servis" }
+            };
         }
 
         #endregion

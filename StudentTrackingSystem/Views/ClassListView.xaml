@@ -7,7 +7,7 @@
              Shell.NavBarIsVisible="False"
              BackgroundColor="#F2F2F2">
 
-    <Grid RowDefinitions="125, Auto, *">
+    <Grid RowDefinitions="125, Auto, Auto, *">
 
         <Border Grid.Row="0"
                 StrokeThickness="0"
@@ -38,7 +38,21 @@
             </Grid>
         </Border>
 
-        <Border Grid.Row="1"
+        <Border x:Name="DemoBanner"
+                Grid.Row="1"
+                IsVisible="False"
+                BackgroundColor="#F39C12"
+                StrokeThickness="0"
+                Padding="12,8"
+                Margin="0,0,0,0">
+            <Label Text="Demo Modu — Gerçek veri gösterilmiyor"
+                   TextColor="White"
+                   FontSize="12"
+                   FontAttributes="Bold"
+                   HorizontalOptions="Center" />
+        </Border>
+
+        <Border Grid.Row="2"
                 Margin="15,-28,15,10"
                 HeightRequest="55"
                 StrokeShape="RoundRectangle 28"
@@ -54,7 +68,7 @@
             </Grid>
         </Border>
 
-        <CollectionView x:Name="ClassCollection" Grid.Row="2" Margin="15,0" SelectionMode="None">
+        <CollectionView x:Name="ClassCollection" Grid.Row="3" Margin="15,0" SelectionMode="None">
             <CollectionView.ItemsLayout>
                 <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
             </CollectionView.ItemsLayout>

@@ -183,6 +183,18 @@
                             </Button.Shadow>
                         </Button>
 
+                        <Button x:Name="BtnDemoLogin"
+                                Text="Demo Olarak Gir"
+                                Clicked="BtnDemoLogin_Clicked"
+                                HeightRequest="45"
+                                CornerRadius="12"
+                                Margin="0,5,0,0"
+                                FontSize="13"
+                                BackgroundColor="Transparent"
+                                TextColor="#7F8C8D"
+                                BorderColor="#BDC3C7"
+                                BorderWidth="1" />
+
                     </VerticalStackLayout>
                 </Border>
 
