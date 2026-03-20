@@ -28,4 +28,7 @@ Thumbs.db
 # Publish profiles (often environment-specific / sensitive)
 **/Properties/PublishProfiles/
 
+# Mobil proje ayrı repoda yönetilir (netronteknoloji/OgrenciBilgiSistemi.Mobil)
+OgrenciBilgiSistemi.Mobil/
+
 CLAUDE.md
