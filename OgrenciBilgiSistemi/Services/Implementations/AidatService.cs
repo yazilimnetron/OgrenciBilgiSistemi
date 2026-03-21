@@ -4,7 +4,6 @@ using OgrenciBilgiSistemi.Data;
 using OgrenciBilgiSistemi.Dtos;
 using OgrenciBilgiSistemi.Helpers;
 using OgrenciBilgiSistemi.Models;
-using OgrenciBilgiSistemi.Models.Enums;
 using OgrenciBilgiSistemi.Services.Interfaces;
 using ClosedXML.Excel;
 

@@ -25,7 +25,7 @@
                 <h3 class="text-primary fw-bold mb-0">@ViewData["Title"]</h3>
 
                 <a class="btn btn-success fw-semibold"
-                   asp-controller="OgrenciAidat"
+                   asp-controller="Aidat"
                    asp-action="AidatRaporExcel"
                    asp-route-query="@Model.query"
                    asp-route-yil="@(Model.yil)"
@@ -40,7 +40,7 @@
 
             <!-- Filtre Formu -->
             <form id="raporFilterForm" method="get"
-                  asp-controller="OgrenciAidat" asp-action="Index"
+                  asp-controller="Aidat" asp-action="Index"
                   class="d-flex align-items-end gap-3 flex-nowrap no-wrap-scroll w-100 bg-body-tertiary border rounded-3 p-3 mb-3">
 
                 <!-- Öğrenci Arama -->
@@ -125,7 +125,7 @@
 
                                 <tr class="text-center">
                                     <td class="text-start">
-                                        <a asp-controller="OgrenciAidat"
+                                        <a asp-controller="Aidat"
                                            asp-action="OgrenciDetay"
                                            asp-route-id="@s.OgrenciId"
                                            asp-route-yil="@(s.Yil ?? Model.yil)"
@@ -140,7 +140,7 @@
                                     <td class="text-end">@s.Kalan.ToString("C", culture)</td>
                                     <td><span class="badge @badgeClass">@badgeText</span></td>
                                     <td>
-                                        <a asp-controller="OgrenciAidat"
+                                        <a asp-controller="Aidat"
                                            asp-action="Ozet"
                                            asp-route-ogrenciId="@s.OgrenciId"
                                            asp-route-yil="@(s.Yil ?? Model.yil)"

@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OgrenciBilgiSistemi.Data;
 using OgrenciBilgiSistemi.Models;
-using OgrenciBilgiSistemi.Models.Enums;
 using OgrenciBilgiSistemi.Services.Interfaces;
 
 namespace OgrenciBilgiSistemi.Controllers
@@ -15,18 +14,21 @@ namespace OgrenciBilgiSistemi.Controllers
         private readonly ILogger<PersonellerController> _logger;
         private readonly IPersonelService _personelService;
         private readonly IBirimService _birimService;
+        private readonly IKullaniciService _kullaniciService;
 
 
         public PersonellerController(
             AppDbContext db,
             ILogger<PersonellerController> logger,
             IPersonelService personelService,
-            IBirimService birimService)
+            IBirimService birimService,
+            IKullaniciService kullaniciService)
         {
             _db = db;
             _logger = logger;
             _personelService = personelService;
             _birimService = birimService;
+            _kullaniciService = kullaniciService;
         }
 
 
@@ -55,22 +57,45 @@ namespace OgrenciBilgiSistemi.Controllers
         public async Task<IActionResult> Ekle(CancellationToken ct = default)
         {
             var model = new PersonelModel();
-            ViewBag.Birimler = await GetBirimlerSelectListAsync(null, includeAllOption: false, ct);
+            await PersonelDropdownDoldur(model, ct);
             return View(model);
         }
 
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Ekle(PersonelModel model, IFormFile? PersonelGorselFile, CancellationToken ct = default)
         {
+            // Kullanıcı seçildiyse adını PersonelAdSoyad'a yaz (validation öncesi)
+            if (model.KullaniciId.HasValue)
+            {
+                var kullanici = await _db.Kullanicilar.FindAsync([model.KullaniciId.Value], ct);
+                if (kullanici != null)
+                {
+                    model.PersonelAdSoyad = kullanici.KullaniciAdi;
+                    ModelState.Remove(nameof(model.PersonelAdSoyad));
+                }
+            }
+
             if (!ModelState.IsValid)
             {
-                ViewBag.Birimler = await GetBirimlerSelectListAsync(model.BirimId, includeAllOption: false, ct);
+                await PersonelDropdownDoldur(model, ct);
                 return View(model);
             }
 
             try
             {
-                await _personelService.AddAsync(model, PersonelGorselFile, ct);
+                var personelId = await _personelService.AddAsync(model, PersonelGorselFile, ct);
+
+                // Kullanıcı-Personel bağlantısını kur
+                if (model.KullaniciId.HasValue)
+                {
+                    var kullanici = await _db.Kullanicilar.FindAsync([model.KullaniciId.Value], ct);
+                    if (kullanici != null)
+                    {
+                        kullanici.PersonelId = personelId;
+                        await _db.SaveChangesAsync(ct);
+                    }
+                }
+
                 TempData["Mesaj"] = "Personel eklendi.";
                 return RedirectToAction(nameof(Index));
             }
@@ -78,7 +103,7 @@ namespace OgrenciBilgiSistemi.Controllers
             {
                 _logger.LogError(ex, "Personel eklenirken hata oluştu.");
                 ModelState.AddModelError(string.Empty, ex.Message);
-                ViewBag.Birimler = await GetBirimlerSelectListAsync(model.BirimId, includeAllOption: false, ct);
+                await PersonelDropdownDoldur(model, ct);
                 return View(model);
             }
         }
@@ -89,22 +114,55 @@ namespace OgrenciBilgiSistemi.Controllers
             var p = await _db.Personeller.FindAsync(new object?[] { id }, ct);
             if (p is null) return NotFound();
 
-            ViewBag.Birimler = await GetBirimlerSelectListAsync(p.BirimId, includeAllOption: false, ct);
+            // Mevcut kullanıcı bağlantısını bul
+            var bagli = await _db.Kullanicilar
+                .FirstOrDefaultAsync(k => k.PersonelId == id && k.KullaniciDurum, ct);
+            p.KullaniciId = bagli?.KullaniciId;
+
+            await PersonelDropdownDoldur(p, ct);
             return View(p);
         }
 
         [HttpPost, ValidateAntiForgeryToken]
         public async Task<IActionResult> Guncelle(PersonelModel model, IFormFile? PersonelGorselFile, CancellationToken ct = default)
         {
+            // Kullanıcı seçildiyse adını PersonelAdSoyad'a yaz (validation öncesi)
+            if (model.KullaniciId.HasValue)
+            {
+                var kullanici = await _db.Kullanicilar.FindAsync([model.KullaniciId.Value], ct);
+                if (kullanici != null)
+                {
+                    model.PersonelAdSoyad = kullanici.KullaniciAdi;
+                    ModelState.Remove(nameof(model.PersonelAdSoyad));
+                }
+            }
+
             if (!ModelState.IsValid)
             {
-                ViewBag.Birimler = await GetBirimlerSelectListAsync(model.BirimId, includeAllOption: false, ct);
+                await PersonelDropdownDoldur(model, ct);
                 return View(model);
             }
 
             try
             {
                 await _personelService.UpdateAsync(model, PersonelGorselFile, ct);
+
+                // Eski bağlantıyı temizle
+                var eskiBagli = await _db.Kullanicilar
+                    .FirstOrDefaultAsync(k => k.PersonelId == model.PersonelId && k.KullaniciDurum, ct);
+                if (eskiBagli != null && eskiBagli.KullaniciId != model.KullaniciId)
+                    eskiBagli.PersonelId = null;
+
+                // Yeni bağlantıyı kur
+                if (model.KullaniciId.HasValue)
+                {
+                    var yeniBagli = await _db.Kullanicilar.FindAsync([model.KullaniciId.Value], ct);
+                    if (yeniBagli != null)
+                        yeniBagli.PersonelId = model.PersonelId;
+                }
+
+                await _db.SaveChangesAsync(ct);
+
                 TempData["Mesaj"] = "Personel güncellendi.";
                 return RedirectToAction(nameof(Index));
             }
@@ -112,9 +170,16 @@ namespace OgrenciBilgiSistemi.Controllers
             {
                 _logger.LogError(ex, "Personel güncellenirken hata oluştu.");
                 ModelState.AddModelError(string.Empty, ex.Message);
-                ViewBag.Birimler = await GetBirimlerSelectListAsync(model.BirimId, includeAllOption: false, ct);
+                await PersonelDropdownDoldur(model, ct);
                 return View(model);
             }
+        }
+
+        private async Task PersonelDropdownDoldur(PersonelModel model, CancellationToken ct)
+        {
+            ViewBag.Birimler = await GetBirimlerSelectListAsync(model.BirimId, includeAllOption: false, ct);
+            model.Kullanicilar = await _kullaniciService.GetKullanicilarByRolSelectListAsync(
+                KullaniciRolu.Ogretmen, ct);
         }
 
         [HttpPost, ValidateAntiForgeryToken]

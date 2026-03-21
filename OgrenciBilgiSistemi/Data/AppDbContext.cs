@@ -225,6 +225,24 @@ namespace OgrenciBilgiSistemi.Data
                 .OnDelete(DeleteBehavior.SetNull);
 
             // =========================
+            // KULLANICI <-> OGRENCIVELI (optional)
+            // =========================
+            modelBuilder.Entity<KullaniciModel>()
+                .HasOne(k => k.OgrenciVeli)
+                .WithMany()
+                .HasForeignKey(k => k.OgrenciVeliId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // =========================
+            // KULLANICI <-> PERSONEL (birebir, opsiyonel)
+            // =========================
+            modelBuilder.Entity<KullaniciModel>()
+                .HasOne(k => k.Personel)
+                .WithMany()
+                .HasForeignKey(k => k.PersonelId)
+                .OnDelete(DeleteBehavior.SetNull);
+
+            // =========================
             // SINIF YOKLAMA
             // =========================
             modelBuilder.Entity<SinifYoklamaModel>(e =>
@@ -282,6 +300,13 @@ namespace OgrenciBilgiSistemi.Data
                 .IsUnique()
                 .HasDatabaseName("UX_Kullanicilar_KullaniciAdi");
 
+            // Personel — her personel en fazla bir kullanıcıya bağlanabilir
+            modelBuilder.Entity<KullaniciModel>()
+                .HasIndex(k => k.PersonelId)
+                .IsUnique()
+                .HasFilter("[PersonelId] IS NOT NULL")
+                .HasDatabaseName("UX_Kullanicilar_PersonelId");
+
             // =========================
             // KULLANICI-MENU (M:N)
             // =========================
@@ -324,8 +349,8 @@ namespace OgrenciBilgiSistemi.Data
 
     new MenuOgeModel { Id = 5, Baslik = "Öğrenciler", Controller = null, Action = null, AnaMenuId = null, Sirala = 3 },
     new MenuOgeModel { Id = 6, Baslik = "Öğrenci İşlemleri", Controller = "Ogrenciler", Action = "Index", AnaMenuId = 5, Sirala = 1 },
-    new MenuOgeModel { Id = 7, Baslik = "Aidat İşlemleri", Controller = "OgrenciAidat", Action = "Index", AnaMenuId = 5, Sirala = 2 },
-    new MenuOgeModel { Id = 8, Baslik = "Yemekhane İşlemleri", Controller = "OgrenciYemekhane", Action = "Index", AnaMenuId = 5, Sirala = 3 },
+    new MenuOgeModel { Id = 7, Baslik = "Aidat İşlemleri", Controller = "Aidat", Action = "Index", AnaMenuId = 5, Sirala = 2 },
+    new MenuOgeModel { Id = 8, Baslik = "Yemekhane İşlemleri", Controller = "Yemekhane", Action = "Index", AnaMenuId = 5, Sirala = 3 },
 
     new MenuOgeModel { Id = 9, Baslik = "Ziyaretçiler", Controller = null, Action = null, AnaMenuId = null, Sirala = 4 },
     new MenuOgeModel { Id = 10, Baslik = "Ziyaretçi İşlemleri", Controller = "Ziyaretciler", Action = "Index", AnaMenuId = 9, Sirala = 1 },
@@ -343,9 +368,9 @@ namespace OgrenciBilgiSistemi.Data
     new MenuOgeModel { Id = 18, Baslik = "Raporlar", Controller = null, Action = null, AnaMenuId = null, Sirala = 8 },
     new MenuOgeModel { Id = 19, Baslik = "Öğrenci Giriş Çıkış Raporları", Controller = "OgrenciGirisCikis", Action = "Detay", AnaMenuId = 18, Sirala = 1 },
     new MenuOgeModel { Id = 20, Baslik = "Öğrenci Veli Raporu", Controller = "Ogrenciler", Action = "OgrenciVeliRapor", AnaMenuId = 18, Sirala = 2 },
-    new MenuOgeModel { Id = 21, Baslik = "Öğrenci Aidat Raporu", Controller = "OgrenciAidat", Action = "AidatRapor", AnaMenuId = 18, Sirala = 3 },
+    new MenuOgeModel { Id = 21, Baslik = "Öğrenci Aidat Raporu", Controller = "Aidat", Action = "AidatRapor", AnaMenuId = 18, Sirala = 3 },
     new MenuOgeModel { Id = 22, Baslik = "Öğrenci Ziyaretçi Raporu", Controller = "Ziyaretciler", Action = "ZiyaretciRapor", AnaMenuId = 18, Sirala = 4 },
-    new MenuOgeModel { Id = 23, Baslik = "Öğrenci Yemek Raporu", Controller = "OgrenciYemekhane", Action = "YemekRapor", AnaMenuId = 18, Sirala = 5 },
+    new MenuOgeModel { Id = 23, Baslik = "Öğrenci Yemek Raporu", Controller = "Yemekhane", Action = "YemekRapor", AnaMenuId = 18, Sirala = 5 },
 
     new MenuOgeModel { Id = 24, Baslik = "KartOku", Controller = null, Action = null, AnaMenuId = null, Sirala = 9 },
     new MenuOgeModel { Id = 25, Baslik = "Kart Okuma Ekranı", Controller = "KartOku", Action = "Index", AnaMenuId = 24, Sirala = 1 },
@@ -353,6 +378,7 @@ namespace OgrenciBilgiSistemi.Data
     new MenuOgeModel { Id = 26, Baslik = "Servisler", Controller = null, Action = null, AnaMenuId = null, Sirala = 10 },
     new MenuOgeModel { Id = 27, Baslik = "Servis Listesi", Controller = "Servisler", Action = "Index", AnaMenuId = 26, Sirala = 1 }
 );
+
         }
     }
 }

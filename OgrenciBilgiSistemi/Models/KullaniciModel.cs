@@ -25,14 +25,33 @@ namespace OgrenciBilgiSistemi.Models
 
         public bool KullaniciDurum { get; set; } = true;
 
-        public int? BirimId { get; set; }
+        [StringLength(15)]
+        [RegularExpression(@"^\d{10,15}$", ErrorMessage = "Telefon numarası yalnızca rakamlardan oluşmalıdır!")]
+        public string? Telefon { get; set; }
 
-        [ForeignKey(nameof(BirimId))]
+        public int? OgrenciVeliId { get; set; }
+
+        [ForeignKey(nameof(OgrenciVeliId))]
         [ValidateNever]
-        public BirimModel? Birim { get; set; }
+        public OgrenciVeliModel? OgrenciVeli { get; set; }
+
+        public int? PersonelId { get; set; }
+
+        [ForeignKey(nameof(PersonelId))]
+        [ValidateNever]
+        public virtual PersonelModel? Personel { get; set; }
 
         [NotMapped]
-        public List<SelectListItem> Birimler { get; set; } = new();
+        public int? ServisId { get; set; }
+
+        [NotMapped]
+        public List<SelectListItem> Veliler { get; set; } = new();
+
+        [NotMapped]
+        public List<SelectListItem> Personeller { get; set; } = new();
+
+        [NotMapped]
+        public List<SelectListItem> Servisler { get; set; } = new();
 
         public ICollection<KullaniciMenuModel> KullaniciMenuler { get; set; } = new List<KullaniciMenuModel>();
     }

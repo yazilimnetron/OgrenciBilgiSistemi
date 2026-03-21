@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OgrenciBilgiSistemi.Data;
-using OgrenciBilgiSistemi.Models.Enums;
 using OgrenciBilgiSistemi.Services.Interfaces;
 
 public class KartOkumaOlayIsleyiciService : IHostedService

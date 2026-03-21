@@ -55,6 +55,8 @@ builder.Services.AddScoped<IPersonelService, PersonelService>();
 builder.Services.AddScoped<IZiyaretciService, ZiyaretciService>();
 builder.Services.AddScoped<IKitapService, KitapService>();
 builder.Services.AddScoped<IKitapDetayService, KitapDetayService>();
+builder.Services.AddScoped<IKullaniciService, KullaniciService>();
+builder.Services.AddScoped<IServisService, ServisService>();
 
 // Hosted services
 builder.Services.AddHostedService<KartOkumaOlayIsleyiciService>();

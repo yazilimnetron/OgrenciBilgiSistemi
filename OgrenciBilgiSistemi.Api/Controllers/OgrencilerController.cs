@@ -11,11 +11,57 @@ namespace OgrenciBilgiSistemi.Api.Controllers
     public class OgrencilerController : ControllerBase
     {
         private readonly OgrenciService _ogrenciService;
+        private readonly ServisService _servisService;
 
-        public OgrencilerController(OgrenciService ogrenciService)
+        public OgrencilerController(OgrenciService ogrenciService, ServisService servisService)
         {
             _ogrenciService = ogrenciService;
+            _servisService = servisService;
         }
+
+        #region Rol Bazlı Öğrenci Metotları
+
+        // Rol bazlı: Giriş yapan kullanıcıya ait öğrencileri getirir
+        // Öğretmen → tüm sınıflar, Şoför → kendi servisi, Veli → kendi çocukları
+        [HttpGet("benim")]
+        public async Task<IActionResult> BenimOgrencilerim()
+        {
+            try
+            {
+                var rol = User.FindFirst("rol")?.Value;
+                var kullaniciId = User.FindFirst("kullaniciId")?.Value;
+
+                if (string.IsNullOrEmpty(rol) || string.IsNullOrEmpty(kullaniciId))
+                    return Unauthorized("Oturum bilgileri eksik.");
+
+                switch (rol)
+                {
+                    case "Veli":
+                        var veliIdStr = User.FindFirst("veliId")?.Value;
+                        if (string.IsNullOrEmpty(veliIdStr) || !int.TryParse(veliIdStr, out var veliId))
+                            return BadRequest("Veli bilgisi bulunamadı.");
+                        var cocuklar = await _ogrenciService.VeliyeGoreOgrencileriGetirAsync(veliId);
+                        return Ok(cocuklar);
+
+                    case "Sofor":
+                        var servisIdStr = User.FindFirst("servisId")?.Value;
+                        if (string.IsNullOrEmpty(servisIdStr) || !int.TryParse(servisIdStr, out var servisId))
+                            return BadRequest("Servis bilgisi bulunamadı.");
+                        var servisOgrencileri = await _servisService.ServisOgrencileriGetir(servisId);
+                        return Ok(servisOgrencileri);
+
+                    default:
+                        // Öğretmen: tüm sınıfları görebilir, bu endpoint sınıf listesine yönlendirir
+                        return Ok(new { mesaj = "Öğretmenler sınıf listesinden öğrenci görüntüler.", rol });
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { error = "Öğrenci listesi alınırken bir hata oluştu." });
+            }
+        }
+
+        #endregion
 
         #region Öğrenci Bilgi Metotları
 

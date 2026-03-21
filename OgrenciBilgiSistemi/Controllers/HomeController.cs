@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OgrenciBilgiSistemi.Data;
 using OgrenciBilgiSistemi.Dtos;
-using OgrenciBilgiSistemi.Models.Enums;
 
 public class HomeController : Controller
 {

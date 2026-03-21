@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using OgrenciBilgiSistemi.Models.Enums;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -23,9 +22,6 @@ namespace OgrenciBilgiSistemi.Models
         [Display(Name = "Durum (Aktif)")]
         public bool PersonelDurum { get; set; } = true;
 
-        [Display(Name = "Görevi")]
-        public PersonelTipi PersonelTipi { get; set; } = PersonelTipi.Ogretmen;
-
         [StringLength(30, ErrorMessage = "En fazla 30 karakter yazabilirsiniz!")]
         [Display(Name = "Kart No")]
         public string? PersonelKartNo { get; set; }
@@ -43,6 +39,12 @@ namespace OgrenciBilgiSistemi.Models
         [ValidateNever]
         [Display(Name = "Fotoğraf Yükle")]
         public IFormFile? PersonelGorselFile { get; set; }
+
+        [NotMapped]
+        public int? KullaniciId { get; set; }
+
+        [NotMapped]
+        public List<SelectListItem> Kullanicilar { get; set; } = new();
 
         [NotMapped]
         public List<SelectListItem> Birimler { get; set; } = new();

@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using OgrenciBilgiSistemi.Dtos;
 using OgrenciBilgiSistemi.Models;
-using OgrenciBilgiSistemi.Models.Enums;
 
 namespace OgrenciBilgiSistemi.Services.Interfaces
 {

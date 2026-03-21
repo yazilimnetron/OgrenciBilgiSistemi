@@ -3,12 +3,12 @@ using OgrenciBilgiSistemi.Services.Interfaces;
 
 namespace OgrenciBilgiSistemi.Controllers
 {
-    [Route("OgrenciYemekhane")]
-    public class OgrenciYemekhaneController : Controller
+    [Route("Yemekhane")]
+    public class YemekhaneController : Controller
     {
         private readonly IYemekhaneService _svc;
 
-        public OgrenciYemekhaneController(IYemekhaneService svc)
+        public YemekhaneController(IYemekhaneService svc)
         {
             _svc = svc;
         }

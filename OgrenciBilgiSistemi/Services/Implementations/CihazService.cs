@@ -2,7 +2,6 @@
 using OgrenciBilgiSistemi.Data;
 using OgrenciBilgiSistemi.Dtos;
 using OgrenciBilgiSistemi.Models;
-using OgrenciBilgiSistemi.Models.Enums;
 using System.Runtime.InteropServices;
 using zkemkeeper;
 

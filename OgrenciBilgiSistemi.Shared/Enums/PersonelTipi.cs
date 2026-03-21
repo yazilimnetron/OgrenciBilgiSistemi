@@ -1,6 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 
-namespace OgrenciBilgiSistemi.Models.Enums
+namespace OgrenciBilgiSistemi.Shared.Enums
 {
     public enum PersonelTipi : byte
     {

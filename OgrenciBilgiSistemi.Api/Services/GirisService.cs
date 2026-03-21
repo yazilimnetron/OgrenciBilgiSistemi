@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using OgrenciBilgiSistemi.Api.Models;
+using OgrenciBilgiSistemi.Shared.Enums;
 
 namespace OgrenciBilgiSistemi.Api.Services
 {
@@ -25,10 +26,10 @@ namespace OgrenciBilgiSistemi.Api.Services
                 SELECT
                     K.KullaniciId,
                     K.KullaniciAdi,
-                    K.BirimId,
                     K.KullaniciDurum,
                     K.Rol,
                     K.Sifre,
+                    K.OgrenciVeliId,
                     S.ServisId
                 FROM Kullanicilar K
                 LEFT JOIN Servisler S ON S.KullaniciId = K.KullaniciId
@@ -54,10 +55,10 @@ namespace OgrenciBilgiSistemi.Api.Services
                     {
                         KullaniciId    = (int)reader["KullaniciId"],
                         KullaniciAdi   = reader["KullaniciAdi"].ToString() ?? string.Empty,
-                        BirimId        = reader["BirimId"] != DBNull.Value ? (int?)reader["BirimId"] : null,
                         KullaniciDurum = Convert.ToBoolean(reader["KullaniciDurum"]),
-                        Rol            = reader["Rol"] != DBNull.Value ? Convert.ToInt32(reader["Rol"]) : 2,
-                        ServisId       = reader["ServisId"] != DBNull.Value ? (int?)reader["ServisId"] : null
+                        Rol            = reader["Rol"] != DBNull.Value ? (KullaniciRolu)Convert.ToInt32(reader["Rol"]) : KullaniciRolu.Ogretmen,
+                        ServisId       = reader["ServisId"] != DBNull.Value ? (int?)reader["ServisId"] : null,
+                        OgrenciVeliId  = reader["OgrenciVeliId"] != DBNull.Value ? (int?)reader["OgrenciVeliId"] : null
                     };
                 }
             }

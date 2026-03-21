@@ -23,7 +23,7 @@
                     <h3 class="text-primary fw-bold mb-0">Toplu Yemekhane Raporu</h3>
                     <div class="d-flex gap-2">
                         <a class="btn btn-outline-success fw-bold"
-                           asp-controller="OgrenciYemekhane"
+                           asp-controller="Yemekhane"
                            asp-action="YemekRaporExcel"
                            asp-route-q="@query"
                            asp-route-bas="@vBas"
@@ -34,7 +34,7 @@
                 </div>
 
                 <!-- Filtre Formu (öğrenci ara başta, yıl ve sayfa boyutu kaldırıldı) -->
-                <form method="get" asp-controller="OgrenciYemekhane" asp-action="YemekRapor" class="row g-2 mb-3">
+                <form method="get" asp-controller="Yemekhane" asp-action="YemekRapor" class="row g-2 mb-3">
                     <!-- Öğrenci Ara -->
                     <div class="col-md-4">
                         <input type="text"
@@ -103,7 +103,7 @@
                                         <td>@s.Yil</td>
                                         <td class="text-start">
                                             <a class="text-decoration-none"
-                                               asp-controller="OgrenciYemekhane"
+                                               asp-controller="Yemekhane"
                                                asp-action="Ozet"
                                                asp-route-ogrenciId="@s.OgrenciId"
                                                asp-route-yil="@s.Yil">
@@ -117,7 +117,7 @@
                                         <td>@s.Kalan.ToString("C")</td>
                                         <td>
                                             <a class="btn btn-sm btn-outline-primary"
-                                               asp-controller="OgrenciYemekhane"
+                                               asp-controller="Yemekhane"
                                                asp-action="Ozet"
                                                asp-route-ogrenciId="@s.OgrenciId"
                                                asp-route-yil="@s.Yil">Detay</a>
@@ -145,7 +145,7 @@
                     {
                         <li class="page-item">
                             <a class="page-link"
-                               asp-controller="OgrenciYemekhane"
+                               asp-controller="Yemekhane"
                                asp-action="YemekRapor"
                                asp-route-q="@query"
                                asp-route-bas="@vBas"
@@ -161,7 +161,7 @@
                     {
                         <li class="page-item">
                             <a class="page-link"
-                               asp-controller="OgrenciYemekhane"
+                               asp-controller="Yemekhane"
                                asp-action="YemekRapor"
                                asp-route-q="@query"
                                asp-route-bas="@vBas"
@@ -182,7 +182,7 @@
                     {
                         <li class="page-item @(i == pageIndex ? "active" : "")">
                             <a class="page-link"
-                               asp-controller="OgrenciYemekhane"
+                               asp-controller="Yemekhane"
                                asp-action="YemekRapor"
                                asp-route-q="@query"
                                asp-route-bas="@vBas"
@@ -199,7 +199,7 @@
                         <li class="page-item disabled"><span class="page-link">...</span></li>
                         <li class="page-item">
                             <a class="page-link"
-                               asp-controller="OgrenciYemekhane"
+                               asp-controller="Yemekhane"
                                asp-action="YemekRapor"
                                asp-route-q="@query"
                                asp-route-bas="@vBas"
@@ -215,7 +215,7 @@
                     {
                         <li class="page-item">
                             <a class="page-link"
-                               asp-controller="OgrenciYemekhane"
+                               asp-controller="Yemekhane"
                                asp-action="YemekRapor"
                                asp-route-q="@query"
                                asp-route-bas="@vBas"

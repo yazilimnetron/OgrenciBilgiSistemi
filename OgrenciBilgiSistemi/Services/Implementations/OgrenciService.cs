@@ -5,7 +5,6 @@ using Microsoft.Extensions.Logging;
 using OgrenciBilgiSistemi.Abstractions;
 using OgrenciBilgiSistemi.Data;
 using OgrenciBilgiSistemi.Models;
-using OgrenciBilgiSistemi.Models.Enums;
 using OgrenciBilgiSistemi.Services.Interfaces;
 using System.Globalization;
 

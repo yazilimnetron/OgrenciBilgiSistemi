@@ -1,6 +1,4 @@
-﻿using OgrenciBilgiSistemi.Models.Enums;
-
-namespace OgrenciBilgiSistemi.Services.Interfaces
+﻿namespace OgrenciBilgiSistemi.Services.Interfaces
 {
     public record GecisKayitSonucu(string GecisTipi, DateTime Zaman);
     public interface IGecisService

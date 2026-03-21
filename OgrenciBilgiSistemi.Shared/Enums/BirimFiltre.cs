@@ -1,4 +1,4 @@
-﻿namespace OgrenciBilgiSistemi.Models.Enums
+namespace OgrenciBilgiSistemi.Shared.Enums
 {
     public enum BirimFiltre
     {

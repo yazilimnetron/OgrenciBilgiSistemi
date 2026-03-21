@@ -180,15 +180,18 @@ namespace OgrenciBilgiSistemi.Migrations
                     b.Property<bool>("BeniHatirla")
                         .HasColumnType("bit");
 
-                    b.Property<int?>("BirimId")
-                        .HasColumnType("int");
-
                     b.Property<string>("KullaniciAdi")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<bool>("KullaniciDurum")
                         .HasColumnType("bit");
+
+                    b.Property<int?>("OgrenciVeliId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("PersonelId")
+                        .HasColumnType("int");
 
                     b.Property<int>("Rol")
                         .HasColumnType("int");
@@ -197,9 +200,22 @@ namespace OgrenciBilgiSistemi.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("Telefon")
+                        .HasMaxLength(15)
+                        .HasColumnType("nvarchar(15)");
+
                     b.HasKey("KullaniciId");
 
-                    b.HasIndex("BirimId");
+                    b.HasIndex("KullaniciAdi")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Kullanicilar_KullaniciAdi");
+
+                    b.HasIndex("OgrenciVeliId");
+
+                    b.HasIndex("PersonelId")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Kullanicilar_PersonelId")
+                        .HasFilter("[PersonelId] IS NOT NULL");
 
                     b.ToTable("Kullanicilar");
                 });
@@ -291,7 +307,7 @@ namespace OgrenciBilgiSistemi.Migrations
                             Action = "Index",
                             AnaMenuId = 5,
                             Baslik = "Aidat İşlemleri",
-                            Controller = "OgrenciAidat",
+                            Controller = "Aidat",
                             Sirala = 2
                         },
                         new
@@ -300,7 +316,7 @@ namespace OgrenciBilgiSistemi.Migrations
                             Action = "Index",
                             AnaMenuId = 5,
                             Baslik = "Yemekhane İşlemleri",
-                            Controller = "OgrenciYemekhane",
+                            Controller = "Yemekhane",
                             Sirala = 3
                         },
                         new
@@ -315,7 +331,7 @@ namespace OgrenciBilgiSistemi.Migrations
                             Action = "Index",
                             AnaMenuId = 9,
                             Baslik = "Ziyaretçi İşlemleri",
-                            Controller = "Ziyaretci",
+                            Controller = "Ziyaretciler",
                             Sirala = 1
                         },
                         new
@@ -402,7 +418,7 @@ namespace OgrenciBilgiSistemi.Migrations
                             Action = "AidatRapor",
                             AnaMenuId = 18,
                             Baslik = "Öğrenci Aidat Raporu",
-                            Controller = "OgrenciAidat",
+                            Controller = "Aidat",
                             Sirala = 3
                         },
                         new
@@ -411,7 +427,7 @@ namespace OgrenciBilgiSistemi.Migrations
                             Action = "ZiyaretciRapor",
                             AnaMenuId = 18,
                             Baslik = "Öğrenci Ziyaretçi Raporu",
-                            Controller = "Ziyaretci",
+                            Controller = "Ziyaretciler",
                             Sirala = 4
                         },
                         new
@@ -420,7 +436,7 @@ namespace OgrenciBilgiSistemi.Migrations
                             Action = "YemekRapor",
                             AnaMenuId = 18,
                             Baslik = "Öğrenci Yemek Raporu",
-                            Controller = "OgrenciYemekhane",
+                            Controller = "Yemekhane",
                             Sirala = 5
                         },
                         new
@@ -436,6 +452,21 @@ namespace OgrenciBilgiSistemi.Migrations
                             AnaMenuId = 24,
                             Baslik = "Kart Okuma Ekranı",
                             Controller = "KartOku",
+                            Sirala = 1
+                        },
+                        new
+                        {
+                            Id = 26,
+                            Baslik = "Servisler",
+                            Sirala = 10
+                        },
+                        new
+                        {
+                            Id = 27,
+                            Action = "Index",
+                            AnaMenuId = 26,
+                            Baslik = "Servis Listesi",
+                            Controller = "Servisler",
                             Sirala = 1
                         });
                 });
@@ -618,9 +649,8 @@ namespace OgrenciBilgiSistemi.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OgrenciKartNo")
-                        .IsRequired()
-                        .HasMaxLength(30)
-                        .HasColumnType("nvarchar(30)");
+                        .HasMaxLength(10)
+                        .HasColumnType("nvarchar(10)");
 
                     b.Property<int>("OgrenciNo")
                         .HasColumnType("int");
@@ -631,13 +661,27 @@ namespace OgrenciBilgiSistemi.Migrations
                     b.Property<int?>("PersonelId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("ServisId")
+                        .HasColumnType("int");
+
                     b.HasKey("OgrenciId");
 
                     b.HasIndex("BirimId");
 
+                    b.HasIndex("OgrenciKartNo")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Ogrenciler_OgrenciKartNo")
+                        .HasFilter("[OgrenciKartNo] IS NOT NULL AND [OgrenciKartNo] != ''");
+
+                    b.HasIndex("OgrenciNo")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Ogrenciler_OgrenciNo");
+
                     b.HasIndex("OgrenciVeliId");
 
                     b.HasIndex("PersonelId");
+
+                    b.HasIndex("ServisId");
 
                     b.ToTable("Ogrenciler");
                 });
@@ -651,7 +695,6 @@ namespace OgrenciBilgiSistemi.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("OgrenciVeliId"));
 
                     b.Property<string>("VeliAdSoyad")
-                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -859,14 +902,135 @@ namespace OgrenciBilgiSistemi.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<byte>("PersonelTipi")
-                        .HasColumnType("tinyint");
-
                     b.HasKey("PersonelId");
 
                     b.HasIndex("BirimId");
 
                     b.ToTable("Personeller");
+                });
+
+            modelBuilder.Entity("OgrenciBilgiSistemi.Models.ServisModel", b =>
+                {
+                    b.Property<int>("ServisId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ServisId"));
+
+                    b.Property<int?>("KullaniciId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Plaka")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<bool>("ServisDurum")
+                        .HasColumnType("bit");
+
+                    b.HasKey("ServisId");
+
+                    b.HasIndex("KullaniciId");
+
+                    b.ToTable("Servisler");
+                });
+
+            modelBuilder.Entity("OgrenciBilgiSistemi.Models.SinifYoklamaDurumModel", b =>
+                {
+                    b.Property<int>("DurumId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("DurumId"));
+
+                    b.Property<string>("DurumAd")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.HasKey("DurumId");
+
+                    b.ToTable("SinifYoklamaDurumlar");
+
+                    b.HasData(
+                        new
+                        {
+                            DurumId = 1,
+                            DurumAd = "Var"
+                        },
+                        new
+                        {
+                            DurumId = 2,
+                            DurumAd = "Yok"
+                        },
+                        new
+                        {
+                            DurumId = 3,
+                            DurumAd = "Geç"
+                        },
+                        new
+                        {
+                            DurumId = 4,
+                            DurumAd = "İzinli"
+                        },
+                        new
+                        {
+                            DurumId = 5,
+                            DurumAd = "Raporlu"
+                        });
+                });
+
+            modelBuilder.Entity("OgrenciBilgiSistemi.Models.SinifYoklamaModel", b =>
+                {
+                    b.Property<int>("SinifYoklamaId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("SinifYoklamaId"));
+
+                    b.Property<int?>("Ders1")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Ders2")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Ders3")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Ders4")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Ders5")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Ders6")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Ders7")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("Ders8")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("GuncellenmeTarihi")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("OgrenciId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("OlusturulmaTarihi")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PersonelId")
+                        .HasColumnType("int");
+
+                    b.HasKey("SinifYoklamaId");
+
+                    b.HasIndex("PersonelId");
+
+                    b.HasIndex("OgrenciId", "OlusturulmaTarihi");
+
+                    b.ToTable("SinifYoklamalar");
                 });
 
             modelBuilder.Entity("OgrenciBilgiSistemi.Models.ZiyaretciModel", b =>
@@ -967,11 +1131,19 @@ namespace OgrenciBilgiSistemi.Migrations
 
             modelBuilder.Entity("OgrenciBilgiSistemi.Models.KullaniciModel", b =>
                 {
-                    b.HasOne("OgrenciBilgiSistemi.Models.BirimModel", "Birim")
-                        .WithMany("Kullanicilar")
-                        .HasForeignKey("BirimId");
+                    b.HasOne("OgrenciBilgiSistemi.Models.OgrenciVeliModel", "OgrenciVeli")
+                        .WithMany()
+                        .HasForeignKey("OgrenciVeliId")
+                        .OnDelete(DeleteBehavior.SetNull);
 
-                    b.Navigation("Birim");
+                    b.HasOne("OgrenciBilgiSistemi.Models.PersonelModel", "Personel")
+                        .WithMany()
+                        .HasForeignKey("PersonelId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("OgrenciVeli");
+
+                    b.Navigation("Personel");
                 });
 
             modelBuilder.Entity("OgrenciBilgiSistemi.Models.MenuOgeModel", b =>
@@ -1041,11 +1213,18 @@ namespace OgrenciBilgiSistemi.Migrations
                         .HasForeignKey("PersonelId")
                         .OnDelete(DeleteBehavior.SetNull);
 
+                    b.HasOne("OgrenciBilgiSistemi.Models.ServisModel", "Servis")
+                        .WithMany("Ogrenciler")
+                        .HasForeignKey("ServisId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.Navigation("Birim");
 
                     b.Navigation("OgrenciVeli");
 
                     b.Navigation("Personel");
+
+                    b.Navigation("Servis");
                 });
 
             modelBuilder.Entity("OgrenciBilgiSistemi.Models.OgrenciYemekModel", b =>
@@ -1107,6 +1286,35 @@ namespace OgrenciBilgiSistemi.Migrations
                     b.Navigation("Birim");
                 });
 
+            modelBuilder.Entity("OgrenciBilgiSistemi.Models.ServisModel", b =>
+                {
+                    b.HasOne("OgrenciBilgiSistemi.Models.KullaniciModel", "Kullanici")
+                        .WithMany()
+                        .HasForeignKey("KullaniciId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Kullanici");
+                });
+
+            modelBuilder.Entity("OgrenciBilgiSistemi.Models.SinifYoklamaModel", b =>
+                {
+                    b.HasOne("OgrenciBilgiSistemi.Models.OgrenciModel", "Ogrenci")
+                        .WithMany("SinifYoklamalar")
+                        .HasForeignKey("OgrenciId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("OgrenciBilgiSistemi.Models.PersonelModel", "Personel")
+                        .WithMany("SinifYoklamalar")
+                        .HasForeignKey("PersonelId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Ogrenci");
+
+                    b.Navigation("Personel");
+                });
+
             modelBuilder.Entity("OgrenciBilgiSistemi.Models.ZiyaretciModel", b =>
                 {
                     b.HasOne("OgrenciBilgiSistemi.Models.PersonelModel", "Personel")
@@ -1118,8 +1326,6 @@ namespace OgrenciBilgiSistemi.Migrations
 
             modelBuilder.Entity("OgrenciBilgiSistemi.Models.BirimModel", b =>
                 {
-                    b.Navigation("Kullanicilar");
-
                     b.Navigation("Ogrenciler");
 
                     b.Navigation("Personeller");
@@ -1149,6 +1355,8 @@ namespace OgrenciBilgiSistemi.Migrations
                     b.Navigation("OgrenciDetaylar");
 
                     b.Navigation("OgrenciYemekler");
+
+                    b.Navigation("SinifYoklamalar");
                 });
 
             modelBuilder.Entity("OgrenciBilgiSistemi.Models.OgrenciVeliModel", b =>
@@ -1160,7 +1368,14 @@ namespace OgrenciBilgiSistemi.Migrations
                 {
                     b.Navigation("Ogrenciler");
 
+                    b.Navigation("SinifYoklamalar");
+
                     b.Navigation("Ziyaretciler");
+                });
+
+            modelBuilder.Entity("OgrenciBilgiSistemi.Models.ServisModel", b =>
+                {
+                    b.Navigation("Ogrenciler");
                 });
 #pragma warning restore 612, 618
         }

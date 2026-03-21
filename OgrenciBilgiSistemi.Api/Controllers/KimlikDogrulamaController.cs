@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using OgrenciBilgiSistemi.Api.Dtos;
 using OgrenciBilgiSistemi.Api.Models;
 using OgrenciBilgiSistemi.Api.Services;
+using OgrenciBilgiSistemi.Shared.Enums;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -34,6 +35,10 @@ namespace OgrenciBilgiSistemi.Api.Controllers
             if (kullanici is null)
                 return Unauthorized("Kullanıcı adı veya şifre hatalı.");
 
+            // Mobil uygulamada admin girişi desteklenmez
+            if (kullanici.Rol == KullaniciRolu.Admin)
+                return Forbid("Bu uygulama yönetici girişi desteklememektedir.");
+
             // JWT token üret — geçerlilik süresi 8 saat (mobil uygulama ile eşleşir)
             var token = GenerateJwtToken(kullanici);
 
@@ -45,10 +50,10 @@ namespace OgrenciBilgiSistemi.Api.Controllers
                 {
                     kullanici.KullaniciId,
                     kullanici.KullaniciAdi,
-                    kullanici.BirimId,
                     kullanici.KullaniciDurum,
                     kullanici.Rol,
-                    kullanici.ServisId
+                    kullanici.ServisId,
+                    kullanici.OgrenciVeliId
                 }
             });
         }
@@ -66,19 +71,26 @@ namespace OgrenciBilgiSistemi.Api.Controllers
 
             var rolAdi = kullanici.Rol switch
             {
-                1 => "Admin",
-                3 => "Sofor",
-                _ => "Ogretmen"
+                KullaniciRolu.Ogretmen => "Ogretmen",
+                KullaniciRolu.Sofor    => "Sofor",
+                KullaniciRolu.Veli     => "Veli",
+                _                      => "Ogretmen"
             };
 
-            var claims = new[]
+            var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub,        kullanici.KullaniciId.ToString()),
-                new Claim(JwtRegisteredClaimNames.UniqueName, kullanici.KullaniciAdi),
-                new Claim(JwtRegisteredClaimNames.Jti,        Guid.NewGuid().ToString()),
-                new Claim("kullaniciId", kullanici.KullaniciId.ToString()),
-                new Claim("rol",         rolAdi)
+                new(JwtRegisteredClaimNames.Sub,        kullanici.KullaniciId.ToString()),
+                new(JwtRegisteredClaimNames.UniqueName, kullanici.KullaniciAdi),
+                new(JwtRegisteredClaimNames.Jti,        Guid.NewGuid().ToString()),
+                new("kullaniciId", kullanici.KullaniciId.ToString()),
+                new("rol",         rolAdi)
             };
+
+            if (kullanici.ServisId.HasValue)
+                claims.Add(new Claim("servisId", kullanici.ServisId.Value.ToString()));
+
+            if (kullanici.OgrenciVeliId.HasValue)
+                claims.Add(new Claim("veliId", kullanici.OgrenciVeliId.Value.ToString()));
 
             var token = new JwtSecurityToken(
                 issuer:             _configuration["Jwt:Issuer"],

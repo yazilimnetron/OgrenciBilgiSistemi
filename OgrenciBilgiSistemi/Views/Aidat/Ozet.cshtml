@@ -36,14 +36,14 @@
             <li class="nav-item"><a class="nav-link active">Aidat</a></li>
             <li class="nav-item">
                 <a class="nav-link"
-                   asp-controller="OgrenciYemekhane"
+                   asp-controller="Yemekhane"
                    asp-action="Ozet"
                    asp-route-ogrenciId="@Model.OgrenciId">Yemekhane</a>
             </li>
 
             <!-- Sağ tarafta yıl seçici -->
             <li class="ms-auto">
-                <form method="get" asp-controller="OgrenciAidat" asp-action="Ozet" class="d-flex gap-2">
+                <form method="get" asp-controller="Aidat" asp-action="Ozet" class="d-flex gap-2">
                     <input type="hidden" name="ogrenciId" value="@Model.OgrenciId" />
                     <select name="yil" class="form-select form-select-sm w-auto">
                         @foreach (var y in kullanilabilirYillar)
@@ -88,7 +88,7 @@
                         <span class="badge bg-warning text-dark">Muaf</span>
                     }
 
-                    <form asp-controller="OgrenciAidat" asp-action="MuafiyetAyarla" method="post" class="d-inline">
+                    <form asp-controller="Aidat" asp-action="MuafiyetAyarla" method="post" class="d-inline">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="ogrenciId" value="@Model.OgrenciId" />
                         <input type="hidden" name="yil" value="@yil" />
@@ -171,7 +171,7 @@
                                         <td class="text-end">@Money(o.Tutar)</td>
                                         <td>@(string.IsNullOrWhiteSpace(o.Aciklama) ? "-" : o.Aciklama)</td>
                                         <td class="text-end">
-                                            <form method="post" asp-action="OdemeSil" asp-controller="OgrenciAidat">
+                                            <form method="post" asp-action="OdemeSil" asp-controller="Aidat">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="ogrenciId" value="@Model.OgrenciId" />
                                                 <input type="hidden" name="yil" value="@yil" />
@@ -226,7 +226,7 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Vazgeç</button>
-                        <form method="post" asp-action="OdemeSil" asp-controller="OgrenciAidat" id="silForm" class="m-0">
+                        <form method="post" asp-action="OdemeSil" asp-controller="Aidat" id="silForm" class="m-0">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="ogrenciId" />
                             <input type="hidden" name="yil" />
@@ -248,7 +248,7 @@
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
                     </div>
                     <div class="modal-body">
-                        <form method="post" asp-action="TarifeKaydet" asp-controller="OgrenciAidat">
+                        <form method="post" asp-action="TarifeKaydet" asp-controller="Aidat">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="ogrenciId" value="@Model.OgrenciId" />
                             <input type="hidden" name="yil" value="@yil" />
@@ -385,14 +385,14 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link"
-                   asp-controller="OgrenciYemekhane"
+                   asp-controller="Yemekhane"
                    asp-action="Ozet"
                    asp-route-ogrenciId="@Model.OgrenciId">Yemekhane</a>
             </li>
 
             <!-- Yıl seçici -->
             <li class="ms-auto">
-                <form method="get" asp-controller="OgrenciAidat" asp-action="Ozet" class="d-flex gap-2">
+                <form method="get" asp-controller="Aidat" asp-action="Ozet" class="d-flex gap-2">
                     <input type="hidden" name="ogrenciId" value="@Model.OgrenciId" />
                     <select name="yil" class="form-select form-select-sm w-auto">
                         @foreach (var y in kullanilabilirYillar)
@@ -437,7 +437,7 @@
                     }
 
                     <!-- Yıl bazlı muafiyet -->
-                    <form asp-controller="OgrenciAidat" asp-action="MuafiyetAyarla" method="post" class="d-inline">
+                    <form asp-controller="Aidat" asp-action="MuafiyetAyarla" method="post" class="d-inline">
                         @Html.AntiForgeryToken()
                         <input type="hidden" name="ogrenciId" value="@Model.OgrenciId" />
                         <input type="hidden" name="yil" value="@yil" />
@@ -531,7 +531,7 @@
                                         <td class="text-end">@Money(o.Tutar)</td>
                                         <td>@(string.IsNullOrWhiteSpace(o.Aciklama) ? "-" : o.Aciklama)</td>
                                         <td class="text-end">
-                                            <form method="post" asp-action="OdemeSil" asp-controller="OgrenciAidat">
+                                            <form method="post" asp-action="OdemeSil" asp-controller="Aidat">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="ogrenciId" value="@Model.OgrenciId" />
                                                 <input type="hidden" name="yil" value="@yil" />
@@ -587,7 +587,7 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Vazgeç</button>
                         <!-- Silme POST'unu yapan TEK form -->
-                        <form method="post" asp-action="OdemeSil" asp-controller="OgrenciAidat" id="silForm" class="m-0">
+                        <form method="post" asp-action="OdemeSil" asp-controller="Aidat" id="silForm" class="m-0">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="ogrenciId" />
                             <input type="hidden" name="yil" />
@@ -609,7 +609,7 @@
                         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Kapat"></button>
                     </div>
                     <div class="modal-body">
-                        <form method="post" asp-action="TarifeKaydet" asp-controller="OgrenciAidat">
+                        <form method="post" asp-action="TarifeKaydet" asp-controller="Aidat">
                             @Html.AntiForgeryToken()
                             <input type="hidden" name="ogrenciId" value="@Model.OgrenciId" />
                             <input type="hidden" name="yil" value="@yil" />

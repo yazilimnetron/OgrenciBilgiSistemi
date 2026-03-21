@@ -22,15 +22,23 @@ if (string.IsNullOrWhiteSpace(jwtKey))
         "appsettings.Development.json veya ortam değişkeni kullanın.");
 
 // --------------------
-// CORS — mobil istemciler dahil tüm originlere izin ver
+// CORS — appsettings'ten yapılandırılmış origin'ler
 // --------------------
 builder.Services.AddCors(options =>
 {
+    var allowedOrigins = builder.Configuration
+        .GetSection("Cors:AllowedOrigins").Get<string[]>();
+
     options.AddPolicy("ConfiguredOrigins", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
+        if (allowedOrigins is { Length: > 0 })
+            policy.WithOrigins(allowedOrigins)
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
+        else
+            policy.AllowAnyOrigin()
+                  .AllowAnyMethod()
+                  .AllowAnyHeader();
     });
 });
 

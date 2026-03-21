@@ -1,4 +1,3 @@
-﻿@using OgrenciBilgiSistemi.Models.Enums
 @model OgrenciBilgiSistemi.ViewModels.OgrenciGirisCikisListViewModel
 
 @{
@@ -25,7 +24,7 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link"
-                   asp-controller="OgrenciAidat"
+                   asp-controller="Aidat"
                    asp-action="Ozet"
                    asp-route-ogrenciId="@Model.Ogrenci.OgrenciId"
                    asp-route-yil="@currentYear">
@@ -35,13 +34,13 @@
 
             <li class="nav-item">
                 <a class="nav-link"
-                   asp-controller="OgrenciYemekhane"
+                   asp-controller="Yemekhane"
                    asp-action="Ozet"
                    asp-route-ogrenciId="@Model.Ogrenci.OgrenciId">Yemekhane</a>
             </li>
 
             <li class="ms-auto">
-                <form method="get" asp-controller="OgrenciAidat" asp-action="Ozet" class="d-flex gap-2">
+                <form method="get" asp-controller="Aidat" asp-action="Ozet" class="d-flex gap-2">
                     <input type="hidden" name="ogrenciId" value="@Model.Ogrenci.OgrenciId" />
                 </form>
             </li>

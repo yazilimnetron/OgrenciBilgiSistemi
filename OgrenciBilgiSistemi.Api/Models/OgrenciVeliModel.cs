@@ -1,3 +1,5 @@
+using OgrenciBilgiSistemi.Shared.Enums;
+
 namespace OgrenciBilgiSistemi.Api.Models
 {
     public class OgrenciVeliModel
@@ -9,7 +11,7 @@ namespace OgrenciBilgiSistemi.Api.Models
         public string? VeliMeslek { get; set; }
         public string? VeliIsYeri { get; set; }
         public string? VeliEmail { get; set; }
-        public int? VeliYakinlik { get; set; }
+        public YakinlikTipi? VeliYakinlik { get; set; }
         public bool VeliDurum { get; set; }
     }
 }

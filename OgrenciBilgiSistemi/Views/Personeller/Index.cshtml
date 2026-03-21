@@ -1,6 +1,5 @@
 ﻿@model SayfalanmisListeModel<OgrenciBilgiSistemi.Models.PersonelModel>
 @using OgrenciBilgiSistemi.Models
-@using OgrenciBilgiSistemi.Models.Enums
 @inject Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider Metadata
 
 @{
@@ -90,9 +89,6 @@
                                     @Html.DisplayNameFor(m => m[0].PersonelTelefon)
                                 </th>
                                 <th>
-                                    @Html.DisplayNameFor(m => m[0].PersonelTipi)
-                                </th>
-                                <th>
                                     @Html.DisplayNameFor(m => m[0].PersonelKartNo)
                                 </th>
                                 <th>İşlem</th>
@@ -114,7 +110,6 @@
                                              alt="Foto" class="rounded-circle border" width="48" height="48" />
                                     </td>
                                     <td>@(s.PersonelTelefon ?? "-")</td>
-                                    <td>@s.PersonelTipi.GetDisplayName()</td>
                                     <td>@(s.PersonelKartNo ?? "-")</td>
                                     <td>
                                         <div class="btn-group btn-group-gap" role="group" style="min-width: 200px;">

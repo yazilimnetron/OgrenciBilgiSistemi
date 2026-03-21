@@ -1,5 +1,4 @@
 ﻿@model OgrenciBilgiSistemi.ViewModels.OgrenciVeliFormVm
-@using OgrenciBilgiSistemi.Models.Enums
 @using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
@@ -16,13 +15,14 @@
     var personeller = Model.Personeller ?? new List<SelectListItem>();
     var birimler = Model.Birimler ?? Enumerable.Empty<SelectListItem>();
     var servisler = Model.Servisler ?? new List<SelectListItem>();
+    var veliKullanicilari = Model.VeliKullanicilari ?? new List<SelectListItem>();
 }
 
 <div class="viewport-scroller">
     <div class="fixed-canvas">
         <div class="container-fluid py-4">
             <div class="row justify-content-center">
-                <div class="col-lg-10 col-xxl-9">
+                <div class="col-lg-11">
                     <div class="card rounded-3 border">
                         <div class="card-header bg-primary text-white text-center">
                             <h4 class="fw-bold mb-0">
@@ -160,9 +160,10 @@
                                             <div class="row g-3">
                                                 <!-- Veli Ad Soyad -->
                                                 <div class="col-md-12">
-                                                    <label asp-for="Veli.VeliAdSoyad" class="form-label fw-semibold"></label>
-                                                    <input asp-for="Veli.VeliAdSoyad" class="form-control" />
-                                                    <span asp-validation-for="Veli.VeliAdSoyad" class="text-danger"></span>
+                                                    <label asp-for="VeliKullaniciId" class="form-label fw-semibold">Veli Ad Soyad</label>
+                                                    <select asp-for="VeliKullaniciId" class="form-select" asp-items="veliKullanicilari" id="veliKullaniciSelect">
+                                                        <option value="">-- Seçiniz --</option>
+                                                    </select>
                                                 </div>
 
                                                 <!-- Telefon -->

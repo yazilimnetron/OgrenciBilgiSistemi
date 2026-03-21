@@ -61,8 +61,9 @@
                         <thead class="bg-dark text-white">
                             <tr class="text-center">
                                 <th class="text-start">Kullanıcı Adı</th>
+                                <th>Rol</th>
+                                <th>Telefon</th>
                                 <th>Durum</th>
-                                <th>Birimi</th>
                                 <th>İşlem</th>
                             </tr>
                         </thead>
@@ -72,11 +73,14 @@
                                 <tr class="text-center">
                                     <td class="text-start fw-semibold text-primary">@s.KullaniciAdi</td>
                                     <td>
+                                        <span class="badge bg-info text-dark">@s.Rol</span>
+                                    </td>
+                                    <td>@(s.Telefon ?? "-")</td>
+                                    <td>
                                         <span class="badge @(s.KullaniciDurum ? "bg-success" : "bg-danger")">
                                             @(s.KullaniciDurum ? "Aktif" : "Pasif")
                                         </span>
                                     </td>
-                                    <td>@(s.Birim?.BirimAd ?? "Birim Yok")</td>
                                     <td>
                                         <div class="btn-group btn-group-gap" role="group" aria-label="İşlemler" style="min-width: 220px;">
                                             <a asp-controller="Kullanicilar" asp-action="Guncelle" asp-route-id="@s.KullaniciId"

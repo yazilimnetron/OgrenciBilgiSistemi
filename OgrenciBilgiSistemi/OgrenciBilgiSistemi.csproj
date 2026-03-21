@@ -48,5 +48,8 @@
     <Folder Include="wwwroot\uploads\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\OgrenciBilgiSistemi.Shared\OgrenciBilgiSistemi.Shared.csproj" />
+  </ItemGroup>
 
 </Project>

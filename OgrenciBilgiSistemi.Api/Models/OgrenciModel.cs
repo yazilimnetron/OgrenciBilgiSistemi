@@ -1,3 +1,5 @@
+using OgrenciBilgiSistemi.Shared.Enums;
+
 namespace OgrenciBilgiSistemi.Api.Models
 {
     public class OgrenciModel
@@ -7,7 +9,7 @@ namespace OgrenciBilgiSistemi.Api.Models
         public int OgrenciNo { get; set; }
         public string? OgrenciGorsel { get; set; }
         public string? OgrenciKartNo { get; set; }
-        public int OgrenciCikisDurumu { get; set; }
+        public OglenCikisDurumu OgrenciCikisDurumu { get; set; }
         public bool OgrenciDurum { get; set; }
         public int? BirimId { get; set; }
         public int? PersonelId { get; set; }

@@ -8,6 +8,13 @@ namespace OgrenciBilgiSistemi.Api.Services
     {
         private readonly string _connectionString;
 
+        // SQL injection'a karşı whitelist: sadece bu sabit değerler SQL'e girer
+        private static readonly Dictionary<int, string> _dersKolonlari = new()
+        {
+            [1] = "Ders1", [2] = "Ders2", [3] = "Ders3", [4] = "Ders4",
+            [5] = "Ders5", [6] = "Ders6", [7] = "Ders7", [8] = "Ders8"
+        };
+
         public OgrenciService(IConfiguration configuration)
         {
             _connectionString = configuration.GetConnectionString("DefaultConnection")
@@ -48,6 +55,46 @@ namespace OgrenciBilgiSistemi.Api.Services
             return ogrenciler;
         }
 
+        public async Task<List<OgrenciModel>> VeliyeGoreOgrencileriGetirAsync(int veliId)
+        {
+            var ogrenciler = new List<OgrenciModel>();
+            try
+            {
+                await using var conn = new SqlConnection(_connectionString);
+                const string query = @"
+                    SELECT O.OgrenciId, O.OgrenciAdSoyad, O.OgrenciGorsel, O.OgrenciNo,
+                           O.BirimId, O.ServisId, B.BirimAd AS SinifAdi
+                    FROM Ogrenciler O
+                    LEFT JOIN Birimler B ON O.BirimId = B.BirimId
+                    WHERE O.OgrenciVeliId = @veliId AND O.OgrenciDurum = 1";
+
+                await using var cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@veliId", veliId);
+                await conn.OpenAsync();
+
+                await using var reader = await cmd.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    string rawFileName = reader["OgrenciGorsel"]?.ToString() ?? string.Empty;
+                    ogrenciler.Add(new OgrenciModel
+                    {
+                        OgrenciId      = (int)reader["OgrenciId"],
+                        OgrenciAdSoyad = reader["OgrenciAdSoyad"]?.ToString() ?? string.Empty,
+                        OgrenciNo      = (int)reader["OgrenciNo"],
+                        OgrenciGorsel  = string.IsNullOrEmpty(rawFileName) ? "user_icon.png" : rawFileName,
+                        BirimId        = reader["BirimId"] as int?,
+                        ServisId       = reader["ServisId"] as int?,
+                        SinifAdi       = reader["SinifAdi"]?.ToString()
+                    });
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new InvalidOperationException("Veliye ait öğrenci listesi alınamadı.", ex);
+            }
+            return ogrenciler;
+        }
+
         public async Task<OgrenciModel?> OgrenciGetirAsync(int ogrenciId)
         {
             try
@@ -84,11 +131,10 @@ namespace OgrenciBilgiSistemi.Api.Services
 
         public async Task<Dictionary<int, int>> MevcutYoklamaGetirAsync(int sinifId, int dersNumarasi)
         {
-            if (dersNumarasi < 1 || dersNumarasi > 8)
+            if (!_dersKolonlari.TryGetValue(dersNumarasi, out var dersKolonu))
                 throw new ArgumentOutOfRangeException(nameof(dersNumarasi), "Ders numarası 1-8 arasında olmalıdır.");
 
             var yoklamaDict = new Dictionary<int, int>();
-            string dersKolonu = $"Ders{dersNumarasi}";
 
             try
             {
@@ -124,10 +170,8 @@ namespace OgrenciBilgiSistemi.Api.Services
             int ogretmenId,
             int dersNumarasi)
         {
-            if (dersNumarasi < 1 || dersNumarasi > 8)
+            if (!_dersKolonlari.TryGetValue(dersNumarasi, out var dersKolonu))
                 throw new ArgumentOutOfRangeException(nameof(dersNumarasi), "Ders numarası 1-8 arasında olmalıdır.");
-
-            string dersKolonu = $"Ders{dersNumarasi}";
 
             await using var conn = new SqlConnection(_connectionString);
             await conn.OpenAsync();

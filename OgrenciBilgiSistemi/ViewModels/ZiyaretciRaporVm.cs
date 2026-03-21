@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
 using OgrenciBilgiSistemi.Dtos;
-using OgrenciBilgiSistemi.Models.Enums;
 
 namespace OgrenciBilgiSistemi.ViewModels
 {

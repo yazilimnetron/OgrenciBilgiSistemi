@@ -25,7 +25,7 @@
             </li>
             <li class="nav-item">
                 <a class="nav-link"
-                   asp-controller="OgrenciAidat"
+                   asp-controller="Aidat"
                    asp-action="Ozet"
                    asp-route-ogrenciId="@ogrenciId"
                    asp-route-yil="@(DateTime.Now.Month >= 9 ? DateTime.Now.Year : DateTime.Now.Year - 1)">Aidat</a>
@@ -34,7 +34,7 @@
 
             <!-- Sağ tarafta yıl seçici -->
             <li class="ms-auto">
-                <form method="get" asp-controller="OgrenciYemekhane" asp-action="Ozet" class="d-flex gap-2">
+                <form method="get" asp-controller="Yemekhane" asp-action="Ozet" class="d-flex gap-2">
                     <input type="hidden" name="ogrenciId" value="@ogrenciId" />
                     <select name="yil" class="form-select form-select-sm w-auto">
                         @foreach (var y in akademikYillar)
@@ -123,7 +123,7 @@
                                     <td>@Money(a.Kalan)</td>
                                     <td class="text-end">
                                         <div class="d-inline-flex gap-2">
-                                            <form method="post" asp-action="AyDurumKaydet" asp-controller="OgrenciYemekhane" class="d-inline-flex gap-2">
+                                            <form method="post" asp-action="AyDurumKaydet" asp-controller="Yemekhane" class="d-inline-flex gap-2">
                                                 @Html.AntiForgeryToken()
                                                 <input type="hidden" name="ogrenciId" value="@ogrenciId" />
                                                 <input type="hidden" name="yil" value="@a.YilGercek" />
@@ -195,7 +195,7 @@
                                                             <td class="text-end">@Money(o.Tutar)</td>
                                                             <td>@(string.IsNullOrWhiteSpace(o.Aciklama) ? "-" : o.Aciklama)</td>
                                                             <td class="text-end">
-                                                                <form method="post" asp-action="OdemeSil" asp-controller="OgrenciYemekhane" class="d-inline">
+                                                                <form method="post" asp-action="OdemeSil" asp-controller="Yemekhane" class="d-inline">
                                                                     @Html.AntiForgeryToken()
                                                                     <input type="hidden" name="ogrenciId" value="@ogrenciId" />
                                                                     <input type="hidden" name="yil" value="@(a.AyGercek >= 9 ? a.YilGercek : a.YilGercek - 1)" />
@@ -219,7 +219,7 @@
                                     </div>
 
                                     <!-- Bu aya hızlı ödeme ekle -->
-                                    <form method="post" asp-action="OdemeEkle" asp-controller="OgrenciYemekhane" class="d-flex flex-wrap gap-2">
+                                    <form method="post" asp-action="OdemeEkle" asp-controller="Yemekhane" class="d-flex flex-wrap gap-2">
                                         @Html.AntiForgeryToken()
                                         <input type="hidden" name="ogrenciId" value="@ogrenciId" />
                                         <input type="hidden" name="yil" value="@a.YilGercek" />
@@ -249,7 +249,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form method="post" asp-action="TarifeKaydet" asp-controller="OgrenciYemekhane">
+                <form method="post" asp-action="TarifeKaydet" asp-controller="Yemekhane">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="ogrenciId" value="@ogrenciId" />
                     <input type="hidden" name="yil" value="@yil" />
@@ -295,7 +295,7 @@
                 </li>
                 <li class="nav-item">
                     <a class="nav-link"
-                       asp-controller="OgrenciAidat"
+                       asp-controller="Aidat"
                        asp-action="Ozet"
                        asp-route-ogrenciId="@ogrenciId"
                        asp-route-yil="@(DateTime.Now.Month >= 9 ? DateTime.Now.Year : DateTime.Now.Year - 1)">Aidat</a>
@@ -304,7 +304,7 @@
 
                 <!-- Akademik yıl seçici -->
                 <li class="ms-auto">
-                    <form method="get" asp-controller="OgrenciYemekhane" asp-action="Ozet" class="d-flex gap-2">
+                    <form method="get" asp-controller="Yemekhane" asp-action="Ozet" class="d-flex gap-2">
                         <input type="hidden" name="ogrenciId" value="@ogrenciId" />
                         <select name="yil" class="form-select form-select-sm w-auto">
                             @foreach (var y in akademikYillar)
@@ -399,7 +399,7 @@
                                         <td>@Money(a.Kalan)</td>
                                         <td class="text-end">
                                             <div class="d-inline-flex gap-2">
-                                                <form method="post" asp-action="AyDurumKaydet" asp-controller="OgrenciYemekhane" class="d-inline-flex gap-2">
+                                                <form method="post" asp-action="AyDurumKaydet" asp-controller="Yemekhane" class="d-inline-flex gap-2">
                                                     @Html.AntiForgeryToken()
                                                     <input type="hidden" name="ogrenciId" value="@ogrenciId" />
                                                     <input type="hidden" name="yil" value="@a.YilGercek" />
@@ -471,7 +471,7 @@
                                                                 <td class="text-end">@Money(o.Tutar)</td>
                                                                 <td>@(string.IsNullOrWhiteSpace(o.Aciklama) ? "-" : o.Aciklama)</td>
                                                                 <td class="text-end">
-                                                                    <form method="post" asp-action="OdemeSil" asp-controller="OgrenciYemekhane" class="d-inline">
+                                                                    <form method="post" asp-action="OdemeSil" asp-controller="Yemekhane" class="d-inline">
                                                                         @Html.AntiForgeryToken()
                                                                         <input type="hidden" name="ogrenciId" value="@ogrenciId" />
                                                                         <input type="hidden" name="yil" value="@(a.AyGercek >= 9 ? a.YilGercek : a.YilGercek - 1)" />
@@ -495,7 +495,7 @@
                                         </div>
 
                                         <!-- Bu aya hızlı ödeme ekle -->
-                                        <form method="post" asp-action="OdemeEkle" asp-controller="OgrenciYemekhane" class="d-flex flex-wrap gap-2">
+                                        <form method="post" asp-action="OdemeEkle" asp-controller="Yemekhane" class="d-flex flex-wrap gap-2">
                                             @Html.AntiForgeryToken()
                                             <input type="hidden" name="ogrenciId" value="@ogrenciId" />
                                             <input type="hidden" name="yil" value="@a.YilGercek" />
@@ -525,7 +525,7 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <form method="post" asp-action="TarifeKaydet" asp-controller="OgrenciYemekhane">
+                <form method="post" asp-action="TarifeKaydet" asp-controller="Yemekhane">
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="ogrenciId" value="@ogrenciId" />
                     <input type="hidden" name="yil" value="@yil" />

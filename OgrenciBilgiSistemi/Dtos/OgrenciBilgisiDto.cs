@@ -1,6 +1,4 @@
-﻿using OgrenciBilgiSistemi.Models.Enums;
-
-namespace OgrenciBilgiSistemi.Dtos
+﻿namespace OgrenciBilgiSistemi.Dtos
 {
     public class OgrenciBilgisiDto
     {

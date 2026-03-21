@@ -1,14 +1,15 @@
 ﻿@model OgrenciBilgiSistemi.Models.PersonelModel
 @using Microsoft.AspNetCore.Mvc.Rendering
-@using OgrenciBilgiSistemi.Models.Enums
 
 @{
     var action = (ViewData["Action"] as string) ?? "Ekle";
     var submitText = (ViewData["SubmitText"] as string) ?? "Kaydet";
-    var includeId = (bool?)ViewData["IncludeId"] ?? false;      
+    var includeId = (bool?)ViewData["IncludeId"] ?? false;
 
     var formId = "personelForm";
     var submitBtnId = "submitBtn";
+
+    var kullanicilar = Model?.Kullanicilar ?? new List<SelectListItem>();
 }
 
 <div class="viewport-scroller">
@@ -36,18 +37,11 @@
 
                                 <!-- Ad Soyad -->
                                 <div class="mb-3">
-                                    <label asp-for="PersonelAdSoyad" class="form-label fw-semibold"></label>
-                                    <input asp-for="PersonelAdSoyad" class="form-control" required />
-                                    <span asp-validation-for="PersonelAdSoyad" class="text-danger"></span>
-                                </div>
-
-                                <!-- Personel Tipi -->
-                                <div class="mb-3">
-                                    <label asp-for="PersonelTipi" class="form-label fw-semibold"></label>
-                                    <select asp-for="PersonelTipi"
-                                            class="form-select"
-                                            asp-items="Html.GetEnumSelectList<PersonelTipi>()"></select>
-                                    <span asp-validation-for="PersonelTipi" class="text-danger"></span>
+                                    <label asp-for="KullaniciId" class="form-label fw-semibold">Ad Soyad</label>
+                                    <select asp-for="KullaniciId" class="form-select" asp-items="kullanicilar" id="kullaniciSelect" required>
+                                        <option value="">-- Seçiniz --</option>
+                                    </select>
+                                    <span asp-validation-for="KullaniciId" class="text-danger"></span>
                                 </div>
 
                                 <!-- Kart No -->

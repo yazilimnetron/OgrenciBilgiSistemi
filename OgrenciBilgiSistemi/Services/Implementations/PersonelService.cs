@@ -5,7 +5,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OgrenciBilgiSistemi.Data;
 using OgrenciBilgiSistemi.Models;
-using OgrenciBilgiSistemi.Models.Enums;
 using OgrenciBilgiSistemi.Services.Interfaces;
 
 namespace OgrenciBilgiSistemi.Services.Implementations
@@ -76,7 +75,6 @@ namespace OgrenciBilgiSistemi.Services.Implementations
 
             entity.PersonelAdSoyad = model.PersonelAdSoyad?.Trim() ?? string.Empty;
             entity.PersonelDurum = model.PersonelDurum;
-            entity.PersonelTipi = model.PersonelTipi;
             entity.BirimId = model.BirimId;
             entity.PersonelEmail = model.PersonelEmail;
             entity.PersonelTelefon = model.PersonelTelefon;
@@ -123,7 +121,6 @@ namespace OgrenciBilgiSistemi.Services.Implementations
         }
 
         public async Task<List<SelectListItem>> GetSelectListAsync(
-            PersonelTipi? tipi = null,
             PersonelFiltre filtre = PersonelFiltre.Aktif,
             CancellationToken ct = default)
         {
@@ -134,9 +131,6 @@ namespace OgrenciBilgiSistemi.Services.Implementations
                 bool aktifMi = filtre == PersonelFiltre.Aktif;
                 q = q.Where(b => b.PersonelDurum == aktifMi);
             }
-
-            if (tipi.HasValue)
-                q = q.Where(p => p.PersonelTipi == tipi.Value);
 
             return await q
                 .OrderBy(p => p.PersonelAdSoyad)

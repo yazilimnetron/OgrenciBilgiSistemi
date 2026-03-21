@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using OgrenciBilgiSistemi.Models;
-using OgrenciBilgiSistemi.Models.Enums;
 using OgrenciBilgiSistemi.Services.Interfaces;
 using OgrenciBilgiSistemi.ViewModels;
 
@@ -32,7 +31,6 @@ namespace OgrenciBilgiSistemi.Controllers
             CancellationToken ct)
         {
             var list = await _personelService.GetSelectListAsync(
-                tipi: null,
                 filtre: PersonelFiltre.Aktif,
                 ct: ct);
 

@@ -9,16 +9,16 @@ using System.Globalization;
 namespace OgrenciBilgiSistemi.Controllers
 {
     [Route("[controller]")]
-    public class OgrenciAidatController : Controller
+    public class AidatController : Controller
     {
         private readonly IAidatService _aidatService;
         private readonly IBirimService _birimService;
-        private readonly ILogger<OgrenciAidatController> _logger;
+        private readonly ILogger<AidatController> _logger;
 
-        public OgrenciAidatController(
+        public AidatController(
             IAidatService aidatService,
             IBirimService birimService,
-            ILogger<OgrenciAidatController> logger)
+            ILogger<AidatController> logger)
         {
             _aidatService = aidatService;
             _birimService = birimService;

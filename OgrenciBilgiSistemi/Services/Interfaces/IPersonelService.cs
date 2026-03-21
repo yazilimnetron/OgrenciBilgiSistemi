@@ -1,7 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using OgrenciBilgiSistemi.Models;
-using OgrenciBilgiSistemi.Models.Enums;
 
 namespace OgrenciBilgiSistemi.Services.Interfaces
 {
@@ -13,7 +12,6 @@ namespace OgrenciBilgiSistemi.Services.Interfaces
         Task<bool> CihazaGonderAsync(int cihazId, bool sadeceAktifler = true, CancellationToken ct = default);
 
         Task<List<SelectListItem>> GetSelectListAsync(
-            PersonelTipi? tipi = null,
             PersonelFiltre filtre = PersonelFiltre.Aktif,
             CancellationToken ct = default);
 

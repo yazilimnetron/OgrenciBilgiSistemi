@@ -4,7 +4,6 @@ using Microsoft.EntityFrameworkCore;
 using OgrenciBilgiSistemi.Data;
 using OgrenciBilgiSistemi.Dtos;
 using OgrenciBilgiSistemi.Models;
-using OgrenciBilgiSistemi.Models.Enums;
 using OgrenciBilgiSistemi.Services.Interfaces;
 using OgrenciBilgiSistemi.ViewModels;
 
@@ -19,6 +18,7 @@ namespace OgrenciBilgiSistemi.Controllers
         private readonly IYemekhaneService _yemekhaneService;
         private readonly IBirimService _birimService;
         private readonly IPersonelService _personelService;
+        private readonly IKullaniciService _kullaniciService;
 
         public OgrencilerController(
             AppDbContext context,
@@ -27,7 +27,8 @@ namespace OgrenciBilgiSistemi.Controllers
             IOgrenciVeliService ogrenciVeliService,
             IYemekhaneService yemekhaneService,
             IBirimService birimService,
-            IPersonelService personelService)
+            IPersonelService personelService,
+            IKullaniciService kullaniciService)
         {
             _context = context;
             _logger = logger;
@@ -36,6 +37,7 @@ namespace OgrenciBilgiSistemi.Controllers
             _yemekhaneService = yemekhaneService;
             _birimService = birimService;
             _personelService = personelService;
+            _kullaniciService = kullaniciService;
         }
 
         #region Index
@@ -94,10 +96,16 @@ namespace OgrenciBilgiSistemi.Controllers
             bool? buAyYemekhaneAktif,
             CancellationToken ct = default)
         {
-            var personeller = await _personelService.GetSelectListAsync(
-                PersonelTipi.Ogretmen,
-                PersonelFiltre.Aktif,
-                ct);
+            var personeller = await _context.Kullanicilar
+                .AsNoTracking()
+                .Where(k => k.KullaniciDurum && k.Rol == KullaniciRolu.Ogretmen && k.PersonelId != null)
+                .OrderBy(k => k.KullaniciAdi)
+                .Select(k => new Microsoft.AspNetCore.Mvc.Rendering.SelectListItem
+                {
+                    Value = k.PersonelId.ToString(),
+                    Text = k.KullaniciAdi
+                })
+                .ToListAsync(ct);
 
             var birimler = await _birimService.GetSelectListAsync(
                 selectedId: ogrenci?.BirimId,
@@ -116,6 +124,9 @@ namespace OgrenciBilgiSistemi.Controllers
                 })
                 .ToListAsync(ct);
 
+            var veliKullanicilari = await _kullaniciService.GetKullanicilarByRolSelectListAsync(
+                KullaniciRolu.Veli, ct);
+
             return new OgrenciVeliFormVm
             {
                 Ogrenci = ogrenci ?? new OgrenciModel(),
@@ -124,6 +135,7 @@ namespace OgrenciBilgiSistemi.Controllers
                 Personeller = personeller,
                 Birimler = birimler,
                 Servisler = servisler,
+                VeliKullanicilari = veliKullanicilari,
                 Action = action,
                 SubmitText = submitText,
                 IncludeId = includeId
@@ -173,6 +185,14 @@ namespace OgrenciBilgiSistemi.Controllers
 
             try
             {
+                // Kullanıcı hesabı seçildiyse VeliAdSoyad'ı kullanıcı adından doldur
+                if (model.VeliKullaniciId.HasValue)
+                {
+                    var veliKullanici = await _context.Kullanicilar.FindAsync([model.VeliKullaniciId.Value], ct);
+                    if (veliKullanici != null)
+                        model.Veli.VeliAdSoyad = veliKullanici.KullaniciAdi;
+                }
+
                 int? veliId = null;
 
                 if (!string.IsNullOrWhiteSpace(model.Veli.VeliAdSoyad))
@@ -189,6 +209,17 @@ namespace OgrenciBilgiSistemi.Controllers
                     model.Ogrenci.OgrenciGorselFile,
                     model.BuAyYemekhaneAktif ?? false,
                     ct);
+
+                // Kullanıcı-Veli bağlantısını kur
+                if (model.VeliKullaniciId.HasValue && veliId.HasValue)
+                {
+                    var veliKullanici = await _context.Kullanicilar.FindAsync([model.VeliKullaniciId.Value], ct);
+                    if (veliKullanici != null)
+                    {
+                        veliKullanici.OgrenciVeliId = veliId.Value;
+                        await _context.SaveChangesAsync(ct);
+                    }
+                }
 
                 return RedirectToAction(nameof(Index));
             }
@@ -237,6 +268,14 @@ namespace OgrenciBilgiSistemi.Controllers
                 buAyYemekhaneAktif: buAyYemekhaneAktif,
                 ct: ct);
 
+            // Mevcut veli-kullanıcı bağlantısını bul
+            if (veli != null)
+            {
+                var bagliKullanici = await _context.Kullanicilar
+                    .FirstOrDefaultAsync(k => k.OgrenciVeliId == veli.OgrenciVeliId && k.KullaniciDurum, ct);
+                vm.VeliKullaniciId = bagliKullanici?.KullaniciId;
+            }
+
             return View("OgrenciVeliForm", vm);
         }
 
@@ -266,6 +305,14 @@ namespace OgrenciBilgiSistemi.Controllers
 
             try
             {
+                // Kullanıcı hesabı seçildiyse VeliAdSoyad'ı kullanıcı adından doldur
+                if (model.VeliKullaniciId.HasValue)
+                {
+                    var veliKullanici = await _context.Kullanicilar.FindAsync([model.VeliKullaniciId.Value], ct);
+                    if (veliKullanici != null)
+                        model.Veli.VeliAdSoyad = veliKullanici.KullaniciAdi;
+                }
+
                 var existingOgrenci = await _context.Ogrenciler
                     .AsNoTracking()
                     .FirstOrDefaultAsync(o => o.OgrenciId == id, ct);
