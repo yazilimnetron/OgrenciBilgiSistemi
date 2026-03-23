@@ -1,4 +1,4 @@
-@model OgrenciBilgiSistemi.Models.ServisModel
+@model OgrenciBilgiSistemi.Models.ServisProfilModel
 @using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
@@ -30,7 +30,7 @@
 
                                 @if (includeId)
                                 {
-                                    <input type="hidden" asp-for="ServisId" />
+                                    <input type="hidden" asp-for="KullaniciId" />
                                 }
 
                                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>

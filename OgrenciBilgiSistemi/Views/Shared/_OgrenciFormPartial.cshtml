@@ -15,7 +15,6 @@
     var ogretmenler = Model.Ogretmenler ?? new List<SelectListItem>();
     var birimler = Model.Birimler ?? Enumerable.Empty<SelectListItem>();
     var servisler = Model.Servisler ?? new List<SelectListItem>();
-    var veliKullanicilari = Model.VeliKullanicilari ?? new List<SelectListItem>();
     var veliler = Model.Veliler ?? new List<SelectListItem>();
 }
 
@@ -165,6 +164,7 @@
                                                     <select asp-for="Ogrenci.VeliId" class="form-select" asp-items="veliler" id="veliSelect">
                                                         <option value="">-- Seçiniz --</option>
                                                     </select>
+                                                    <input type="hidden" asp-for="Veli.VeliAdSoyad" id="veliAdSoyadHidden" />
                                                 </div>
 
                                                 <!-- Telefon -->
@@ -239,3 +239,21 @@
         </div> <!-- /container-fluid -->
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var sel = document.getElementById('veliSelect');
+            var hidden = document.getElementById('veliAdSoyadHidden');
+            if (!sel || !hidden) return;
+
+            function syncAdSoyad() {
+                var opt = sel.options[sel.selectedIndex];
+                hidden.value = (opt && opt.value) ? opt.text : '';
+            }
+
+            sel.addEventListener('change', syncAdSoyad);
+            syncAdSoyad(); // sayfa açıldığında mevcut seçimi yaz
+        })();
+    </script>
+}

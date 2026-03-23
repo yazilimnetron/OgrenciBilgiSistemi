@@ -20,6 +20,7 @@ namespace OgrenciBilgiSistemi.Services.Interfaces
 
         Task<List<SelectListItem>> GetPersonellerSelectListAsync(CancellationToken ct = default);
         Task<List<SelectListItem>> GetServislerSelectListAsync(CancellationToken ct = default);
+        Task<List<SelectListItem>> GetSoforlerSelectListAsync(int? selectedId = null, CancellationToken ct = default);
         Task<List<SelectListItem>> GetBirimlerSelectListAsync(CancellationToken ct = default);
         Task<List<SelectListItem>> GetKullanicilarByRolSelectListAsync(KullaniciRolu rol, CancellationToken ct = default);
 

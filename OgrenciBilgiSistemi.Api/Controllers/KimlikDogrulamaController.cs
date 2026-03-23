@@ -52,8 +52,8 @@ namespace OgrenciBilgiSistemi.Api.Controllers
                     kullanici.KullaniciAdi,
                     kullanici.KullaniciDurum,
                     kullanici.Rol,
-                    kullanici.ServisId,
-                    kullanici.OgrenciVeliId
+                    kullanici.VeliProfilVar,
+                    kullanici.ServisProfilVar
                 }
             });
         }
@@ -86,11 +86,11 @@ namespace OgrenciBilgiSistemi.Api.Controllers
                 new("rol",         rolAdi)
             };
 
-            if (kullanici.ServisId.HasValue)
-                claims.Add(new Claim("servisId", kullanici.ServisId.Value.ToString()));
+            if (kullanici.Rol == KullaniciRolu.Sofor)
+                claims.Add(new Claim("servisId", kullanici.KullaniciId.ToString()));
 
-            if (kullanici.OgrenciVeliId.HasValue)
-                claims.Add(new Claim("veliId", kullanici.OgrenciVeliId.Value.ToString()));
+            if (kullanici.Rol == KullaniciRolu.Veli)
+                claims.Add(new Claim("veliId", kullanici.KullaniciId.ToString()));
 
             var token = new JwtSecurityToken(
                 issuer:             _configuration["Jwt:Issuer"],

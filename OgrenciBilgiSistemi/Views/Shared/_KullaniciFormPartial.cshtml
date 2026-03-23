@@ -1,4 +1,4 @@
-﻿@model OgrenciBilgiSistemi.Models.KullaniciModel
+@model OgrenciBilgiSistemi.Models.KullaniciModel
 @using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
@@ -10,7 +10,7 @@
     var submitBtnId = "submitBtn";
 
     var servisler = Model?.Servisler ?? new List<SelectListItem>();
-    var birimler = Model?.Birimler ?? new List<SelectListItem>();
+    var birimler = ViewBag.Birimler as List<SelectListItem> ?? new List<SelectListItem>();
 
     var adminRolDegeri = (int)OgrenciBilgiSistemi.Shared.Enums.KullaniciRolu.Admin;
 
@@ -91,41 +91,35 @@
                                     <span asp-validation-for="Telefon" class="text-danger"></span>
                                 </div>
 
-                                <!-- Personel Alanları (Rol = Öğretmen veya Admin olduğunda görünür) -->
-                                <div id="personelAlanlari" style="display:none;">
+                                <!-- Öğretmen Profil Alanları (Rol = Öğretmen olduğunda görünür) -->
+                                <div id="ogretmenAlanlari" style="display:none;">
                                     <div class="mb-3">
-                                        <label asp-for="KartNo" class="form-label fw-semibold">Kart No</label>
-                                        <input asp-for="KartNo" class="form-control" placeholder="Kart numarası" />
-                                        <span asp-validation-for="KartNo" class="text-danger"></span>
+                                        <label asp-for="OgretmenProfil.Email" class="form-label fw-semibold">E-posta</label>
+                                        <input asp-for="OgretmenProfil.Email" class="form-control" placeholder="ornek@email.com" />
+                                        <span asp-validation-for="OgretmenProfil.Email" class="text-danger"></span>
                                     </div>
 
                                     <div class="mb-3">
-                                        <label asp-for="Email" class="form-label fw-semibold">E-posta</label>
-                                        <input asp-for="Email" class="form-control" placeholder="ornek@email.com" />
-                                        <span asp-validation-for="Email" class="text-danger"></span>
-                                    </div>
-
-                                    <div class="mb-3">
-                                        <label asp-for="BirimId" class="form-label fw-semibold">Birim</label>
-                                        <select asp-for="BirimId" class="form-select" asp-items="birimler">
+                                        <label asp-for="OgretmenProfil.BirimId" class="form-label fw-semibold">Birim</label>
+                                        <select asp-for="OgretmenProfil.BirimId" class="form-select" asp-items="birimler">
                                             <option value="">-- Birim Seçiniz --</option>
                                         </select>
-                                        <span asp-validation-for="BirimId" class="text-danger"></span>
+                                        <span asp-validation-for="OgretmenProfil.BirimId" class="text-danger"></span>
                                     </div>
 
                                     <div class="mb-3">
-                                        <label asp-for="GorselFile" class="form-label fw-semibold">Fotoğraf</label>
-                                        @if (!string.IsNullOrWhiteSpace(Model?.GorselPath))
+                                        <label asp-for="OgretmenProfil.GorselFile" class="form-label fw-semibold">Fotoğraf</label>
+                                        @if (!string.IsNullOrWhiteSpace(Model?.OgretmenProfil?.GorselPath))
                                         {
                                             <div class="mb-2">
-                                                <img src="@Url.Content(Model.GorselPath)"
+                                                <img src="@Url.Content(Model.OgretmenProfil.GorselPath)"
                                                      alt="Mevcut Fotoğraf"
                                                      class="img-thumbnail d-block"
                                                      style="max-height:80px;" />
                                             </div>
                                         }
-                                        <input asp-for="GorselFile" type="file" class="form-control" accept=".jpg,.jpeg,.png" />
-                                        <span asp-validation-for="GorselFile" class="text-danger"></span>
+                                        <input asp-for="OgretmenProfil.GorselFile" type="file" class="form-control" accept=".jpg,.jpeg,.png" />
+                                        <span asp-validation-for="OgretmenProfil.GorselFile" class="text-danger"></span>
                                     </div>
                                 </div>
 
@@ -166,13 +160,13 @@
             const ADMIN_ROL = '@adminRolDegeri';
 
             const rolSelect = document.getElementById('Rol');
-            const personelAlanlari = document.getElementById('personelAlanlari');
+            const ogretmenAlanlari = document.getElementById('ogretmenAlanlari');
             const servisAlani = document.getElementById('servisSecimAlani');
 
             function rolDegisti() {
                 if (!rolSelect) return;
                 const val = rolSelect.value;
-                if (personelAlanlari) personelAlanlari.style.display = (val === OGRETMEN_ROL || val === ADMIN_ROL) ? '' : 'none';
+                if (ogretmenAlanlari) ogretmenAlanlari.style.display = (val === OGRETMEN_ROL) ? '' : 'none';
                 if (servisAlani) servisAlani.style.display = (val === SOFOR_ROL) ? '' : 'none';
             }
 

@@ -6,7 +6,7 @@ namespace OgrenciBilgiSistemi.ViewModels
     public class OgrenciVeliFormVm
     {
         public OgrenciModel Ogrenci { get; set; } = new();
-        public OgrenciVeliModel Veli { get; set; } = new();
+        public VeliProfilModel Veli { get; set; } = new();
 
         // Yemekhane (bu ay)
         public bool? BuAyYemekhaneAktif { get; set; } = true;

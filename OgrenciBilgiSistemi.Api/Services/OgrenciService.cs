@@ -101,7 +101,7 @@ namespace OgrenciBilgiSistemi.Api.Services
             {
                 await using var conn = new SqlConnection(_connectionString);
                 const string query = @"
-                    SELECT OgrenciId, OgrenciAdSoyad, OgrenciGorsel, BirimId, VeliId
+                    SELECT OgrenciId, OgrenciAdSoyad, OgrenciGorsel, BirimId, VeliId, ServisId
                     FROM Ogrenciler
                     WHERE OgrenciId = @ogrenciId AND OgrenciDurum = 1";
 
@@ -118,7 +118,8 @@ namespace OgrenciBilgiSistemi.Api.Services
                         OgrenciAdSoyad = reader["OgrenciAdSoyad"]?.ToString() ?? string.Empty,
                         OgrenciGorsel  = reader["OgrenciGorsel"]?.ToString(),
                         BirimId        = reader["BirimId"]       as int?,
-                        VeliId         = reader["VeliId"] as int?
+                        VeliId         = reader["VeliId"] as int?,
+                        ServisId       = reader["ServisId"] as int?
                     };
                 }
             }
@@ -222,9 +223,9 @@ namespace OgrenciBilgiSistemi.Api.Services
                         t.KullaniciAdi AS OgretmenAdSoyad, srv.Plaka
                     FROM Ogrenciler s
                     LEFT JOIN Birimler          u   ON s.BirimId        = u.BirimId
-                    LEFT JOIN OgrenciVeliler    p   ON s.VeliId         = p.OgrenciVeliId
+                    LEFT JOIN VeliProfiller      p   ON s.VeliId         = p.KullaniciId
                     LEFT JOIN Kullanicilar      t   ON s.OgretmenId     = t.KullaniciId
-                    LEFT JOIN Servisler         srv ON s.ServisId       = srv.ServisId
+                    LEFT JOIN ServisProfiller    srv ON s.ServisId       = srv.KullaniciId
                     WHERE s.OgrenciId = @ogrenciId";
 
                 await using var cmd = new SqlCommand(query, conn);
@@ -365,55 +366,5 @@ namespace OgrenciBilgiSistemi.Api.Services
             }
         }
 
-        public async Task<List<SinifYoklamaModel>> HaftalikYoklamaGetirAsync(
-            int ogrenciId, DateTime baslangic, DateTime bitis)
-        {
-            var kayitlar = new List<SinifYoklamaModel>();
-            try
-            {
-                await using var conn = new SqlConnection(_connectionString);
-                const string query = @"
-                    SELECT
-                        SinifYoklamaId, OgrenciId, KullaniciId,
-                        Ders1, Ders2, Ders3, Ders4, Ders5, Ders6, Ders7, Ders8,
-                        OlusturulmaTarihi
-                    FROM SinifYoklama
-                    WHERE OgrenciId = @ogrenciId
-                      AND CAST(OlusturulmaTarihi AS DATE) >= @baslangic
-                      AND CAST(OlusturulmaTarihi AS DATE) <= @bitis
-                    ORDER BY OlusturulmaTarihi ASC";
-
-                await using var cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@ogrenciId", ogrenciId);
-                cmd.Parameters.AddWithValue("@baslangic", baslangic.Date);
-                cmd.Parameters.AddWithValue("@bitis",     bitis.Date);
-                await conn.OpenAsync();
-
-                await using var reader = await cmd.ExecuteReaderAsync();
-                while (await reader.ReadAsync())
-                {
-                    kayitlar.Add(new SinifYoklamaModel
-                    {
-                        SinifYoklamaId    = (int)reader["SinifYoklamaId"],
-                        OgrenciId         = (int)reader["OgrenciId"],
-                        KullaniciId       = (int)reader["KullaniciId"],
-                        Ders1             = reader["Ders1"] as int?,
-                        Ders2             = reader["Ders2"] as int?,
-                        Ders3             = reader["Ders3"] as int?,
-                        Ders4             = reader["Ders4"] as int?,
-                        Ders5             = reader["Ders5"] as int?,
-                        Ders6             = reader["Ders6"] as int?,
-                        Ders7             = reader["Ders7"] as int?,
-                        Ders8             = reader["Ders8"] as int?,
-                        OlusturulmaTarihi = Convert.ToDateTime(reader["OlusturulmaTarihi"])
-                    });
-                }
-            }
-            catch (SqlException ex)
-            {
-                throw new InvalidOperationException("Haftalık yoklama alınamadı.", ex);
-            }
-            return kayitlar;
-        }
     }
 }

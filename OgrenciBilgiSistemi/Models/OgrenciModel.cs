@@ -31,7 +31,7 @@ namespace OgrenciBilgiSistemi.Models
         [ForeignKey(nameof(VeliId))]
         [ValidateNever]
         [Display(Name = "Veli")]
-        public virtual OgrenciVeliModel? Veli { get; set; }
+        public virtual KullaniciModel? Veli { get; set; }
 
         [Display(Name = "Öğle Çıkış")]
         public OglenCikisDurumu OgrenciCikisDurumu { get; set; } = OglenCikisDurumu.Hayir;
@@ -61,7 +61,7 @@ namespace OgrenciBilgiSistemi.Models
         [ForeignKey(nameof(ServisId))]
         [ValidateNever]
         [Display(Name = "Servis")]
-        public virtual ServisModel? Servis { get; set; }
+        public virtual KullaniciModel? Sofor { get; set; }
 
         [Display(Name = "Fotoğraf")]
         public string? OgrenciGorsel { get; set; }

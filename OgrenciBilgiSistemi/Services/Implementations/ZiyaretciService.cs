@@ -189,7 +189,6 @@ namespace OgrenciBilgiSistemi.Services.Implementations
         {
             var q = _db.Ziyaretciler
                 .Include(z => z.Kullanici)
-                    .ThenInclude(k => k!.Birim)
                 .AsNoTracking()
                 .AsQueryable();
 
@@ -243,8 +242,8 @@ namespace OgrenciBilgiSistemi.Services.Implementations
 
                     KullaniciId = z.KullaniciId,
                     KullaniciAdi = z.Kullanici != null ? z.Kullanici.KullaniciAdi : null,
-                    BirimAd = z.Kullanici != null && z.Kullanici.Birim != null
-                        ? z.Kullanici.Birim.BirimAd
+                    BirimAd = z.Kullanici != null && z.Kullanici.OgretmenProfil != null && z.Kullanici.OgretmenProfil.Birim != null
+                        ? z.Kullanici.OgretmenProfil.Birim.BirimAd
                         : null,
 
                     ZiyaretSebebi = z.ZiyaretSebebi,
@@ -284,8 +283,8 @@ namespace OgrenciBilgiSistemi.Services.Implementations
                     z.Telefon,
                     z.Adres,
                     KullaniciAdi = z.Kullanici != null ? z.Kullanici.KullaniciAdi : null,
-                    BirimAd = z.Kullanici != null && z.Kullanici.Birim != null
-                        ? z.Kullanici.Birim.BirimAd
+                    BirimAd = z.Kullanici != null && z.Kullanici.OgretmenProfil != null && z.Kullanici.OgretmenProfil.Birim != null
+                        ? z.Kullanici.OgretmenProfil.Birim.BirimAd
                         : null,
                     z.ZiyaretSebebi,
                     z.KartNo,

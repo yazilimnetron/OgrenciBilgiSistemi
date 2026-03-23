@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -29,45 +29,25 @@ namespace OgrenciBilgiSistemi.Models
         [RegularExpression(@"^\d{10,15}$", ErrorMessage = "Telefon numarası yalnızca rakamlardan oluşmalıdır!")]
         public string? Telefon { get; set; }
 
-        [StringLength(30, ErrorMessage = "En fazla 30 karakter yazabilirsiniz!")]
-        [Display(Name = "Kart No")]
-        public string? KartNo { get; set; }
-
-        [Display(Name = "Fotoğraf")]
-        public string? GorselPath { get; set; }
-
-        [Display(Name = "Birimi")]
-        public int? BirimId { get; set; }
-
-        [ForeignKey(nameof(BirimId))]
-        [ValidateNever]
-        [Display(Name = "Birimi")]
-        public virtual BirimModel? Birim { get; set; }
-
-        [StringLength(120)]
-        [EmailAddress(ErrorMessage = "Geçerli bir e-posta adresi giriniz!")]
-        [Display(Name = "E-posta")]
-        public string? Email { get; set; }
-
         [NotMapped]
         public int? ServisId { get; set; }
 
         [NotMapped]
         [ValidateNever]
-        [Display(Name = "Fotoğraf Yükle")]
-        public IFormFile? GorselFile { get; set; }
-
-        [NotMapped]
-        [ValidateNever]
         public List<SelectListItem> Servisler { get; set; } = new();
-
-        [NotMapped]
-        [ValidateNever]
-        public List<SelectListItem> Birimler { get; set; } = new();
 
         public ICollection<KullaniciMenuModel> KullaniciMenuler { get; set; } = new List<KullaniciMenuModel>();
 
         // Navigasyon koleksiyonları
+        [ValidateNever]
+        public virtual VeliProfilModel? VeliProfil { get; set; }
+
+        [ValidateNever]
+        public virtual ServisProfilModel? ServisProfil { get; set; }
+
+        [ValidateNever]
+        public virtual OgretmenProfilModel? OgretmenProfil { get; set; }
+
         [ValidateNever]
         public virtual List<OgrenciModel> Ogrenciler { get; set; } = new();
 

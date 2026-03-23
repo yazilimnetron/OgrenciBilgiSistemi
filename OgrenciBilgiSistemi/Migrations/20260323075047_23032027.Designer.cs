@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using OgrenciBilgiSistemi.Data;
 
@@ -11,9 +12,11 @@ using OgrenciBilgiSistemi.Data;
 namespace OgrenciBilgiSistemi.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260323075047_23032027")]
+    partial class _23032027
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -180,6 +183,20 @@ namespace OgrenciBilgiSistemi.Migrations
                     b.Property<bool>("BeniHatirla")
                         .HasColumnType("bit");
 
+                    b.Property<int?>("BirimId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Email")
+                        .HasMaxLength(120)
+                        .HasColumnType("nvarchar(120)");
+
+                    b.Property<string>("GorselPath")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("KartNo")
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
                     b.Property<string>("KullaniciAdi")
                         .IsRequired()
                         .HasColumnType("nvarchar(450)");
@@ -199,6 +216,13 @@ namespace OgrenciBilgiSistemi.Migrations
                         .HasColumnType("nvarchar(15)");
 
                     b.HasKey("KullaniciId");
+
+                    b.HasIndex("BirimId");
+
+                    b.HasIndex("KartNo")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Kullanicilar_KartNo")
+                        .HasFilter("[KartNo] IS NOT NULL AND [KartNo] != ''");
 
                     b.HasIndex("KullaniciAdi")
                         .IsUnique()
@@ -252,7 +276,7 @@ namespace OgrenciBilgiSistemi.Migrations
                         new
                         {
                             Id = 2,
-                            Baslik = "Öğretmenler",
+                            Baslik = "Birimler",
                             Sirala = 2
                         },
                         new
@@ -267,191 +291,182 @@ namespace OgrenciBilgiSistemi.Migrations
                         new
                         {
                             Id = 4,
-                            Action = "Index",
-                            AnaMenuId = 2,
-                            Baslik = "Öğretmen İşlemleri",
-                            Controller = "Ogretmenler",
-                            Sirala = 2
-                        },
-                        new
-                        {
-                            Id = 5,
                             Baslik = "Öğrenciler",
                             Sirala = 3
                         },
                         new
                         {
-                            Id = 6,
+                            Id = 5,
                             Action = "Index",
-                            AnaMenuId = 5,
+                            AnaMenuId = 4,
                             Baslik = "Öğrenci İşlemleri",
                             Controller = "Ogrenciler",
                             Sirala = 1
                         },
                         new
                         {
-                            Id = 7,
+                            Id = 6,
                             Action = "Index",
-                            AnaMenuId = 5,
+                            AnaMenuId = 4,
                             Baslik = "Aidat İşlemleri",
                             Controller = "Aidat",
                             Sirala = 2
                         },
                         new
                         {
-                            Id = 8,
+                            Id = 7,
                             Action = "Index",
-                            AnaMenuId = 5,
+                            AnaMenuId = 4,
                             Baslik = "Yemekhane İşlemleri",
                             Controller = "Yemekhane",
                             Sirala = 3
                         },
                         new
                         {
-                            Id = 9,
+                            Id = 8,
                             Baslik = "Ziyaretçiler",
                             Sirala = 4
                         },
                         new
                         {
-                            Id = 10,
+                            Id = 9,
                             Action = "Index",
-                            AnaMenuId = 9,
+                            AnaMenuId = 8,
                             Baslik = "Ziyaretçi İşlemleri",
                             Controller = "Ziyaretciler",
                             Sirala = 1
                         },
                         new
                         {
-                            Id = 11,
+                            Id = 10,
                             Baslik = "Kullanıcılar",
                             Sirala = 5
                         },
                         new
                         {
-                            Id = 12,
+                            Id = 11,
                             Action = "Index",
-                            AnaMenuId = 11,
+                            AnaMenuId = 10,
                             Baslik = "Kullanıcı Listesi",
                             Controller = "Kullanicilar",
                             Sirala = 1
                         },
                         new
                         {
-                            Id = 13,
+                            Id = 12,
                             Baslik = "Kitaplar",
                             Sirala = 6
                         },
                         new
                         {
-                            Id = 14,
+                            Id = 13,
                             Action = "Index",
-                            AnaMenuId = 13,
+                            AnaMenuId = 12,
                             Baslik = "Kitap Listesi",
                             Controller = "Kitaplar",
                             Sirala = 1
                         },
                         new
                         {
-                            Id = 15,
+                            Id = 14,
                             Action = "Index",
-                            AnaMenuId = 13,
+                            AnaMenuId = 12,
                             Baslik = "Kitap Hareketleri",
                             Controller = "KitapDetaylar",
                             Sirala = 2
                         },
                         new
                         {
-                            Id = 16,
+                            Id = 15,
                             Baslik = "Cihazlar",
                             Sirala = 7
                         },
                         new
                         {
-                            Id = 17,
+                            Id = 16,
                             Action = "Index",
-                            AnaMenuId = 16,
+                            AnaMenuId = 15,
                             Baslik = "Cihaz Listesi",
                             Controller = "Cihazlar",
                             Sirala = 1
                         },
                         new
                         {
-                            Id = 18,
+                            Id = 17,
                             Baslik = "Raporlar",
                             Sirala = 8
                         },
                         new
                         {
-                            Id = 19,
+                            Id = 18,
                             Action = "Detay",
-                            AnaMenuId = 18,
+                            AnaMenuId = 17,
                             Baslik = "Öğrenci Giriş Çıkış Raporları",
                             Controller = "OgrenciGirisCikis",
                             Sirala = 1
                         },
                         new
                         {
-                            Id = 20,
+                            Id = 19,
                             Action = "OgrenciVeliRapor",
-                            AnaMenuId = 18,
+                            AnaMenuId = 17,
                             Baslik = "Öğrenci Veli Raporu",
                             Controller = "Ogrenciler",
                             Sirala = 2
                         },
                         new
                         {
-                            Id = 21,
+                            Id = 20,
                             Action = "AidatRapor",
-                            AnaMenuId = 18,
+                            AnaMenuId = 17,
                             Baslik = "Öğrenci Aidat Raporu",
                             Controller = "Aidat",
                             Sirala = 3
                         },
                         new
                         {
-                            Id = 22,
+                            Id = 21,
                             Action = "ZiyaretciRapor",
-                            AnaMenuId = 18,
+                            AnaMenuId = 17,
                             Baslik = "Öğrenci Ziyaretçi Raporu",
                             Controller = "Ziyaretciler",
                             Sirala = 4
                         },
                         new
                         {
-                            Id = 23,
+                            Id = 22,
                             Action = "YemekRapor",
-                            AnaMenuId = 18,
+                            AnaMenuId = 17,
                             Baslik = "Öğrenci Yemek Raporu",
                             Controller = "Yemekhane",
                             Sirala = 5
                         },
                         new
                         {
-                            Id = 24,
-                            Baslik = "Kart Oku",
+                            Id = 23,
+                            Baslik = "KartOku",
                             Sirala = 9
                         },
                         new
                         {
-                            Id = 25,
+                            Id = 24,
                             Action = "Index",
-                            AnaMenuId = 24,
+                            AnaMenuId = 23,
                             Baslik = "Kart Okuma Ekranı",
                             Controller = "KartOku",
                             Sirala = 1
                         },
                         new
                         {
-                            Id = 26,
+                            Id = 25,
                             Baslik = "Servisler",
                             Sirala = 10
                         },
                         new
                         {
-                            Id = 27,
+                            Id = 26,
                             Action = "Index",
-                            AnaMenuId = 26,
+                            AnaMenuId = 25,
                             Baslik = "Servis Listesi",
                             Controller = "Servisler",
                             Sirala = 1
@@ -770,31 +785,6 @@ namespace OgrenciBilgiSistemi.Migrations
                     b.ToTable("OgrenciYemekTarifeler");
                 });
 
-            modelBuilder.Entity("OgrenciBilgiSistemi.Models.OgretmenProfilModel", b =>
-                {
-                    b.Property<int>("KullaniciId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("BirimId")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Email")
-                        .HasMaxLength(120)
-                        .HasColumnType("nvarchar(120)");
-
-                    b.Property<string>("GorselPath")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<bool>("OgretmenDurum")
-                        .HasColumnType("bit");
-
-                    b.HasKey("KullaniciId");
-
-                    b.HasIndex("BirimId");
-
-                    b.ToTable("OgretmenProfiller");
-                });
-
             modelBuilder.Entity("OgrenciBilgiSistemi.Models.ServisProfilModel", b =>
                 {
                     b.Property<int>("KullaniciId")
@@ -1086,6 +1076,16 @@ namespace OgrenciBilgiSistemi.Migrations
                     b.Navigation("MenuOge");
                 });
 
+            modelBuilder.Entity("OgrenciBilgiSistemi.Models.KullaniciModel", b =>
+                {
+                    b.HasOne("OgrenciBilgiSistemi.Models.BirimModel", "Birim")
+                        .WithMany("Kullanicilar")
+                        .HasForeignKey("BirimId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Birim");
+                });
+
             modelBuilder.Entity("OgrenciBilgiSistemi.Models.MenuOgeModel", b =>
                 {
                     b.HasOne("OgrenciBilgiSistemi.Models.MenuOgeModel", "AnaMenu")
@@ -1200,24 +1200,6 @@ namespace OgrenciBilgiSistemi.Migrations
                     b.Navigation("Ogrenci");
                 });
 
-            modelBuilder.Entity("OgrenciBilgiSistemi.Models.OgretmenProfilModel", b =>
-                {
-                    b.HasOne("OgrenciBilgiSistemi.Models.BirimModel", "Birim")
-                        .WithMany()
-                        .HasForeignKey("BirimId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
-                    b.HasOne("OgrenciBilgiSistemi.Models.KullaniciModel", "Kullanici")
-                        .WithOne("OgretmenProfil")
-                        .HasForeignKey("OgrenciBilgiSistemi.Models.OgretmenProfilModel", "KullaniciId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Birim");
-
-                    b.Navigation("Kullanici");
-                });
-
             modelBuilder.Entity("OgrenciBilgiSistemi.Models.ServisProfilModel", b =>
                 {
                     b.HasOne("OgrenciBilgiSistemi.Models.KullaniciModel", "Kullanici")
@@ -1290,6 +1272,8 @@ namespace OgrenciBilgiSistemi.Migrations
 
             modelBuilder.Entity("OgrenciBilgiSistemi.Models.BirimModel", b =>
                 {
+                    b.Navigation("Kullanicilar");
+
                     b.Navigation("Ogrenciler");
                 });
 
@@ -1298,8 +1282,6 @@ namespace OgrenciBilgiSistemi.Migrations
                     b.Navigation("KullaniciMenuler");
 
                     b.Navigation("Ogrenciler");
-
-                    b.Navigation("OgretmenProfil");
 
                     b.Navigation("ServisProfil");
 

@@ -123,7 +123,7 @@ namespace OgrenciBilgiSistemi.Controllers
         private async Task DropdownDoldur(KullaniciModel model)
         {
             model.Servisler = await _kullaniciService.GetServislerSelectListAsync();
-            model.Birimler = await _kullaniciService.GetBirimlerSelectListAsync();
+            ViewBag.Birimler = await _kullaniciService.GetBirimlerSelectListAsync();
         }
 
         [HttpPost]

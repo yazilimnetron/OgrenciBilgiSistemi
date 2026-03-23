@@ -2,9 +2,9 @@ using OgrenciBilgiSistemi.Shared.Enums;
 
 namespace OgrenciBilgiSistemi.Api.Models
 {
-    public class OgrenciVeliModel
+    public class VeliProfilModel
     {
-        public int OgrenciVeliId { get; set; }
+        public int KullaniciId { get; set; }
         public string? VeliAdSoyad { get; set; }
         public string? VeliTelefon { get; set; }
         public string? VeliAdres { get; set; }

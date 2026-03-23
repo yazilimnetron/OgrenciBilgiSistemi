@@ -47,7 +47,9 @@ builder.Services.AddScoped<IKartOkuService, KartOkuService>();
 builder.Services.AddScoped<IYemekhaneService, YemekhaneService>();
 builder.Services.AddScoped<ICihazService, CihazService>();
 builder.Services.AddScoped<IOgrenciService, OgrenciService>();
-builder.Services.AddScoped<IOgrenciVeliService, OgrenciVeliService>();
+builder.Services.AddScoped<IVeliProfilService, VeliProfilService>();
+builder.Services.AddScoped<IServisProfilService, ServisProfilService>();
+builder.Services.AddScoped<IOgretmenProfilService, OgretmenProfilService>();
 builder.Services.AddScoped<IFileStorage, LocalFileStorage>();
 builder.Services.AddScoped<IBirimService, BirimService>();
 builder.Services.AddScoped<IMenuService, MenuService>();
@@ -55,7 +57,6 @@ builder.Services.AddScoped<IZiyaretciService, ZiyaretciService>();
 builder.Services.AddScoped<IKitapService, KitapService>();
 builder.Services.AddScoped<IKitapDetayService, KitapDetayService>();
 builder.Services.AddScoped<IKullaniciService, KullaniciService>();
-builder.Services.AddScoped<IServisService, ServisService>();
 
 // Hosted services
 builder.Services.AddHostedService<KartOkumaOlayIsleyiciService>();

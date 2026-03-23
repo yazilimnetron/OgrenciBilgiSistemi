@@ -1,0 +1,8 @@
+@model OgrenciBilgiSistemi.Models.OgretmenProfilModel
+@{
+    ViewData["Title"] = "Yeni Öğretmen Ekle";
+    ViewData["Action"] = "Ekle";
+    ViewData["SubmitText"] = "Kaydet";
+    ViewData["IncludeId"] = false;
+}
+<partial name="~/Views/Ogretmenler/_OgretmenFormPartial.cshtml" model="Model" />

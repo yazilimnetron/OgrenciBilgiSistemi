@@ -89,6 +89,10 @@ namespace OgrenciBilgiSistemi.Api.Controllers
                 var ogrenci = await _ogrenciService.OgrenciGetirAsync(id);
                 if (ogrenci is null)
                     return NotFound(new { message = $"{id} numaralı öğrenci bulunamadı." });
+
+                var yetkiSonucu = OgrenciyeErisimKontrol(ogrenci.VeliId, ogrenci.ServisId);
+                if (yetkiSonucu != null) return yetkiSonucu;
+
                 return Ok(ogrenci);
             }
             catch (Exception)
@@ -103,6 +107,14 @@ namespace OgrenciBilgiSistemi.Api.Controllers
         {
             try
             {
+                // Önce öğrenciyi getirip yetki kontrolü yap
+                var ogrenci = await _ogrenciService.OgrenciGetirAsync(id);
+                if (ogrenci is null)
+                    return NotFound(new { message = $"{id} numaralı öğrenci bulunamadı." });
+
+                var yetkiSonucu = OgrenciyeErisimKontrol(ogrenci.VeliId, ogrenci.ServisId);
+                if (yetkiSonucu != null) return yetkiSonucu;
+
                 var detaylar = await _ogrenciService.OgrenciDetayGetirAsync(id);
                 if (detaylar.Count == 0)
                     return NotFound(new { message = $"{id} numaralı öğrenci bulunamadı." });
@@ -205,25 +217,7 @@ namespace OgrenciBilgiSistemi.Api.Controllers
             }
         }
 
-        // 8. Haftalık yoklama geçmişini getirir
-        [HttpGet("{id}/weekly-attendance")]
-        public async Task<IActionResult> HaftalikGetir(int id, [FromQuery] DateTime baslangic, [FromQuery] DateTime bitis)
-        {
-            if (baslangic > bitis)
-                return BadRequest(new { error = "Başlangıç tarihi bitiş tarihinden sonra olamaz." });
-
-            try
-            {
-                var gecmis = await _ogrenciService.HaftalikYoklamaGetirAsync(id, baslangic, bitis);
-                return Ok(gecmis);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { error = "Haftalık yoklama alınırken bir hata oluştu." });
-            }
-        }
-
-        // 9. Toplu yoklama kaydetme (POST)
+        // 8. Toplu yoklama kaydetme (POST)
         [HttpPost("attendance/save-bulk")]
         public async Task<IActionResult> TopluYoklamaKaydet([FromBody] TopluYoklamaGuncelleDto model)
         {
@@ -251,6 +245,39 @@ namespace OgrenciBilgiSistemi.Api.Controllers
             {
                 return StatusCode(500, new { error = "Yoklama kaydedilirken bir hata oluştu." });
             }
+        }
+
+        #endregion
+
+        #region Yardımcı Metotlar
+
+        /// <summary>
+        /// Rol bazlı öğrenci erişim kontrolü.
+        /// Veli sadece kendi çocuğunu, şoför sadece kendi servisindeki öğrenciyi görebilir.
+        /// Öğretmen tüm öğrencilere erişebilir.
+        /// </summary>
+        private IActionResult? OgrenciyeErisimKontrol(int? ogrenciVeliId, int? ogrenciServisId)
+        {
+            var rol = User.FindFirst("rol")?.Value;
+
+            switch (rol)
+            {
+                case "Veli":
+                    var veliIdStr = User.FindFirst("veliId")?.Value;
+                    if (!int.TryParse(veliIdStr, out var veliId) || ogrenciVeliId != veliId)
+                        return Forbid();
+                    break;
+
+                case "Sofor":
+                    var servisIdStr = User.FindFirst("servisId")?.Value;
+                    if (!int.TryParse(servisIdStr, out var servisId) || ogrenciServisId != servisId)
+                        return Forbid();
+                    break;
+
+                // Öğretmen: tüm öğrencilere erişebilir
+            }
+
+            return null; // Erişim onaylandı
         }
 
         #endregion

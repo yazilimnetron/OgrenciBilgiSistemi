@@ -1,7 +1,7 @@
-@model SayfalanmisListeModel<OgrenciBilgiSistemi.Models.ServisProfilModel>
+@model SayfalanmisListeModel<OgrenciBilgiSistemi.Models.OgretmenProfilModel>
 
 @{
-    ViewData["Title"] = "Servis İşlemleri";
+    ViewData["Title"] = "Öğretmen İşlemleri";
     var q = ViewData["CurrentFilter"] as string;
     var page = Model.SayfaIndeks;
     var total = Model.ToplamSayfa;
@@ -16,22 +16,22 @@
             <div class="d-flex justify-content-between align-items-center mb-4 flex-nowrap no-wrap-scroll">
                 <h3 class="text-primary fw-bold mb-0">@ViewData["Title"]</h3>
                 <a class="btn btn-success fw-semibold"
-                   asp-controller="Servisler"
+                   asp-controller="Ogretmenler"
                    asp-action="Ekle">
-                    <i class="bi bi-plus-lg"></i> Servis Ekle
+                    <i class="bi bi-plus-lg"></i> Öğretmen Ekle
                 </a>
             </div>
 
             <!-- Filtre Formu -->
             <form method="get"
-                  asp-controller="Servisler" asp-action="Index"
+                  asp-controller="Ogretmenler" asp-action="Index"
                   class="d-flex align-items-end gap-3 flex-nowrap no-wrap-scroll w-100 bg-body-tertiary border rounded-3 p-3 mb-3">
                 <div>
                     <label for="searchString" class="visually-hidden">Arama</label>
                     <div class="input-group">
                         <span class="input-group-text bg-white"><i class="bi bi-search"></i></span>
                         <input type="text" id="searchString" name="searchString"
-                               class="form-control" placeholder="Plaka veya şoför ara…"
+                               class="form-control" placeholder="Ad, e-posta veya birim ara…"
                                value="@q" style="width:280px;" />
                     </div>
                 </div>
@@ -55,30 +55,40 @@
                     <table class="table table-hover table-sm align-middle">
                         <thead class="bg-dark text-white">
                             <tr class="text-center">
-                                <th class="text-start">Plaka</th>
-                                <th>Şoför</th>
-                                <th>Öğrenci Sayısı</th>
+                                <th class="text-start">Fotoğraf</th>
+                                <th class="text-start">Kullanıcı Adı</th>
+                                <th>E-posta</th>
+                                <th>Birim</th>
                                 <th>Durum</th>
                                 <th>İşlem</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach (var s in Model)
+                            @foreach (var o in Model)
                             {
                                 <tr class="text-center">
-                                    <td class="text-start fw-semibold text-primary">@s.Plaka</td>
-                                    <td>@(s.Kullanici?.KullaniciAdi ?? "Atanmamış")</td>
-                                    <td>
-                                        <span class="badge bg-info">@s.OgrenciSayisi</span>
+                                    <td class="text-start">
+                                        @if (!string.IsNullOrEmpty(o.GorselPath))
+                                        {
+                                            <img src="@o.GorselPath" alt="Fotoğraf"
+                                                 class="rounded-circle" style="width:36px;height:36px;object-fit:cover;" />
+                                        }
+                                        else
+                                        {
+                                            <i class="bi bi-person-circle fs-4 text-secondary"></i>
+                                        }
                                     </td>
+                                    <td class="text-start fw-semibold text-primary">@o.Kullanici?.KullaniciAdi</td>
+                                    <td>@(o.Email ?? "—")</td>
+                                    <td>@(o.Birim?.BirimAd ?? "—")</td>
                                     <td>
-                                        <span class="badge @(s.ServisDurum ? "bg-success" : "bg-danger")">
-                                            @(s.ServisDurum ? "Aktif" : "Pasif")
+                                        <span class="badge @(o.OgretmenDurum ? "bg-success" : "bg-danger")">
+                                            @(o.OgretmenDurum ? "Aktif" : "Pasif")
                                         </span>
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-gap" role="group" style="min-width: 160px;">
-                                            <a asp-controller="Servisler" asp-action="Guncelle" asp-route-id="@s.KullaniciId"
+                                            <a asp-controller="Ogretmenler" asp-action="Guncelle" asp-route-id="@o.KullaniciId"
                                                class="btn btn-primary btn-sm">
                                                 <i class="bi bi-pencil-square"></i> Güncelle
                                             </a>
@@ -86,7 +96,7 @@
                                                     class="btn btn-danger btn-sm"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#silModal"
-                                                    onclick="document.getElementById('servisId').value='@s.KullaniciId'">
+                                                    onclick="document.getElementById('ogretmenId').value='@o.KullaniciId'">
                                                 <i class="bi bi-trash"></i> Sil
                                             </button>
                                         </div>
@@ -126,17 +136,17 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="silModalLabel">Servis Sil</h5>
+                <h5 class="modal-title" id="silModalLabel">Öğretmen Sil</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <p>Bu servisi silmek istediğinize emin misiniz?</p>
+                <p>Bu öğretmeni silmek istediğinize emin misiniz?</p>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
                 <form id="silForm" method="post" asp-action="Sil">
                     @Html.AntiForgeryToken()
-                    <input type="hidden" id="servisId" name="id" />
+                    <input type="hidden" id="ogretmenId" name="id" />
                     <button type="submit" class="btn btn-danger">Evet, Sil!</button>
                 </form>
             </div>

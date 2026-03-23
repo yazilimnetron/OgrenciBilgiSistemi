@@ -23,9 +23,6 @@ namespace OgrenciBilgiSistemi.Models
         public bool BirimSinifMi { get; set; } = true;
 
         [ValidateNever]
-        public virtual List<KullaniciModel> Kullanicilar { get; set; } = new();
-
-        [ValidateNever]
         public virtual List<OgrenciModel> Ogrenciler { get; set; } = new();
 
     }

@@ -12,7 +12,7 @@ namespace OgrenciBilgiSistemi.Data
         public DbSet<BirimModel> Birimler { get; set; }
         public DbSet<KullaniciModel> Kullanicilar { get; set; }
         public DbSet<OgrenciModel> Ogrenciler { get; set; }
-        public DbSet<OgrenciVeliModel> OgrenciVeliler { get; set; }
+        public DbSet<VeliProfilModel> VeliProfiller { get; set; }
         public DbSet<OgrenciDetayModel> OgrenciDetaylar { get; set; }
         public DbSet<KitapModel> Kitaplar { get; set; }
         public DbSet<KitapDetayModel> KitapDetaylar { get; set; }
@@ -26,9 +26,11 @@ namespace OgrenciBilgiSistemi.Data
         public DbSet<OgrenciYemekTarifeModel> OgrenciYemekTarifeler { get; set; }
         public DbSet<OgrenciYemekOdemeModel> OgrenciYemekOdemeler { get; set; }
         public DbSet<ZiyaretciModel> Ziyaretciler { get; set; }
-        public DbSet<ServisModel> Servisler { get; set; }
         public DbSet<SinifYoklamaModel> SinifYoklamalar { get; set; }
         public DbSet<SinifYoklamaDurumModel> SinifYoklamaDurumlar { get; set; }
+        public DbSet<ServisProfilModel> ServisProfiller { get; set; }
+        public DbSet<OgretmenProfilModel> OgretmenProfiller { get; set; }
+        public DbSet<ServisYoklamaModel> ServisYoklamalar { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -51,7 +53,7 @@ namespace OgrenciBilgiSistemi.Data
 
             modelBuilder.Entity<OgrenciModel>()
                 .HasOne(o => o.Veli)
-                .WithMany(v => v.Ogrenciler)
+                .WithMany()
                 .HasForeignKey(o => o.VeliId)
                 .OnDelete(DeleteBehavior.SetNull);
 
@@ -205,39 +207,57 @@ namespace OgrenciBilgiSistemi.Data
             });
 
             // =========================
-            // OGRENCI <-> SERVIS (optional)
+            // OGRENCI <-> KULLANICI/SOFOR (optional)
             // =========================
             modelBuilder.Entity<OgrenciModel>()
-                .HasOne(o => o.Servis)
-                .WithMany(s => s.Ogrenciler)
+                .HasOne(o => o.Sofor)
+                .WithMany()
                 .HasForeignKey(o => o.ServisId)
                 .OnDelete(DeleteBehavior.SetNull);
 
             // =========================
-            // SERVIS <-> KULLANICI (optional)
+            // KULLANICI <-> VELIPROFIL (1:1)
             // =========================
-            modelBuilder.Entity<ServisModel>()
-                .HasOne(s => s.Kullanici)
-                .WithMany()
-                .HasForeignKey(s => s.KullaniciId)
-                .OnDelete(DeleteBehavior.SetNull);
+            modelBuilder.Entity<VeliProfilModel>()
+                .HasKey(v => v.KullaniciId);
 
-            // =========================
-            // OGRENCIVELI <-> KULLANICI (optional)
-            // =========================
-            modelBuilder.Entity<OgrenciVeliModel>()
-                .HasOne(v => v.Kullanici)
-                .WithMany()
-                .HasForeignKey(v => v.KullaniciId)
-                .OnDelete(DeleteBehavior.SetNull);
-
-            // =========================
-            // KULLANICI <-> BIRIM (optional)
-            // =========================
             modelBuilder.Entity<KullaniciModel>()
-                .HasOne(k => k.Birim)
-                .WithMany(b => b.Kullanicilar)
-                .HasForeignKey(k => k.BirimId)
+                .HasOne(k => k.VeliProfil)
+                .WithOne(v => v.Kullanici)
+                .HasForeignKey<VeliProfilModel>(v => v.KullaniciId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // =========================
+            // KULLANICI <-> SERVISPROFIL (1:1)
+            // =========================
+            modelBuilder.Entity<ServisProfilModel>()
+                .HasKey(s => s.KullaniciId);
+
+            modelBuilder.Entity<KullaniciModel>()
+                .HasOne(k => k.ServisProfil)
+                .WithOne(s => s.Kullanici)
+                .HasForeignKey<ServisProfilModel>(s => s.KullaniciId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // =========================
+            // KULLANICI <-> OGRETMENPROFIL (1:1)
+            // =========================
+            modelBuilder.Entity<OgretmenProfilModel>()
+                .HasKey(o => o.KullaniciId);
+
+            modelBuilder.Entity<KullaniciModel>()
+                .HasOne(k => k.OgretmenProfil)
+                .WithOne(o => o.Kullanici)
+                .HasForeignKey<OgretmenProfilModel>(o => o.KullaniciId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // =========================
+            // OGRETMENPROFIL <-> BIRIM (optional)
+            // =========================
+            modelBuilder.Entity<OgretmenProfilModel>()
+                .HasOne(o => o.Birim)
+                .WithMany()
+                .HasForeignKey(o => o.BirimId)
                 .OnDelete(DeleteBehavior.SetNull);
 
             // =========================
@@ -270,6 +290,29 @@ namespace OgrenciBilgiSistemi.Data
             });
 
             modelBuilder.Entity<SinifYoklamaModel>()
+                .HasQueryFilter(sy => sy.Ogrenci.OgrenciDurum || IncludePasifOgrenciler);
+
+            // =========================
+            // SERVIS YOKLAMA
+            // =========================
+            modelBuilder.Entity<ServisYoklamaModel>(e =>
+            {
+                e.HasOne(sy => sy.Ogrenci)
+                 .WithMany()
+                 .HasForeignKey(sy => sy.OgrenciId)
+                 .OnDelete(DeleteBehavior.Restrict)
+                 .IsRequired();
+
+                e.HasOne(sy => sy.Kullanici)
+                 .WithMany()
+                 .HasForeignKey(sy => sy.KullaniciId)
+                 .OnDelete(DeleteBehavior.Restrict)
+                 .IsRequired();
+
+                e.HasIndex(sy => new { sy.KullaniciId, sy.OgrenciId, sy.Periyot, sy.OlusturulmaTarihi });
+            });
+
+            modelBuilder.Entity<ServisYoklamaModel>()
                 .HasQueryFilter(sy => sy.Ogrenci.OgrenciDurum || IncludePasifOgrenciler);
 
             // =========================
@@ -307,13 +350,6 @@ namespace OgrenciBilgiSistemi.Data
                 .IsUnique()
                 .HasDatabaseName("UX_Kullanicilar_KullaniciAdi");
 
-            // Kart numarası — bir kart birden fazla kullanıcıya atanamaz
-            modelBuilder.Entity<KullaniciModel>()
-                .HasIndex(k => k.KartNo)
-                .IsUnique()
-                .HasFilter("[KartNo] IS NOT NULL AND [KartNo] != ''")
-                .HasDatabaseName("UX_Kullanicilar_KartNo");
-
             // =========================
             // KULLANICI-MENU (M:N)
             // =========================
@@ -349,40 +385,32 @@ namespace OgrenciBilgiSistemi.Data
 
             modelBuilder.Entity<MenuOgeModel>().HasData(
                 new MenuOgeModel { Id = 1, Baslik = "Ana Sayfa", Controller = "Home", Action = "Index", AnaMenuId = null, Sirala = 1 },
-
-                new MenuOgeModel { Id = 2, Baslik = "Birimler", Controller = null, Action = null, AnaMenuId = null, Sirala = 2 },
+                new MenuOgeModel { Id = 2, Baslik = "Öğretmenler", Controller = null, Action = null, AnaMenuId = null, Sirala = 2 },
                 new MenuOgeModel { Id = 3, Baslik = "Birim Listesi", Controller = "Birimler", Action = "Index", AnaMenuId = 2, Sirala = 1 },
-
-                new MenuOgeModel { Id = 4, Baslik = "Öğrenciler", Controller = null, Action = null, AnaMenuId = null, Sirala = 3 },
-                new MenuOgeModel { Id = 5, Baslik = "Öğrenci İşlemleri", Controller = "Ogrenciler", Action = "Index", AnaMenuId = 4, Sirala = 1 },
-                new MenuOgeModel { Id = 6, Baslik = "Aidat İşlemleri", Controller = "Aidat", Action = "Index", AnaMenuId = 4, Sirala = 2 },
-                new MenuOgeModel { Id = 7, Baslik = "Yemekhane İşlemleri", Controller = "Yemekhane", Action = "Index", AnaMenuId = 4, Sirala = 3 },
-
-                new MenuOgeModel { Id = 8, Baslik = "Ziyaretçiler", Controller = null, Action = null, AnaMenuId = null, Sirala = 4 },
-                new MenuOgeModel { Id = 9, Baslik = "Ziyaretçi İşlemleri", Controller = "Ziyaretciler", Action = "Index", AnaMenuId = 8, Sirala = 1 },
-
-                new MenuOgeModel { Id = 10, Baslik = "Kullanıcılar", Controller = null, Action = null, AnaMenuId = null, Sirala = 5 },
-                new MenuOgeModel { Id = 11, Baslik = "Kullanıcı Listesi", Controller = "Kullanicilar", Action = "Index", AnaMenuId = 10, Sirala = 1 },
-
-                new MenuOgeModel { Id = 12, Baslik = "Kitaplar", Controller = null, Action = null, AnaMenuId = null, Sirala = 6 },
-                new MenuOgeModel { Id = 13, Baslik = "Kitap Listesi", Controller = "Kitaplar", Action = "Index", AnaMenuId = 12, Sirala = 1 },
-                new MenuOgeModel { Id = 14, Baslik = "Kitap Hareketleri", Controller = "KitapDetaylar", Action = "Index", AnaMenuId = 12, Sirala = 2 },
-
-                new MenuOgeModel { Id = 15, Baslik = "Cihazlar", Controller = null, Action = null, AnaMenuId = null, Sirala = 7 },
-                new MenuOgeModel { Id = 16, Baslik = "Cihaz Listesi", Controller = "Cihazlar", Action = "Index", AnaMenuId = 15, Sirala = 1 },
-
-                new MenuOgeModel { Id = 17, Baslik = "Raporlar", Controller = null, Action = null, AnaMenuId = null, Sirala = 8 },
-                new MenuOgeModel { Id = 18, Baslik = "Öğrenci Giriş Çıkış Raporları", Controller = "OgrenciGirisCikis", Action = "Detay", AnaMenuId = 17, Sirala = 1 },
-                new MenuOgeModel { Id = 19, Baslik = "Öğrenci Veli Raporu", Controller = "Ogrenciler", Action = "OgrenciVeliRapor", AnaMenuId = 17, Sirala = 2 },
-                new MenuOgeModel { Id = 20, Baslik = "Öğrenci Aidat Raporu", Controller = "Aidat", Action = "AidatRapor", AnaMenuId = 17, Sirala = 3 },
-                new MenuOgeModel { Id = 21, Baslik = "Öğrenci Ziyaretçi Raporu", Controller = "Ziyaretciler", Action = "ZiyaretciRapor", AnaMenuId = 17, Sirala = 4 },
-                new MenuOgeModel { Id = 22, Baslik = "Öğrenci Yemek Raporu", Controller = "Yemekhane", Action = "YemekRapor", AnaMenuId = 17, Sirala = 5 },
-
-                new MenuOgeModel { Id = 23, Baslik = "KartOku", Controller = null, Action = null, AnaMenuId = null, Sirala = 9 },
-                new MenuOgeModel { Id = 24, Baslik = "Kart Okuma Ekranı", Controller = "KartOku", Action = "Index", AnaMenuId = 23, Sirala = 1 },
-
-                new MenuOgeModel { Id = 25, Baslik = "Servisler", Controller = null, Action = null, AnaMenuId = null, Sirala = 10 },
-                new MenuOgeModel { Id = 26, Baslik = "Servis Listesi", Controller = "Servisler", Action = "Index", AnaMenuId = 25, Sirala = 1 }
+                new MenuOgeModel { Id = 4, Baslik = "Öğretmen İşlemleri", Controller = "Ogretmenler", Action = "Index", AnaMenuId = 2, Sirala = 2 },
+                new MenuOgeModel { Id = 5, Baslik = "Öğrenciler", Controller = null, Action = null, AnaMenuId = null, Sirala = 3 },
+                new MenuOgeModel { Id = 6, Baslik = "Öğrenci İşlemleri", Controller = "Ogrenciler", Action = "Index", AnaMenuId = 5, Sirala = 1 },
+                new MenuOgeModel { Id = 7, Baslik = "Aidat İşlemleri", Controller = "Aidat", Action = "Index", AnaMenuId = 5, Sirala = 2 },
+                new MenuOgeModel { Id = 8, Baslik = "Yemekhane İşlemleri", Controller = "Yemekhane", Action = "Index", AnaMenuId = 5, Sirala = 3 },
+                new MenuOgeModel { Id = 9, Baslik = "Ziyaretçiler", Controller = null, Action = null, AnaMenuId = null, Sirala = 4 },
+                new MenuOgeModel { Id = 10, Baslik = "Ziyaretçi İşlemleri", Controller = "Ziyaretciler", Action = "Index", AnaMenuId = 9, Sirala = 1 },
+                new MenuOgeModel { Id = 11, Baslik = "Kullanıcılar", Controller = null, Action = null, AnaMenuId = null, Sirala = 5 },
+                new MenuOgeModel { Id = 12, Baslik = "Kullanıcı Listesi", Controller = "Kullanicilar", Action = "Index", AnaMenuId = 11, Sirala = 1 },
+                new MenuOgeModel { Id = 13, Baslik = "Kitaplar", Controller = null, Action = null, AnaMenuId = null, Sirala = 6 },
+                new MenuOgeModel { Id = 14, Baslik = "Kitap Listesi", Controller = "Kitaplar", Action = "Index", AnaMenuId = 13, Sirala = 1 },
+                new MenuOgeModel { Id = 15, Baslik = "Kitap Hareketleri", Controller = "KitapDetaylar", Action = "Index", AnaMenuId = 13, Sirala = 2 },
+                new MenuOgeModel { Id = 16, Baslik = "Cihazlar", Controller = null, Action = null, AnaMenuId = null, Sirala = 7 },
+                new MenuOgeModel { Id = 17, Baslik = "Cihaz Listesi", Controller = "Cihazlar", Action = "Index", AnaMenuId = 16, Sirala = 1 },
+                new MenuOgeModel { Id = 18, Baslik = "Raporlar", Controller = null, Action = null, AnaMenuId = null, Sirala = 8 },
+                new MenuOgeModel { Id = 19, Baslik = "Öğrenci Giriş Çıkış Raporları", Controller = "OgrenciGirisCikis", Action = "Detay", AnaMenuId = 18, Sirala = 1 },
+                new MenuOgeModel { Id = 20, Baslik = "Öğrenci Veli Raporu", Controller = "Ogrenciler", Action = "OgrenciVeliRapor", AnaMenuId = 18, Sirala = 2 },
+                new MenuOgeModel { Id = 21, Baslik = "Öğrenci Aidat Raporu", Controller = "Aidat", Action = "AidatRapor", AnaMenuId = 18, Sirala = 3 },
+                new MenuOgeModel { Id = 22, Baslik = "Öğrenci Ziyaretçi Raporu", Controller = "Ziyaretciler", Action = "ZiyaretciRapor", AnaMenuId = 18, Sirala = 4 },
+                new MenuOgeModel { Id = 23, Baslik = "Öğrenci Yemek Raporu", Controller = "Yemekhane", Action = "YemekRapor", AnaMenuId = 18, Sirala = 5 },
+                new MenuOgeModel { Id = 24, Baslik = "Kart Oku", Controller = null, Action = null, AnaMenuId = null, Sirala = 9 },
+                new MenuOgeModel { Id = 25, Baslik = "Kart Okuma Ekranı", Controller = "KartOku", Action = "Index", AnaMenuId = 24, Sirala = 1 },
+                new MenuOgeModel { Id = 26, Baslik = "Servisler", Controller = null, Action = null, AnaMenuId = null, Sirala = 10 },
+                new MenuOgeModel { Id = 27, Baslik = "Servis Listesi", Controller = "Servisler", Action = "Index", AnaMenuId = 26, Sirala = 1 }
             );
         }
     }

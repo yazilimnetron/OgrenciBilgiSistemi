@@ -8,7 +8,7 @@ namespace OgrenciBilgiSistemi.Api.Models
         public string KullaniciAdi { get; set; } = string.Empty;
         public KullaniciRolu Rol { get; set; }
         public bool KullaniciDurum { get; set; }
-        public int? ServisId { get; set; }
-        public int? OgrenciVeliId { get; set; }
+        public bool VeliProfilVar { get; set; }
+        public bool ServisProfilVar { get; set; }
     }
 }

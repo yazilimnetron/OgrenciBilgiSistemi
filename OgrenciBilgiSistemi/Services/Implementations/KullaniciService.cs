@@ -37,116 +37,63 @@ namespace OgrenciBilgiSistemi.Services.Implementations
 
         public async Task<KullaniciModel?> GetByIdAsync(int id, CancellationToken ct = default)
         {
-            var kullanici = await _db.Kullanicilar
-                .Include(k => k.Birim)
+            return await _db.Kullanicilar
+                .Include(k => k.ServisProfil)
+                .Include(k => k.OgretmenProfil).ThenInclude(o => o!.Birim)
                 .FirstOrDefaultAsync(k => k.KullaniciId == id, ct);
-
-            if (kullanici != null)
-            {
-                var servisId = await _db.Servisler
-                    .Where(s => s.KullaniciId == id)
-                    .Select(s => (int?)s.ServisId)
-                    .FirstOrDefaultAsync(ct);
-
-                kullanici.ServisId = servisId;
-            }
-
-            return kullanici;
         }
 
         public async Task EkleAsync(KullaniciModel model, CancellationToken ct = default)
         {
-            // Role göre koşullu FK temizliği
-            if (model.Rol != KullaniciRolu.Ogretmen && model.Rol != KullaniciRolu.Admin)
+            // OgretmenProfil: görsel kaydet
+            if (model.Rol == KullaniciRolu.Ogretmen && model.OgretmenProfil != null)
             {
-                model.BirimId = null;
-                model.KartNo = null;
+                if (model.OgretmenProfil.GorselFile != null && model.OgretmenProfil.GorselFile.Length > 0)
+                    model.OgretmenProfil.GorselPath = await SaveImageAsync(model.OgretmenProfil.GorselFile, ct);
             }
-
-            // KartNo normalize + tekillik
-            model.KartNo = NormalizeKartNo(model.KartNo);
-            if (!string.IsNullOrWhiteSpace(model.KartNo) &&
-                await _db.Kullanicilar.AnyAsync(k => k.KartNo == model.KartNo && k.KullaniciDurum, ct))
-                throw new InvalidOperationException("Bu kart numarası başka bir kullanıcıda kayıtlı.");
-
-            if (model.Rol == KullaniciRolu.Sofor && model.ServisId.HasValue &&
-                await _db.Servisler.AnyAsync(s => s.ServisId == model.ServisId && s.KullaniciId != null, ct))
-                throw new InvalidOperationException("Bu servis zaten başka bir şoföre atanmış.");
-
-            // Görsel kaydet
-            if (model.GorselFile != null && model.GorselFile.Length > 0)
-                model.GorselPath = await SaveImageAsync(model.GorselFile, ct);
 
             model.Sifre = _passwordHasher.HashPassword(model, model.Sifre);
+
+            // Ogretmen değilse profili temizle (form'dan gelmiş olabilir)
+            if (model.Rol != KullaniciRolu.Ogretmen)
+                model.OgretmenProfil = null;
+
             _db.Kullanicilar.Add(model);
             await _db.SaveChangesAsync(ct);
-
-            // Servis bağlantısı (kayıt sonrası KullaniciId oluşmuş olur)
-            if (model.Rol == KullaniciRolu.Sofor && model.ServisId.HasValue)
-            {
-                var servis = await _db.Servisler.FindAsync([model.ServisId.Value], ct);
-                if (servis != null)
-                {
-                    servis.KullaniciId = model.KullaniciId;
-                    await _db.SaveChangesAsync(ct);
-                }
-            }
         }
 
         public async Task GuncelleAsync(KullaniciModel model, CancellationToken ct = default)
         {
-            var kullanici = await _db.Kullanicilar.FindAsync([model.KullaniciId], ct)
+            var kullanici = await _db.Kullanicilar
+                .Include(k => k.OgretmenProfil)
+                .FirstOrDefaultAsync(k => k.KullaniciId == model.KullaniciId, ct)
                 ?? throw new KeyNotFoundException("Kullanıcı bulunamadı.");
-
-            // KartNo normalize + tekillik
-            var normalizedKartNo = NormalizeKartNo(model.KartNo);
-            if (!string.Equals(kullanici.KartNo, normalizedKartNo, StringComparison.Ordinal) &&
-                !string.IsNullOrWhiteSpace(normalizedKartNo) &&
-                await _db.Kullanicilar.AnyAsync(k => k.KartNo == normalizedKartNo && k.KullaniciId != model.KullaniciId && k.KullaniciDurum, ct))
-                throw new InvalidOperationException("Bu kart numarası başka bir kullanıcıda kayıtlı.");
-
-            if (model.Rol == KullaniciRolu.Sofor && model.ServisId.HasValue &&
-                await _db.Servisler.AnyAsync(s => s.ServisId == model.ServisId && s.KullaniciId != null && s.KullaniciId != model.KullaniciId, ct))
-                throw new InvalidOperationException("Bu servis zaten başka bir şoföre atanmış.");
 
             kullanici.KullaniciAdi = model.KullaniciAdi;
             kullanici.Rol = model.Rol;
             kullanici.KullaniciDurum = model.KullaniciDurum;
             kullanici.Telefon = model.Telefon;
             kullanici.BeniHatirla = model.BeniHatirla;
-            kullanici.Email = model.Email;
-            // Role göre BirimId ve KartNo
-            if (model.Rol == KullaniciRolu.Ogretmen || model.Rol == KullaniciRolu.Admin)
-            {
-                kullanici.BirimId = model.BirimId;
-                kullanici.KartNo = normalizedKartNo;
-            }
-            else
-            {
-                kullanici.BirimId = null;
-                kullanici.KartNo = null;
-            }
 
-            // Görsel kaydet
-            if (model.GorselFile != null && model.GorselFile.Length > 0)
-                kullanici.GorselPath = await SaveImageAsync(model.GorselFile, ct);
+            // OgretmenProfil yönetimi
+            if (model.Rol == KullaniciRolu.Ogretmen)
+            {
+                var profil = kullanici.OgretmenProfil;
+                if (profil == null)
+                {
+                    profil = new OgretmenProfilModel { KullaniciId = kullanici.KullaniciId };
+                    _db.OgretmenProfiller.Add(profil);
+                }
+
+                profil.BirimId = model.OgretmenProfil?.BirimId;
+                profil.Email = model.OgretmenProfil?.Email;
+
+                if (model.OgretmenProfil?.GorselFile != null && model.OgretmenProfil.GorselFile.Length > 0)
+                    profil.GorselPath = await SaveImageAsync(model.OgretmenProfil.GorselFile, ct);
+            }
 
             if (!string.IsNullOrWhiteSpace(model.Sifre))
                 kullanici.Sifre = _passwordHasher.HashPassword(kullanici, model.Sifre);
-
-            // Servis bağlantısı yönetimi
-            var eskiServis = await _db.Servisler
-                .FirstOrDefaultAsync(s => s.KullaniciId == kullanici.KullaniciId, ct);
-
-            if (eskiServis != null && eskiServis.ServisId != model.ServisId)
-                eskiServis.KullaniciId = null;
-
-            if (model.Rol == KullaniciRolu.Sofor && model.ServisId.HasValue)
-            {
-                var yeniServis = await _db.Servisler.FindAsync([model.ServisId.Value], ct);
-                if (yeniServis != null)
-                    yeniServis.KullaniciId = kullanici.KullaniciId;
-            }
 
             await _db.SaveChangesAsync(ct);
         }
@@ -158,11 +105,15 @@ namespace OgrenciBilgiSistemi.Services.Implementations
 
             kullanici.KullaniciDurum = false;
 
-            // Bağlı servis varsa bağlantıyı temizle
-            var servis = await _db.Servisler
-                .FirstOrDefaultAsync(s => s.KullaniciId == id, ct);
-            if (servis != null)
-                servis.KullaniciId = null;
+            // Bağlı servis profili varsa durumunu pasife çek
+            var servisProfil = await _db.ServisProfiller.FindAsync([id], ct);
+            if (servisProfil != null)
+                servisProfil.ServisDurum = false;
+
+            // Bağlı öğretmen profili varsa durumunu pasife çek
+            var ogretmenProfil = await _db.OgretmenProfiller.FindAsync([id], ct);
+            if (ogretmenProfil != null)
+                ogretmenProfil.OgretmenDurum = false;
 
             await _db.SaveChangesAsync(ct);
         }
@@ -186,14 +137,27 @@ namespace OgrenciBilgiSistemi.Services.Implementations
                 .ToListAsync(ct);
 
         public async Task<List<SelectListItem>> GetServislerSelectListAsync(CancellationToken ct = default)
-            => await _db.Servisler
+            => await _db.ServisProfiller
                 .AsNoTracking()
                 .Where(s => s.ServisDurum)
                 .OrderBy(s => s.Plaka)
                 .Select(s => new SelectListItem
                 {
-                    Value = s.ServisId.ToString(),
+                    Value = s.KullaniciId.ToString(),
                     Text = s.Plaka
+                })
+                .ToListAsync(ct);
+
+        public async Task<List<SelectListItem>> GetSoforlerSelectListAsync(int? selectedId = null, CancellationToken ct = default)
+            => await _db.Kullanicilar
+                .AsNoTracking()
+                .Where(k => k.KullaniciDurum && k.Rol == KullaniciRolu.Sofor)
+                .OrderBy(k => k.KullaniciAdi)
+                .Select(k => new SelectListItem
+                {
+                    Value = k.KullaniciId.ToString(),
+                    Text = k.KullaniciAdi,
+                    Selected = selectedId.HasValue && k.KullaniciId == selectedId.Value
                 })
                 .ToListAsync(ct);
 
@@ -286,13 +250,6 @@ namespace OgrenciBilgiSistemi.Services.Implementations
                     Text = b.BirimAd
                 })
                 .ToListAsync(ct);
-
-        private static string? NormalizeKartNo(string? s)
-        {
-            if (string.IsNullOrWhiteSpace(s)) return null;
-            var t = s.Trim().TrimStart('0');
-            return t;
-        }
 
         private async Task<string> SaveImageAsync(IFormFile file, CancellationToken ct)
         {
