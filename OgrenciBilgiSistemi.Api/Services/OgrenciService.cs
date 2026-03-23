@@ -142,7 +142,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                 await using var conn = new SqlConnection(_connectionString);
                 string query = $@"
                     SELECT SY.OgrenciId, SY.{dersKolonu}
-                    FROM SinifYoklama SY
+                    FROM SinifYoklamalar SY
                     INNER JOIN Ogrenciler O ON SY.OgrenciId = O.OgrenciId
                     WHERE O.BirimId = @sinifId
                       AND CAST(SY.OlusturulmaTarihi AS DATE) = CAST(GETDATE() AS DATE)";
@@ -182,7 +182,7 @@ namespace OgrenciBilgiSistemi.Api.Services
             {
                 string query = $@"
                     DECLARE @Bugun DATE = CAST(GETDATE() AS DATE);
-                    MERGE INTO SinifYoklama AS target
+                    MERGE INTO SinifYoklamalar AS target
                     USING (SELECT @ogrenciId AS OgrenciId) AS source
                     ON (target.OgrenciId = source.OgrenciId AND CAST(target.OlusturulmaTarihi AS DATE) = @Bugun)
                     WHEN MATCHED THEN
@@ -207,6 +207,55 @@ namespace OgrenciBilgiSistemi.Api.Services
                 await transaction.RollbackAsync();
                 throw new InvalidOperationException("Yoklama kaydedilemedi.", ex);
             }
+        }
+
+        public async Task<List<SinifYoklamaModel>> HaftalikYoklamaGetirAsync(int ogrenciId, DateTime baslangic, DateTime bitis)
+        {
+            var sonuc = new List<SinifYoklamaModel>();
+            try
+            {
+                await using var conn = new SqlConnection(_connectionString);
+                const string query = @"
+                    SELECT SinifYoklamaId, OgrenciId, KullaniciId,
+                           Ders1, Ders2, Ders3, Ders4, Ders5, Ders6, Ders7, Ders8,
+                           OlusturulmaTarihi, GuncellenmeTarihi
+                    FROM SinifYoklamalar
+                    WHERE OgrenciId = @ogrenciId
+                      AND CAST(OlusturulmaTarihi AS DATE) BETWEEN @baslangic AND @bitis
+                    ORDER BY OlusturulmaTarihi";
+
+                await using var cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@ogrenciId", ogrenciId);
+                cmd.Parameters.AddWithValue("@baslangic", baslangic.Date);
+                cmd.Parameters.AddWithValue("@bitis", bitis.Date);
+                await conn.OpenAsync();
+
+                await using var reader = await cmd.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    sonuc.Add(new SinifYoklamaModel
+                    {
+                        SinifYoklamaId = (int)reader["SinifYoklamaId"],
+                        OgrenciId = (int)reader["OgrenciId"],
+                        KullaniciId = (int)reader["KullaniciId"],
+                        Ders1 = reader["Ders1"] != DBNull.Value ? (int)reader["Ders1"] : null,
+                        Ders2 = reader["Ders2"] != DBNull.Value ? (int)reader["Ders2"] : null,
+                        Ders3 = reader["Ders3"] != DBNull.Value ? (int)reader["Ders3"] : null,
+                        Ders4 = reader["Ders4"] != DBNull.Value ? (int)reader["Ders4"] : null,
+                        Ders5 = reader["Ders5"] != DBNull.Value ? (int)reader["Ders5"] : null,
+                        Ders6 = reader["Ders6"] != DBNull.Value ? (int)reader["Ders6"] : null,
+                        Ders7 = reader["Ders7"] != DBNull.Value ? (int)reader["Ders7"] : null,
+                        Ders8 = reader["Ders8"] != DBNull.Value ? (int)reader["Ders8"] : null,
+                        OlusturulmaTarihi = (DateTime)reader["OlusturulmaTarihi"],
+                        GuncellenmeTarihi = reader["GuncellenmeTarihi"] != DBNull.Value ? (DateTime)reader["GuncellenmeTarihi"] : null
+                    });
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new InvalidOperationException("Haftalık yoklama bilgisi alınamadı.", ex);
+            }
+            return sonuc;
         }
 
         public async Task<Dictionary<string, string>> OgrenciDetayGetirAsync(int ogrenciId)
@@ -269,11 +318,11 @@ namespace OgrenciBilgiSistemi.Api.Services
             const string query = @"
                 INSERT INTO Ogrenciler
                     (OgrenciAdSoyad, OgrenciNo, OgrenciKartNo, OgrenciCikisDurumu,
-                     OgrenciDurum, BirimId, OgretmenId, VeliId, OgrenciGorsel)
+                     OgrenciDurum, BirimId, OgretmenId, VeliId, ServisId, OgrenciGorsel)
                 OUTPUT INSERTED.OgrenciId
                 VALUES
                     (@adSoyad, @no, @kartNo, @cikisDurumu,
-                     1, @birimId, @ogretmenId, @veliId, @gorsel)";
+                     1, @birimId, @ogretmenId, @veliId, @servisId, @gorsel)";
 
             try
             {
@@ -287,6 +336,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                 cmd.Parameters.AddWithValue("@birimId",      (object?)dto.BirimId    ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@ogretmenId",   (object?)dto.OgretmenId ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@veliId",       (object?)dto.VeliId ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@servisId",    (object?)dto.ServisId ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@gorsel",       (object?)dto.OgrenciGorsel ?? DBNull.Value);
 
                 await conn.OpenAsync();
@@ -314,6 +364,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                     BirimId          = @birimId,
                     OgretmenId       = @ogretmenId,
                     VeliId           = @veliId,
+                    ServisId         = @servisId,
                     OgrenciGorsel    = @gorsel
                 WHERE OgrenciId = @id";
 
@@ -331,6 +382,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                 cmd.Parameters.AddWithValue("@birimId",      (object?)dto.BirimId    ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@ogretmenId",   (object?)dto.OgretmenId ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@veliId",       (object?)dto.VeliId ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@servisId",    (object?)dto.ServisId ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@gorsel",       (object?)dto.OgrenciGorsel ?? DBNull.Value);
 
                 await conn.OpenAsync();

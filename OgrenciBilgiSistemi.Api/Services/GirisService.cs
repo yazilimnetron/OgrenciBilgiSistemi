@@ -29,6 +29,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                     K.KullaniciDurum,
                     K.Rol,
                     K.Sifre,
+                    COALESCE(V.VeliAdSoyad, K.KullaniciAdi) AS AdSoyad,
                     CASE WHEN V.KullaniciId IS NOT NULL THEN 1 ELSE 0 END AS VeliProfilVar,
                     CASE WHEN SP.KullaniciId IS NOT NULL THEN 1 ELSE 0 END AS ServisProfilVar
                 FROM Kullanicilar K
@@ -58,6 +59,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                         KullaniciAdi   = reader["KullaniciAdi"].ToString() ?? string.Empty,
                         KullaniciDurum = Convert.ToBoolean(reader["KullaniciDurum"]),
                         Rol            = reader["Rol"] != DBNull.Value ? (KullaniciRolu)Convert.ToInt32(reader["Rol"]) : KullaniciRolu.Ogretmen,
+                        AdSoyad        = reader["AdSoyad"]?.ToString(),
                         VeliProfilVar  = Convert.ToBoolean(reader["VeliProfilVar"]),
                         ServisProfilVar = Convert.ToBoolean(reader["ServisProfilVar"])
                     };

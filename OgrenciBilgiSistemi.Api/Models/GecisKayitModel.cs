@@ -1,3 +1,5 @@
+using OgrenciBilgiSistemi.Shared.Enums;
+
 namespace OgrenciBilgiSistemi.Api.Models
 {
     // OgrenciDetaylar tablosundaki giriş/çıkış kaydını temsil eder
@@ -11,7 +13,7 @@ namespace OgrenciBilgiSistemi.Api.Models
         public DateTime? OgrenciGTarih { get; set; }
         public DateTime? OgrenciCTarih { get; set; }
         public string? OgrenciGecisTipi { get; set; }  // "GİRİŞ" veya "ÇIKIŞ"
-        public int IstasyonTipi { get; set; }
+        public IstasyonTipi IstasyonTipi { get; set; }
         public string? CihazAdi { get; set; }
     }
 }

@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using OgrenciBilgiSistemi.Shared.Enums;
 
 namespace OgrenciBilgiSistemi.Api.Dtos
 {
@@ -9,11 +10,12 @@ namespace OgrenciBilgiSistemi.Api.Dtos
         [Range(1, int.MaxValue, ErrorMessage = "Öğrenci numarası 0'dan büyük olmalıdır!")]
         public int OgrenciNo { get; set; }
         public string? OgrenciKartNo { get; set; }
-        public int OgrenciCikisDurumu { get; set; }  // 0=Hayır, 1=Evet
+        public OglenCikisDurumu OgrenciCikisDurumu { get; set; }
         public bool OgrenciDurum { get; set; } = true;
         public int? BirimId { get; set; }
         public int? OgretmenId { get; set; }
         public int? VeliId { get; set; }
+        public int? ServisId { get; set; }
         public string? OgrenciGorsel { get; set; }
     }
 }

@@ -198,7 +198,29 @@ namespace OgrenciBilgiSistemi.Api.Controllers
 
         #region Yoklama Metotları
 
-        // 7. Mevcut yoklama durumunu getirir (Dictionary döner)
+        // 7. Öğrencinin haftalık yoklama geçmişini getirir
+        [HttpGet("{id}/weekly-attendance")]
+        public async Task<IActionResult> HaftalikYoklamaGetir(int id, [FromQuery] DateTime baslangic, [FromQuery] DateTime bitis)
+        {
+            try
+            {
+                var ogrenci = await _ogrenciService.OgrenciGetirAsync(id);
+                if (ogrenci is null)
+                    return NotFound(new { message = $"{id} numaralı öğrenci bulunamadı." });
+
+                var yetkiSonucu = OgrenciyeErisimKontrol(ogrenci.VeliId, ogrenci.ServisId);
+                if (yetkiSonucu != null) return yetkiSonucu;
+
+                var yoklamalar = await _ogrenciService.HaftalikYoklamaGetirAsync(id, baslangic, bitis);
+                return Ok(yoklamalar);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { error = "Haftalık yoklama bilgisi alınırken bir hata oluştu." });
+            }
+        }
+
+        // 8. Mevcut yoklama durumunu getirir (Dictionary döner)
         [HttpGet("attendance/{sinifId}/{dersNumarasi}")]
         public async Task<IActionResult> YoklamaGetir(int sinifId, int dersNumarasi)
         {

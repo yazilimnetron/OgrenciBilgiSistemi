@@ -50,6 +50,7 @@ namespace OgrenciBilgiSistemi.Api.Controllers
                 {
                     kullanici.KullaniciId,
                     kullanici.KullaniciAdi,
+                    kullanici.AdSoyad,
                     kullanici.KullaniciDurum,
                     kullanici.Rol,
                     kullanici.VeliProfilVar,

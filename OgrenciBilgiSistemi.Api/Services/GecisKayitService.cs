@@ -123,7 +123,7 @@ namespace OgrenciBilgiSistemi.Api.Services
             OgrenciGTarih   = reader["OgrenciGTarih"] as DateTime?,
             OgrenciCTarih   = reader["OgrenciCTarih"] as DateTime?,
             OgrenciGecisTipi = reader["OgrenciGecisTipi"] as string,
-            IstasyonTipi    = (short)reader["IstasyonTipi"],
+            IstasyonTipi    = (Shared.Enums.IstasyonTipi)(short)reader["IstasyonTipi"],
             CihazAdi        = reader["CihazAdi"] as string
         };
     }
