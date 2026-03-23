@@ -38,16 +38,8 @@
       - name: Clean project
         script: |
           set -e
-          rm -rf bin obj
-          "$DOTNET" clean "$PROJECT_PATH" /p:TargetFramework=$IOS_TFM
-
-      - name: Restore NuGet packages
-        script: |
-          set -e
-          "$DOTNET" restore OgrenciBilgiSistemi.Shared/OgrenciBilgiSistemi.Shared.csproj
-          "$DOTNET" restore "$PROJECT_PATH" \
-            /p:TargetFramework=$IOS_TFM \
-            -r ios-arm64
+          rm -rf OgrenciBilgiSistemi.Mobil/bin OgrenciBilgiSistemi.Mobil/obj
+          rm -rf OgrenciBilgiSistemi.Shared/bin OgrenciBilgiSistemi.Shared/obj
 
       - name: Setup iOS code signing
         script: |
@@ -73,7 +65,6 @@
           -c Release \
           -f "$IOS_TFM" \
           -r ios-arm64 \
-          --no-restore \
           /p:ArchiveOnBuild=true \
           /p:BuildIpa=true \
           /p:ApplicationVersion=$APP_BUILD_NUMBER \
@@ -122,15 +113,8 @@
       - name: Clean project
         script: |
           set -e
-          rm -rf bin obj
-          "$DOTNET" clean /p:TargetFramework=$ANDROID_TFM
-
-      - name: Restore NuGet packages
-        script: |
-          set -e
-          "$DOTNET" restore OgrenciBilgiSistemi.Shared/OgrenciBilgiSistemi.Shared.csproj
-          "$DOTNET" restore "$PROJECT_PATH" \
-            /p:TargetFramework=$ANDROID_TFM
+          rm -rf OgrenciBilgiSistemi.Mobil/bin OgrenciBilgiSistemi.Mobil/obj
+          rm -rf OgrenciBilgiSistemi.Shared/bin OgrenciBilgiSistemi.Shared/obj
 
       - name: Build AAB (Release)
         script: |
@@ -147,7 +131,6 @@
           "$DOTNET" publish "$PROJECT_PATH" \
             -c Release \
             -f "$ANDROID_TFM" \
-            --no-restore \
             /p:RuntimeIdentifier=android-arm64 \
             /p:AndroidPackageFormat=aab \
             /p:ApplicationVersion=$APP_BUILD_NUMBER \
