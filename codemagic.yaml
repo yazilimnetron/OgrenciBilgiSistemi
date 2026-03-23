@@ -59,14 +59,6 @@
           set -e
           SIGNING_IDENTITY=$(security find-identity -v -p codesigning | grep "Apple Distribution" | head -1 | awk -F'"' '{print $2}')
 
-          LATEST_BUILD=$(app-store-connect get-latest-testflight-build-number "$BUNDLE_ID" 2>/dev/null || echo "")
-          if [ -n "$LATEST_BUILD" ] && [ "$LATEST_BUILD" -gt 0 ] 2>/dev/null; then
-            APP_BUILD_NUMBER=$((LATEST_BUILD + 1))
-          else
-            APP_BUILD_NUMBER=$((CM_BUILD_NUMBER + 1))
-          fi
-          echo "CM_BUILD_NUMBER=$CM_BUILD_NUMBER, LATEST_BUILD=${LATEST_BUILD:-N/A}, APP_BUILD_NUMBER=$APP_BUILD_NUMBER"
-
           "$DOTNET" publish "$PROJECT_PATH" \
           -c Release \
           -f "$IOS_TFM" \
@@ -74,7 +66,6 @@
           --no-restore \
           /p:ArchiveOnBuild=true \
           /p:BuildIpa=true \
-          /p:ApplicationVersion=$APP_BUILD_NUMBER \
           /p:CodesignKey="$SIGNING_IDENTITY"
 
     artifacts:
