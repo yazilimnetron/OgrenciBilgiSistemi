@@ -1,5 +1,5 @@
 using System.Text.Json.Serialization;
-using OgrenciBilgiSistemi.Mobil.Enums;
+using OgrenciBilgiSistemi.Shared.Enums;
 
 namespace OgrenciBilgiSistemi.Mobil.Models
 {

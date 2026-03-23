@@ -1,7 +1,7 @@
 #region Kütüphane Referansları
 using System.Net.Http.Json;
 using OgrenciBilgiSistemi.Mobil.Models;
-using OgrenciBilgiSistemi.Mobil.Enums;
+using OgrenciBilgiSistemi.Shared.Enums;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;

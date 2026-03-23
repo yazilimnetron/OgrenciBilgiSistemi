@@ -1,7 +1,7 @@
 using System.Text;
 using System.Text.Json;
 using OgrenciBilgiSistemi.Mobil.Models;
-using OgrenciBilgiSistemi.Mobil.Enums;
+using OgrenciBilgiSistemi.Shared.Enums;
 
 namespace OgrenciBilgiSistemi.Mobil.Services
 {
