@@ -47,7 +47,7 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             {
                 if (e.Parameter is Ogrenci ogrenci)
                 {
-                    await Shell.Current.GoToAsync($"OgrenciDetayView?ogrenciId={ogrenci.OgrenciId}");
+                    await Navigation.PushAsync(new OgrenciDetayView(ogrenci.OgrenciId));
                 }
             }
             catch (Exception ex)
