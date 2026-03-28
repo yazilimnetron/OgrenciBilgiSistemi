@@ -13,9 +13,9 @@ namespace OgrenciBilgiSistemi.Mobil.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{BaseUrl}servisler/{servisId}/ogrenciler");
+                var response = await GetAsync($"{BaseUrl}servisler/{servisId}/ogrenciler");
 
-                if (await YanitDurumuIsle(response))
+                if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
                     var list = JsonSerializer.Deserialize<List<Ogrenci>>(json, _jsonOptions) ?? new List<Ogrenci>();
@@ -39,9 +39,9 @@ namespace OgrenciBilgiSistemi.Mobil.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{BaseUrl}servisler/{servisId}");
+                var response = await GetAsync($"{BaseUrl}servisler/{servisId}");
 
-                if (await YanitDurumuIsle(response))
+                if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
                     return JsonSerializer.Deserialize<Servis>(json, _jsonOptions);
@@ -62,8 +62,8 @@ namespace OgrenciBilgiSistemi.Mobil.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{BaseUrl}servisler/{servisId}/yoklama/{periyot}");
-                if (!await YanitDurumuIsle(response))
+                var response = await GetAsync($"{BaseUrl}servisler/{servisId}/yoklama/{periyot}");
+                if (!response.IsSuccessStatusCode)
                     return new Dictionary<int, int>();
 
                 return await response.Content.ReadFromJsonAsync<Dictionary<int, int>>(_jsonOptions) ?? new Dictionary<int, int>();
@@ -93,9 +93,9 @@ namespace OgrenciBilgiSistemi.Mobil.Services
                     }).ToList()
                 };
 
-                var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}servisler/yoklama-kaydet", model);
+                var response = await PostAsJsonAsync($"{BaseUrl}servisler/yoklama-kaydet", model);
 
-                if (!await YanitDurumuIsle(response))
+                if (!response.IsSuccessStatusCode)
                     throw new Exception("Servis yoklaması kaydedilemedi.");
             }
             catch (Exception ex)

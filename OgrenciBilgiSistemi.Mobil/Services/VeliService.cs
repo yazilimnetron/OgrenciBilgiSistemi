@@ -12,9 +12,9 @@ namespace OgrenciBilgiSistemi.Mobil.Services
         {
             try
             {
-                var response = await _httpClient.GetAsync($"{BaseUrl}ogrenciler/benim");
+                var response = await GetAsync($"{BaseUrl}ogrenciler/benim");
 
-                if (await YanitDurumuIsle(response))
+                if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
                     var list = JsonSerializer.Deserialize<List<Ogrenci>>(json, _jsonOptions) ?? new List<Ogrenci>();

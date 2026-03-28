@@ -1,4 +1,5 @@
 using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
 
@@ -89,6 +90,72 @@ namespace OgrenciBilgiSistemi.Mobil.Services
             var errorContent = await response.Content.ReadAsStringAsync();
             System.Diagnostics.Debug.WriteLine($"[API HATASI] {response.StatusCode}: {errorContent}");
             return false;
+        }
+
+        /// <summary>
+        /// GET isteği gönderir. Her istekten önce token'ı günceller.
+        /// 401 alınırsa token yeniler ve isteği tekrar dener.
+        /// </summary>
+        protected async Task<HttpResponseMessage> GetAsync(string url)
+        {
+            YetkiBasliginiYenile();
+            var response = await _httpClient.GetAsync(url);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                var yenilendi = await TokenYenilemeAsync();
+                if (yenilendi)
+                {
+                    YetkiBasliginiYenile();
+                    response = await _httpClient.GetAsync(url);
+                }
+                else
+                {
+                    await KullaniciOturum.OturumTemizleAsync();
+                    OturumSuresiDoldu?.Invoke();
+                }
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"[API HATASI] {response.StatusCode}: {errorContent}");
+            }
+
+            return response;
+        }
+
+        /// <summary>
+        /// POST isteği gönderir. Her istekten önce token'ı günceller.
+        /// 401 alınırsa token yeniler ve isteği tekrar dener.
+        /// </summary>
+        protected async Task<HttpResponseMessage> PostAsJsonAsync<T>(string url, T data)
+        {
+            YetkiBasliginiYenile();
+            var response = await _httpClient.PostAsJsonAsync(url, data);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                var yenilendi = await TokenYenilemeAsync();
+                if (yenilendi)
+                {
+                    YetkiBasliginiYenile();
+                    response = await _httpClient.PostAsJsonAsync(url, data);
+                }
+                else
+                {
+                    await KullaniciOturum.OturumTemizleAsync();
+                    OturumSuresiDoldu?.Invoke();
+                }
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"[API HATASI] {response.StatusCode}: {errorContent}");
+            }
+
+            return response;
         }
 
         /// <summary>

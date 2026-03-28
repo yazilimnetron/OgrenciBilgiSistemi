@@ -32,8 +32,8 @@ namespace OgrenciBilgiSistemi.Mobil.Services
             try
             {
                 // API Ucu: GET api/ogrenciler/class/{sinifId}
-                var response = await _httpClient.GetAsync($"{BaseUrl}ogrenciler/class/{sinifId}");
-                if (!await YanitDurumuIsle(response))
+                var response = await GetAsync($"{BaseUrl}ogrenciler/class/{sinifId}");
+                if (!response.IsSuccessStatusCode)
                     return new List<Ogrenci>();
 
                 var list = await response.Content.ReadFromJsonAsync<List<Ogrenci>>(_jsonOptions) ?? new List<Ogrenci>();
@@ -55,8 +55,8 @@ namespace OgrenciBilgiSistemi.Mobil.Services
             try
             {
                 // API Ucu: GET api/ogrenciler/{id}/details
-                var response = await _httpClient.GetAsync($"{BaseUrl}ogrenciler/{ogrenciId}/details");
-                if (!await YanitDurumuIsle(response))
+                var response = await GetAsync($"{BaseUrl}ogrenciler/{ogrenciId}/details");
+                if (!response.IsSuccessStatusCode)
                     return null;
 
                 return await response.Content.ReadFromJsonAsync<OgrenciDetay>(_jsonOptions);
@@ -79,8 +79,8 @@ namespace OgrenciBilgiSistemi.Mobil.Services
             try
             {
                 // API Ucu: GET api/ogrenciler/attendance/{sinifId}/{dersNumarasi}
-                var response = await _httpClient.GetAsync($"{BaseUrl}ogrenciler/attendance/{sinifId}/{dersNumarasi}");
-                if (!await YanitDurumuIsle(response))
+                var response = await GetAsync($"{BaseUrl}ogrenciler/attendance/{sinifId}/{dersNumarasi}");
+                if (!response.IsSuccessStatusCode)
                     return new Dictionary<int, int>();
 
                 return await response.Content.ReadFromJsonAsync<Dictionary<int, int>>(_jsonOptions) ?? new Dictionary<int, int>();
@@ -111,9 +111,9 @@ namespace OgrenciBilgiSistemi.Mobil.Services
                 };
 
                 // API Ucu: POST api/ogrenciler/attendance/save-bulk
-                var response = await _httpClient.PostAsJsonAsync($"{BaseUrl}ogrenciler/attendance/save-bulk", model);
+                var response = await PostAsJsonAsync($"{BaseUrl}ogrenciler/attendance/save-bulk", model);
 
-                if (!await YanitDurumuIsle(response))
+                if (!response.IsSuccessStatusCode)
                     throw new Exception("Yoklama kaydedilemedi.");
             }
             catch (Exception ex)
@@ -131,8 +131,8 @@ namespace OgrenciBilgiSistemi.Mobil.Services
             {
                 // API Ucu: GET api/ogrenciler/{id}/weekly-attendance?baslangic=...&bitis=...
                 string url = $"{BaseUrl}ogrenciler/{ogrenciId}/weekly-attendance?baslangic={baslangic:yyyy-MM-dd}&bitis={bitis:yyyy-MM-dd}";
-                var response = await _httpClient.GetAsync(url);
-                if (!await YanitDurumuIsle(response))
+                var response = await GetAsync(url);
+                if (!response.IsSuccessStatusCode)
                     return new List<SinifYoklama>();
 
                 return await response.Content.ReadFromJsonAsync<List<SinifYoklama>>(_jsonOptions) ?? new List<SinifYoklama>();

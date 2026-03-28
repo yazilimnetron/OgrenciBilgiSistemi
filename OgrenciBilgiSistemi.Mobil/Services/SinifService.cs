@@ -11,8 +11,8 @@ namespace OgrenciBilgiSistemi.Mobil.Services
             try
             {
                 // API'deki 'api/siniflar/all-with-count' endpoint'ine istek atıyoruz
-                var response = await _httpClient.GetAsync($"{BaseUrl}siniflar/all-with-count");
-                if (!await YanitDurumuIsle(response))
+                var response = await GetAsync($"{BaseUrl}siniflar/all-with-count");
+                if (!response.IsSuccessStatusCode)
                     return new List<SinifGorunumModel>();
 
                 var data = await response.Content.ReadFromJsonAsync<List<BirimOgrenciSayisiDto>>(_jsonOptions);

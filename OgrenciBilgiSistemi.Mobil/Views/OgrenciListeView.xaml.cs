@@ -27,7 +27,10 @@ public partial class OgrenciListeView : ContentPage
             // Veri yüklemeyi tetikle
             LoadStudents();
         }
-        catch { /**/ }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[HATA] OgrenciListeView başlatılamadı: {ex.Message}");
+        }
     }
     #endregion
 
@@ -84,7 +87,10 @@ public partial class OgrenciListeView : ContentPage
                 }
             }
         }
-        catch { /**/ }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[HATA] Ders saati değiştirilirken hata: {ex.Message}");
+        }
     }
 
     private async void OnSaveAttendanceClicked(object sender, EventArgs e)
@@ -147,7 +153,10 @@ public partial class OgrenciListeView : ContentPage
                 }
             }
         }
-        catch { /**/ }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[HATA] Durum seçilirken hata: {ex.Message}");
+        }
     }
 
     private async void OnStudentDetailClicked(object sender, EventArgs e)
