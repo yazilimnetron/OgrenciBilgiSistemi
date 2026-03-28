@@ -29,7 +29,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                     K.KullaniciDurum,
                     K.Rol,
                     K.Sifre,
-                    COALESCE(V.VeliAdSoyad, K.KullaniciAdi) AS AdSoyad,
+                    K.KullaniciAdi AS AdSoyad,
                     CASE WHEN V.KullaniciId IS NOT NULL THEN 1 ELSE 0 END AS VeliProfilVar,
                     CASE WHEN SP.KullaniciId IS NOT NULL THEN 1 ELSE 0 END AS ServisProfilVar
                 FROM Kullanicilar K
@@ -81,6 +81,96 @@ namespace OgrenciBilgiSistemi.Api.Services
                 return null;
 
             return found;
+        }
+
+        /// <summary>
+        /// Kullanıcı ID'si ile aktif kullanıcıyı getirir (refresh token doğrulaması için).
+        /// </summary>
+        public async Task<KullaniciModel?> KullaniciIdIleGetirAsync(int kullaniciId)
+        {
+            const string query = @"
+                SELECT
+                    K.KullaniciId,
+                    K.KullaniciAdi,
+                    K.KullaniciDurum,
+                    K.Rol,
+                    K.KullaniciAdi AS AdSoyad,
+                    CASE WHEN V.KullaniciId IS NOT NULL THEN 1 ELSE 0 END AS VeliProfilVar,
+                    CASE WHEN SP.KullaniciId IS NOT NULL THEN 1 ELSE 0 END AS ServisProfilVar
+                FROM Kullanicilar K
+                LEFT JOIN VeliProfiller V ON V.KullaniciId = K.KullaniciId
+                LEFT JOIN ServisProfiller SP ON SP.KullaniciId = K.KullaniciId
+                WHERE K.KullaniciId = @kullaniciId
+                  AND K.KullaniciDurum = 1";
+
+            try
+            {
+                await using var conn = new SqlConnection(_connectionString);
+                await using var cmd  = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@kullaniciId", kullaniciId);
+
+                await conn.OpenAsync();
+                await using var reader = await cmd.ExecuteReaderAsync();
+
+                if (await reader.ReadAsync())
+                {
+                    return new KullaniciModel
+                    {
+                        KullaniciId    = (int)reader["KullaniciId"],
+                        KullaniciAdi   = reader["KullaniciAdi"].ToString() ?? string.Empty,
+                        KullaniciDurum = Convert.ToBoolean(reader["KullaniciDurum"]),
+                        Rol            = reader["Rol"] != DBNull.Value ? (KullaniciRolu)Convert.ToInt32(reader["Rol"]) : KullaniciRolu.Ogretmen,
+                        AdSoyad        = reader["AdSoyad"]?.ToString(),
+                        VeliProfilVar  = Convert.ToBoolean(reader["VeliProfilVar"]),
+                        ServisProfilVar = Convert.ToBoolean(reader["ServisProfilVar"])
+                    };
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new InvalidOperationException("Veritabanı sorgusunda hata oluştu.", ex);
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Kullanıcı adının ilk harflerine göre eşleşen aktif kullanıcıları arar.
+        /// Admin kullanıcıları hariç tutulur (mobilde giriş yapamıyorlar).
+        /// </summary>
+        public async Task<List<string>> KullaniciAdiAraAsync(string aranan)
+        {
+            const string query = @"
+                SELECT TOP 10 KullaniciAdi
+                FROM Kullanicilar
+                WHERE KullaniciDurum = 1
+                  AND Rol <> @adminRol
+                  AND KullaniciAdi LIKE @aranan + '%'
+                ORDER BY KullaniciAdi";
+
+            var sonuclar = new List<string>();
+
+            try
+            {
+                await using var conn = new SqlConnection(_connectionString);
+                await using var cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@aranan", aranan);
+                cmd.Parameters.AddWithValue("@adminRol", (int)KullaniciRolu.Admin);
+
+                await conn.OpenAsync();
+                await using var reader = await cmd.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
+                {
+                    sonuclar.Add(reader["KullaniciAdi"].ToString() ?? string.Empty);
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new InvalidOperationException("Kullanıcı arama sorgusunda hata oluştu.", ex);
+            }
+
+            return sonuclar;
         }
     }
 }

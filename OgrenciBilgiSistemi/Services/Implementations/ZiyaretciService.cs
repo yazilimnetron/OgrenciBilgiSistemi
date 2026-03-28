@@ -57,7 +57,11 @@ namespace OgrenciBilgiSistemi.Services.Implementations
             if (ziyaretci == null)
                 return;
 
-            _db.Ziyaretciler.Remove(ziyaretci);
+            // Soft-delete: fiziksel silme yerine pasife al
+            ziyaretci.AktifMi = false;
+            if (!ziyaretci.CikisZamani.HasValue)
+                ziyaretci.CikisZamani = DateTime.Now;
+
             await _db.SaveChangesAsync(ct);
         }
 

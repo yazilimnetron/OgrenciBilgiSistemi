@@ -4,7 +4,7 @@ namespace OgrenciBilgiSistemi.Mobil.Models
     {
         public int KullaniciId { get; set; }
         public string Plaka { get; set; }
-        public string? SoforTelefon { get; set; }
+        public string? ServisTelefon { get; set; }
         public bool ServisDurum { get; set; }
     }
 }

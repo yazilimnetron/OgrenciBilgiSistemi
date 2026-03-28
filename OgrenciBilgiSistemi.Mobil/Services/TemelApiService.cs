@@ -1,11 +1,12 @@
 using System.Net.Http.Headers;
+using System.Text;
 using System.Text.Json;
 
 namespace OgrenciBilgiSistemi.Mobil.Services
 {
     public class TemelApiService
     {
-        // 401 alındığında tüm aboneleri uyarır (App.xaml.cs login'e yönlendirir)
+        // 401 alındığında ve refresh da başarısız olduğunda tüm aboneleri uyarır
         public static event Action OturumSuresiDoldu;
 
         protected readonly HttpClient _httpClient;
@@ -15,6 +16,10 @@ namespace OgrenciBilgiSistemi.Mobil.Services
 
         // JSON Serileştirme Seçenekleri
         protected readonly JsonSerializerOptions _jsonOptions;
+
+        // Eş zamanlı refresh isteklerini önlemek için kilit
+        private static readonly SemaphoreSlim _refreshKilidi = new(1, 1);
+        private static bool _refreshDevamEdiyor;
 
         public TemelApiService()
         {
@@ -57,7 +62,7 @@ namespace OgrenciBilgiSistemi.Mobil.Services
 
         /// <summary>
         /// API haberleşmesi sırasında oluşan hataları yönetmek için ortak metot.
-        /// 401 durumunda oturumu sonlandırır.
+        /// 401 durumunda önce token yenileme dener, başarısızsa oturumu sonlandırır.
         /// </summary>
         protected async Task<bool> YanitDurumuIsle(HttpResponseMessage response)
         {
@@ -66,14 +71,87 @@ namespace OgrenciBilgiSistemi.Mobil.Services
 
             if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
             {
-                // Token süresi dolmuş veya geçersiz - oturumu temizle ve login'e yönlendir
+                // Token yenilemeyi dene
+                var yenilendi = await TokenYenilemeAsync();
+                if (yenilendi)
+                {
+                    // Token yenilendi, çağıran taraf isteği tekrar denemeli
+                    return false;
+                }
+
+                // Yenileme başarısız — oturumu sonlandır
                 await KullaniciOturum.OturumTemizleAsync();
                 OturumSuresiDoldu?.Invoke();
             }
+            // 403 Forbidden: Token geçerli ama yetki yok — oturum temizlenmez,
+            // çağıran servis hata fırlatarak kullanıcıya bilgi verir.
 
             var errorContent = await response.Content.ReadAsStringAsync();
             System.Diagnostics.Debug.WriteLine($"[API HATASI] {response.StatusCode}: {errorContent}");
             return false;
+        }
+
+        /// <summary>
+        /// Refresh token kullanarak yeni access token alır.
+        /// Eş zamanlı birden fazla refresh isteğini önler.
+        /// </summary>
+        private async Task<bool> TokenYenilemeAsync()
+        {
+            var refreshToken = KullaniciOturum.RefreshToken;
+            if (string.IsNullOrEmpty(refreshToken))
+                return false;
+
+            await _refreshKilidi.WaitAsync();
+            try
+            {
+                // Başka bir thread zaten refresh yaptıysa sonucu kullan
+                if (_refreshDevamEdiyor)
+                    return false;
+
+                _refreshDevamEdiyor = true;
+
+                var requestBody = new { RefreshToken = refreshToken };
+                var json = JsonSerializer.Serialize(requestBody);
+                var content = new StringContent(json, Encoding.UTF8, "application/json");
+
+                using var tempClient = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
+                var response = await tempClient.PostAsync($"{BaseUrl}kimlik-dogrulama/refresh", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var responseString = await response.Content.ReadAsStringAsync();
+                    using var doc = JsonDocument.Parse(responseString);
+                    var root = doc.RootElement;
+
+                    string yeniToken = null;
+                    string yeniRefreshToken = null;
+
+                    if (root.TryGetProperty("token", out var tokenEl))
+                        yeniToken = tokenEl.GetString();
+
+                    if (root.TryGetProperty("refreshToken", out var refreshEl))
+                        yeniRefreshToken = refreshEl.GetString();
+
+                    if (!string.IsNullOrEmpty(yeniToken) && !string.IsNullOrEmpty(yeniRefreshToken))
+                    {
+                        await KullaniciOturum.TokenlariGuncelleAsync(yeniToken, yeniRefreshToken);
+                        YetkiBasliginiYenile();
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[TOKEN YENİLEME HATASI]: {ex.Message}");
+                return false;
+            }
+            finally
+            {
+                _refreshDevamEdiyor = false;
+                _refreshKilidi.Release();
+            }
         }
     }
 }

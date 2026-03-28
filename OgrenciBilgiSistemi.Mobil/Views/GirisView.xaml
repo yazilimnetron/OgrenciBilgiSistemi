@@ -102,7 +102,32 @@
                                        FontSize="14"
                                        BackgroundColor="Transparent"
                                        Margin="12,0"
-                                       VerticalOptions="Center" />
+                                       VerticalOptions="Center"
+                                       TextChanged="OnUsernameTextChanged" />
+                            </Border>
+
+                            <!-- Kullanıcı adı öneri listesi -->
+                            <Border x:Name="OneriKutusu"
+                                    IsVisible="False"
+                                    Stroke="#E5E8E8"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 8"
+                                    BackgroundColor="White"
+                                    MaximumHeightRequest="150"
+                                    Margin="0,-5,0,0">
+                                <CollectionView x:Name="OneriListesi"
+                                                SelectionMode="Single"
+                                                SelectionChanged="OnOneriSecildi">
+                                    <CollectionView.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid Padding="12,10">
+                                                <Label Text="{Binding .}"
+                                                       TextColor="#2C3E50"
+                                                       FontSize="14" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </CollectionView.ItemTemplate>
+                                </CollectionView>
                             </Border>
 
                         </VerticalStackLayout>
@@ -183,22 +208,10 @@
                             </Button.Shadow>
                         </Button>
 
-                        <Button x:Name="BtnDemoLogin"
-                                Text="Demo Olarak Gir"
-                                Clicked="BtnDemoLogin_Clicked"
-                                HeightRequest="45"
-                                CornerRadius="12"
-                                Margin="0,5,0,0"
-                                FontSize="13"
-                                BackgroundColor="Transparent"
-                                TextColor="#7F8C8D"
-                                BorderColor="#BDC3C7"
-                                BorderWidth="1" />
-
                     </VerticalStackLayout>
                 </Border>
 
-                <Label Text="© 2026 | Developed by Mert Yüksel. Tüm hakları saklıdır."
+                <Label Text="© 2026 | Developed by Netron Yazılım. Tüm hakları saklıdır."
                        TextColor="#BDC3C7"
                        FontSize="11"
                        HorizontalOptions="Center"

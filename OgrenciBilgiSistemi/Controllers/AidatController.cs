@@ -42,6 +42,9 @@ namespace OgrenciBilgiSistemi.Controllers
             int defaultYil = AkademikDonemHelper.Current();
             int year = yil ?? defaultYil;
 
+            if (pageSize <= 0) pageSize = 50;
+            pageSize = Math.Min(pageSize, 200);
+
             // Raporu çek
             var rapor = await _aidatService.GetAidatRaporAsync(
                 yil: yil,
@@ -172,6 +175,7 @@ namespace OgrenciBilgiSistemi.Controllers
         {
             if (page < 1) page = 1;
             if (pageSize <= 0) pageSize = 50;
+            pageSize = Math.Min(pageSize, 200);
 
             ViewData["CurrentFilter"] = query;
             ViewData["CurrentYear"] = yil;
@@ -401,7 +405,7 @@ namespace OgrenciBilgiSistemi.Controllers
         private IActionResult SafeRedirect(string? returnUrl, string fallbackAction, object? routeValues = null)
         {
             if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
-                return Redirect(returnUrl);
+                return LocalRedirect(returnUrl);
 
             return RedirectToAction(fallbackAction, routeValues);
         }

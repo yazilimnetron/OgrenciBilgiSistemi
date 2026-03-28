@@ -21,7 +21,7 @@ namespace OgrenciBilgiSistemi.Api.Services
             try
             {
                 await using var conn = new SqlConnection(_connectionString);
-                const string query = "SELECT BirimId, BirimAd, BirimSinifMi, BirimDurum FROM Birimler WHERE BirimId = @birimId";
+                const string query = "SELECT BirimId, BirimAd, BirimSinifMi, BirimDurum FROM Birimler WHERE BirimId = @birimId AND BirimDurum = 1";
 
                 await using var cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@birimId", birimId);

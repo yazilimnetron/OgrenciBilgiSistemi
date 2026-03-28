@@ -61,7 +61,7 @@ namespace OgrenciBilgiSistemi.Models
         [ForeignKey(nameof(ServisId))]
         [ValidateNever]
         [Display(Name = "Servis")]
-        public virtual KullaniciModel? Sofor { get; set; }
+        public virtual KullaniciModel? ServisKullanici { get; set; }
 
         [Display(Name = "Fotoğraf")]
         public string? OgrenciGorsel { get; set; }
@@ -84,6 +84,9 @@ namespace OgrenciBilgiSistemi.Models
 
         [ValidateNever]
         public virtual List<SinifYoklamaModel> SinifYoklamalar { get; set; } = new();
+
+        [ValidateNever]
+        public virtual List<ServisYoklamaModel> ServisYoklamalar { get; set; } = new();
 
         [NotMapped]
         [ValidateNever]

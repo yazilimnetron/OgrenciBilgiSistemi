@@ -36,7 +36,8 @@ builder.Services.AddCors(options =>
                   .AllowAnyMethod()
                   .AllowAnyHeader();
         else
-            policy.AllowAnyOrigin()
+            // Yapılandırma eksikse hiçbir origin'e izin verme (güvenli varsayılan)
+            policy.WithOrigins("https://localhost")
                   .AllowAnyMethod()
                   .AllowAnyHeader();
     });
@@ -70,6 +71,7 @@ builder.Services.AddAuthorization(opts =>
 // --------------------
 builder.Services.AddControllers();
 builder.Services.AddScoped<GirisService>();
+builder.Services.AddSingleton<RefreshTokenService>();
 builder.Services.AddScoped<SinifService>();
 builder.Services.AddScoped<OgrenciService>();
 builder.Services.AddScoped<BirimService>();
@@ -86,8 +88,11 @@ var app = builder.Build();
 app.UseHttpsRedirection();
 app.UseCors("ConfiguredOrigins");
 
-app.UseSwagger();
-app.UseSwaggerUI();
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
 
 // MVC projesinin wwwroot/uploads klasörünü /uploads altında sun
 var mvcWwwRoot = Path.Combine(app.Environment.ContentRootPath, "..", "OgrenciBilgiSistemi", "wwwroot");

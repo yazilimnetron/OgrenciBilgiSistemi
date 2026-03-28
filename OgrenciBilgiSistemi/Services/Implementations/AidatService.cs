@@ -411,7 +411,7 @@ namespace OgrenciBilgiSistemi.Services.Implementations
 
                 var aidat = ent.OgrenciAidat;
                 aidat.Odenen = decimal.Round(Math.Max(0m, aidat.Odenen - ent.Tutar), 2, MidpointRounding.AwayFromZero);
-                _db.OgrenciAidatOdemeler.Remove(ent);
+                ent.AktifMi = false;
                 await _db.SaveChangesAsync(ct);
 
                 aidat.SonOdemeTarihi = await _db.OgrenciAidatOdemeler

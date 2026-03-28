@@ -56,5 +56,8 @@ namespace OgrenciBilgiSistemi.Models
 
         [ValidateNever]
         public virtual List<SinifYoklamaModel> SinifYoklamalar { get; set; } = new();
+
+        [ValidateNever]
+        public virtual List<ServisYoklamaModel> ServisYoklamalar { get; set; } = new();
     }
 }

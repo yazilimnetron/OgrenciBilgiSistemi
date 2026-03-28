@@ -68,7 +68,7 @@ namespace OgrenciBilgiSistemi.Services.Implementations
             var profil = await _db.OgretmenProfiller.FindAsync([kullaniciId], ct);
             if (profil == null) return;
 
-            _db.OgretmenProfiller.Remove(profil);
+            profil.OgretmenDurum = false;
             await _db.SaveChangesAsync(ct);
         }
 

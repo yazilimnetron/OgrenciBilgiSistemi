@@ -31,11 +31,7 @@
             if (form.checkValidity()) {
               btn.disabled = true;
               const originalText = btn.textContent.trim();
-              if (originalText.endsWith("e")) {
-                  btn.textContent = originalText + "iliyor...";
-              } else {
-                  btn.textContent = originalText + "iyor...";
-              }
+              btn.textContent = originalText === 'Güncelle' ? 'Güncelleniyor...' : 'Kaydediliyor...';
             }
           });
         })();

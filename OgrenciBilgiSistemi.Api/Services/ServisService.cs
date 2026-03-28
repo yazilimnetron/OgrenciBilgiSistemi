@@ -14,9 +14,9 @@ namespace OgrenciBilgiSistemi.Api.Services
         }
 
         /// <summary>
-        /// Belirtilen şoföre (KullaniciId) atanmış aktif öğrencileri getirir.
+        /// Belirtilen servise (KullaniciId) atanmış aktif öğrencileri getirir.
         /// </summary>
-        public async Task<List<OgrenciModel>> ServisOgrencileriGetir(int soforKullaniciId)
+        public async Task<List<OgrenciModel>> ServisOgrencileriGetir(int servisKullaniciId)
         {
             var ogrenciler = new List<OgrenciModel>();
             try
@@ -27,11 +27,11 @@ namespace OgrenciBilgiSistemi.Api.Services
                            B.BirimAd AS SinifAdi
                     FROM Ogrenciler O
                     LEFT JOIN Birimler B ON O.BirimId = B.BirimId
-                    WHERE O.ServisId = @soforId AND O.OgrenciDurum = 1
+                    WHERE O.ServisId = @servisId AND O.OgrenciDurum = 1
                     ORDER BY O.OgrenciAdSoyad";
 
                 await using var cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@soforId", soforKullaniciId);
+                cmd.Parameters.AddWithValue("@servisId", servisKullaniciId);
                 await conn.OpenAsync();
 
                 await using var reader = await cmd.ExecuteReaderAsync();
@@ -56,20 +56,21 @@ namespace OgrenciBilgiSistemi.Api.Services
         }
 
         /// <summary>
-        /// Belirtilen şoförün servis profil bilgilerini getirir.
+        /// Belirtilen servisün servis profil bilgilerini getirir.
         /// </summary>
-        public async Task<ServisProfilModel?> ServisProfilGetir(int soforKullaniciId)
+        public async Task<ServisProfilModel?> ServisProfilGetir(int servisKullaniciId)
         {
             try
             {
                 await using var conn = new SqlConnection(_connectionString);
                 const string query = @"
-                    SELECT KullaniciId, Plaka, SoforTelefon, ServisDurum
-                    FROM ServisProfiller
-                    WHERE KullaniciId = @kullaniciId";
+                    SELECT SP.KullaniciId, SP.Plaka, K.Telefon AS ServisTelefon, SP.ServisDurum
+                    FROM ServisProfiller SP
+                    INNER JOIN Kullanicilar K ON K.KullaniciId = SP.KullaniciId
+                    WHERE SP.KullaniciId = @kullaniciId";
 
                 await using var cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@kullaniciId", soforKullaniciId);
+                cmd.Parameters.AddWithValue("@kullaniciId", servisKullaniciId);
                 await conn.OpenAsync();
 
                 await using var reader = await cmd.ExecuteReaderAsync();
@@ -79,7 +80,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                     {
                         KullaniciId = (int)reader["KullaniciId"],
                         Plaka       = reader["Plaka"]?.ToString() ?? string.Empty,
-                        SoforTelefon = reader["SoforTelefon"]?.ToString(),
+                        ServisTelefon = reader["ServisTelefon"]?.ToString(),
                         ServisDurum = Convert.ToBoolean(reader["ServisDurum"])
                     };
                 }
@@ -92,9 +93,9 @@ namespace OgrenciBilgiSistemi.Api.Services
         }
 
         /// <summary>
-        /// Belirtilen şoförün bugünkü yoklamasını periyoda göre getirir.
+        /// Belirtilen servisün bugünkü yoklamasını periyoda göre getirir.
         /// </summary>
-        public async Task<Dictionary<int, int>> MevcutServisYoklamaGetir(int soforKullaniciId, int periyot)
+        public async Task<Dictionary<int, int>> MevcutServisYoklamaGetir(int servisKullaniciId, int periyot)
         {
             var yoklamaDict = new Dictionary<int, int>();
 
@@ -109,7 +110,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                       AND CAST(SY.OlusturulmaTarihi AS DATE) = CAST(GETDATE() AS DATE)";
 
                 await using var cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@kullaniciId", soforKullaniciId);
+                cmd.Parameters.AddWithValue("@kullaniciId", servisKullaniciId);
                 cmd.Parameters.AddWithValue("@periyot", periyot);
                 await conn.OpenAsync();
 

@@ -2,7 +2,7 @@
 <html lang="tr">
 <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0" />
     <meta name="description" content="Öğrenci Bilgi Sistemi - Öğrenci ve Kitap Yönetimi" />
     <meta name="keywords" content="Öğrenci, Kitap, Yönetim, Bilgi Sistemi" />
     <title>@ViewData["Title"] - Öğrenci Bilgi Sistemi</title>
@@ -24,30 +24,22 @@
     @if (isAuthenticated)
     {
         <header>
-            <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
+            <nav class="navbar navbar-expand bg-body-tertiary border-bottom">
                 <div class="container-fluid">
+                    <ul class="navbar-nav me-auto mb-0">
+                        @await Component.InvokeAsync("Menu")
+                    </ul>
 
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
-                            aria-controls="mainNavbar" aria-expanded="false" aria-label="Menüyü Aç/Kapat">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-
-                    <div class="collapse navbar-collapse" id="mainNavbar">
-                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                            @await Component.InvokeAsync("Menu")
-                        </ul>
-
-                        <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                            <li class="nav-item">
-                                <form asp-controller="Hesaplar" asp-action="Cikis" method="post" class="d-inline">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="btn btn-link nav-link p-0">
-                                        <i class="bi bi-box-arrow-right"></i> Çıkış Yap
-                                    </button>
-                                </form>
-                            </li>
-                        </ul>
-                    </div>
+                    <ul class="navbar-nav ms-auto mb-0">
+                        <li class="nav-item">
+                            <form asp-controller="Hesaplar" asp-action="Cikis" method="post" class="d-inline">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-link nav-link p-0">
+                                    <i class="bi bi-box-arrow-right"></i> Çıkış Yap
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
                 </div>
             </nav>
         </header>
@@ -55,13 +47,8 @@
     else
     {
         <header>
-            <nav class="navbar navbar-expand-lg bg-body-tertiary border-bottom">
-                <div class="container-fluid">
-                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
-                            aria-controls="mainNavbar" aria-expanded="false" aria-label="Menüyü Aç/Kapat">
-                        <span class="navbar-toggler-icon"></span>
-                    </button>
-                </div>
+            <nav class="navbar navbar-expand bg-body-tertiary border-bottom">
+                <div class="container-fluid"></div>
             </nav>
         </header>
     }

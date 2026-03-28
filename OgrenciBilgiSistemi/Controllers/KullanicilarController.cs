@@ -87,6 +87,8 @@ namespace OgrenciBilgiSistemi.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Guncelle(KullaniciModel model)
         {
+            ModelState.Remove(nameof(model.Sifre));
+
             if (!ModelState.IsValid)
             {
                 await DropdownDoldur(model);

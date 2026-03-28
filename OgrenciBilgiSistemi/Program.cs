@@ -30,12 +30,18 @@ builder.Services.AddDbContextPool<AppDbContext>(options =>
             errorNumbersToAdd: null)));
 
 // --------------------
-// MVC + Global Authorize
+// MVC + Global Authorize + Menu Yetki
 // --------------------
 builder.Services.AddControllersWithViews(o =>
 {
     o.Filters.Add(new AuthorizeFilter());
+    o.Filters.Add(typeof(OgrenciBilgiSistemi.Infrastructure.MenuYetkiFilter));
 });
+
+// --------------------
+// HttpContext erişimi (servis katmanında kullanıcı bilgilerine erişim için)
+// --------------------
+builder.Services.AddHttpContextAccessor();
 
 // --------------------
 // App services
@@ -80,6 +86,9 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 builder.Services.AddAuthorization(o =>
 {
     o.AddPolicy("AdminOnly", p => p.RequireRole("Admin"));
+    o.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+        .RequireAuthenticatedUser()
+        .Build();
 });
 
 var app = builder.Build();

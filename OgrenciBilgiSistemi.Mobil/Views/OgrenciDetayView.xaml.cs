@@ -60,30 +60,26 @@ namespace OgrenciBilgiSistemi.Mobil.Views
         {
             try
             {
-                var details = await _ogrenciService.OgrenciDetayGetirAsync(_studentId);
-                if (details != null)
+                var detay = await _ogrenciService.OgrenciDetayGetirAsync(_studentId);
+                if (detay != null)
                 {
                     var vm = new OgrenciGorunumModel();
                     vm.OgrenciData.OgrenciId = _studentId;
-                    // API Türkçe anahtar isimleri kullanıyor (OgrenciAdSoyad, VeliAdSoyad vb.)
-                    vm.OgrenciData.OgrenciAdSoyad = details.ContainsKey("OgrenciAdSoyad") ? details["OgrenciAdSoyad"] : "Bilinmiyor";
-
-                    string imgName = details.ContainsKey("OgrenciGorsel") ? details["OgrenciGorsel"] : "user_icon.png";
-                    vm.OgrenciData.OgrenciGorsel = Constants.GorselUrl(imgName);
+                    vm.OgrenciData.OgrenciAdSoyad = detay.OgrenciAdSoyad;
+                    vm.OgrenciData.OgrenciGorsel = Constants.GorselUrl(detay.OgrenciGorsel);
                     this.BindingContext = vm;
 
-                    LblClass.Text         = details.ContainsKey("BirimAd")         ? details["BirimAd"]         : "-";
-                    LblStudentNo.Text     = details.ContainsKey("OgrenciNo")        ? details["OgrenciNo"]        : "-";
-                    LblCardNo.Text        = details.ContainsKey("OgrenciKartNo")    ? details["OgrenciKartNo"]    : "-";
-                    LblServicePlate.Text  = details.ContainsKey("Plaka")            ? details["Plaka"]            : "Kullanmıyor";
-                    LblParentName.Text    = details.ContainsKey("VeliAdSoyad")      ? details["VeliAdSoyad"]      : "-";
-                    LblParentPhone.Text   = details.ContainsKey("VeliTelefon")      ? details["VeliTelefon"]      : "-";
-                    LblParentEmail.Text   = details.ContainsKey("VeliEmail")        ? details["VeliEmail"]        : "-";
-                    LblParentAddress.Text = details.ContainsKey("VeliAdres")        ? details["VeliAdres"]        : "-";
-                    LblParentJob.Text     = details.ContainsKey("VeliMeslek")       ? details["VeliMeslek"]       : "-";
-                    LblParentWork.Text    = details.ContainsKey("VeliIsYeri")       ? details["VeliIsYeri"]       : "-";
-                    LblTeacherName.Text   = details.ContainsKey("OgretmenAdSoyad")  ? details["OgretmenAdSoyad"]  : "Atanmamış";
-
+                    LblClass.Text         = detay.BirimAd;
+                    LblStudentNo.Text     = detay.OgrenciNo;
+                    LblCardNo.Text        = detay.OgrenciKartNo;
+                    LblServicePlate.Text  = detay.Plaka;
+                    LblParentName.Text    = detay.VeliAdSoyad;
+                    LblParentPhone.Text   = detay.VeliTelefon;
+                    LblParentEmail.Text   = detay.VeliEmail;
+                    LblParentAddress.Text = detay.VeliAdres;
+                    LblParentJob.Text     = detay.VeliMeslek;
+                    LblParentWork.Text    = detay.VeliIsYeri;
+                    LblTeacherName.Text   = detay.OgretmenAdSoyad;
                 }
             }
             catch (Exception ex)

@@ -5,8 +5,6 @@ namespace OgrenciBilgiSistemi.Api.Models
     public class VeliProfilModel
     {
         public int KullaniciId { get; set; }
-        public string? VeliAdSoyad { get; set; }
-        public string? VeliTelefon { get; set; }
         public string? VeliAdres { get; set; }
         public string? VeliMeslek { get; set; }
         public string? VeliIsYeri { get; set; }

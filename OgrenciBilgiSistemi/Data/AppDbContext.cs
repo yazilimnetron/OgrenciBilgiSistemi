@@ -96,6 +96,13 @@ namespace OgrenciBilgiSistemi.Data
                 .IsRequired();
 
             modelBuilder.Entity<KitapDetayModel>()
+                .HasOne(k => k.Kitap)
+                .WithMany()
+                .HasForeignKey(k => k.KitapId)
+                .OnDelete(DeleteBehavior.Restrict)
+                .IsRequired();
+
+            modelBuilder.Entity<KitapDetayModel>()
                 .HasQueryFilter(k => k.Ogrenci.OgrenciDurum || IncludePasifOgrenciler);
 
             // =========================
@@ -147,7 +154,7 @@ namespace OgrenciBilgiSistemi.Data
             });
 
             modelBuilder.Entity<OgrenciYemekOdemeModel>()
-                .HasQueryFilter(p => p.Ogrenci.OgrenciDurum || IncludePasifOgrenciler);
+                .HasQueryFilter(p => p.AktifMi && (p.Ogrenci.OgrenciDurum || IncludePasifOgrenciler));
 
             // =========================
             // AIDAT: KAYIT (required -> Ogrenci)
@@ -192,7 +199,7 @@ namespace OgrenciBilgiSistemi.Data
             });
 
             modelBuilder.Entity<OgrenciAidatOdemeModel>()
-                .HasQueryFilter(x => x.OgrenciAidat.Ogrenci.OgrenciDurum || IncludePasifOgrenciler);
+                .HasQueryFilter(x => x.AktifMi && (x.OgrenciAidat.Ogrenci.OgrenciDurum || IncludePasifOgrenciler));
 
             // =========================
             // AIDAT: TARIFE (global)
@@ -207,10 +214,10 @@ namespace OgrenciBilgiSistemi.Data
             });
 
             // =========================
-            // OGRENCI <-> KULLANICI/SOFOR (optional)
+            // OGRENCI <-> KULLANICI/SERVIS (optional)
             // =========================
             modelBuilder.Entity<OgrenciModel>()
-                .HasOne(o => o.Sofor)
+                .HasOne(o => o.ServisKullanici)
                 .WithMany()
                 .HasForeignKey(o => o.ServisId)
                 .OnDelete(DeleteBehavior.SetNull);
@@ -269,6 +276,12 @@ namespace OgrenciBilgiSistemi.Data
                 .HasForeignKey(z => z.KullaniciId)
                 .OnDelete(DeleteBehavior.SetNull);
 
+            modelBuilder.Entity<ZiyaretciModel>()
+                .HasOne(z => z.Cihaz)
+                .WithMany()
+                .HasForeignKey(z => z.CihazId)
+                .OnDelete(DeleteBehavior.SetNull);
+
             // =========================
             // SINIF YOKLAMA
             // =========================
@@ -298,13 +311,13 @@ namespace OgrenciBilgiSistemi.Data
             modelBuilder.Entity<ServisYoklamaModel>(e =>
             {
                 e.HasOne(sy => sy.Ogrenci)
-                 .WithMany()
+                 .WithMany(o => o.ServisYoklamalar)
                  .HasForeignKey(sy => sy.OgrenciId)
                  .OnDelete(DeleteBehavior.Restrict)
                  .IsRequired();
 
                 e.HasOne(sy => sy.Kullanici)
-                 .WithMany()
+                 .WithMany(k => k.ServisYoklamalar)
                  .HasForeignKey(sy => sy.KullaniciId)
                  .OnDelete(DeleteBehavior.Restrict)
                  .IsRequired();
@@ -349,6 +362,20 @@ namespace OgrenciBilgiSistemi.Data
                 .HasIndex(k => k.KullaniciAdi)
                 .IsUnique()
                 .HasDatabaseName("UX_Kullanicilar_KullaniciAdi");
+
+            // =========================
+            // PERFORMANS INDEKSLERI
+            // =========================
+
+            // Rol bazlı yetkilendirme sorgularında kullanılır
+            modelBuilder.Entity<KullaniciModel>()
+                .HasIndex(k => k.Rol)
+                .HasDatabaseName("IX_Kullanicilar_Rol");
+
+            // Sınıfa göre öğrenci filtreleme sorgularında kullanılır
+            modelBuilder.Entity<OgrenciModel>()
+                .HasIndex(o => o.BirimId)
+                .HasDatabaseName("IX_Ogrenciler_BirimId");
 
             // =========================
             // KULLANICI-MENU (M:N)

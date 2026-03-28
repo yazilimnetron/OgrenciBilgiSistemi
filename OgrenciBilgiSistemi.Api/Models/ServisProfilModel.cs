@@ -4,7 +4,7 @@ namespace OgrenciBilgiSistemi.Api.Models
     {
         public int KullaniciId { get; set; }
         public string Plaka { get; set; } = string.Empty;
-        public string? SoforTelefon { get; set; }
+        public string? ServisTelefon { get; set; }
         public bool ServisDurum { get; set; }
     }
 }

@@ -34,7 +34,7 @@ namespace OgrenciBilgiSistemi.Services.Implementations
 
             if (veli is null) return;
 
-            _db.VeliProfiller.Remove(veli);
+            veli.VeliDurum = false;
             await _db.SaveChangesAsync(ct);
         }
 

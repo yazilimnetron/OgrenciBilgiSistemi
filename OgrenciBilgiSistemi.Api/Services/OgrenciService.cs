@@ -268,14 +268,16 @@ namespace OgrenciBilgiSistemi.Api.Services
                     SELECT
                         s.OgrenciAdSoyad, s.OgrenciNo, s.OgrenciKartNo, s.OgrenciGorsel,
                         u.BirimAd,
-                        p.VeliAdSoyad, p.VeliTelefon, p.VeliEmail, p.VeliMeslek, p.VeliIsYeri, p.VeliAdres,
+                        vk.KullaniciAdi AS VeliAdSoyad, vk.Telefon AS VeliTelefon,
+                        p.VeliEmail, p.VeliMeslek, p.VeliIsYeri, p.VeliAdres,
                         t.KullaniciAdi AS OgretmenAdSoyad, srv.Plaka
                     FROM Ogrenciler s
                     LEFT JOIN Birimler          u   ON s.BirimId        = u.BirimId
+                    LEFT JOIN Kullanicilar      vk  ON s.VeliId         = vk.KullaniciId
                     LEFT JOIN VeliProfiller      p   ON s.VeliId         = p.KullaniciId
                     LEFT JOIN Kullanicilar      t   ON s.OgretmenId     = t.KullaniciId
                     LEFT JOIN ServisProfiller    srv ON s.ServisId       = srv.KullaniciId
-                    WHERE s.OgrenciId = @ogrenciId";
+                    WHERE s.OgrenciId = @ogrenciId AND s.OgrenciDurum = 1";
 
                 await using var cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@ogrenciId", ogrenciId);

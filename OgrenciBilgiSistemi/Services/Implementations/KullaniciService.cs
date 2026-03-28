@@ -40,6 +40,7 @@ namespace OgrenciBilgiSistemi.Services.Implementations
             return await _db.Kullanicilar
                 .Include(k => k.ServisProfil)
                 .Include(k => k.OgretmenProfil).ThenInclude(o => o!.Birim)
+                .Include(k => k.VeliProfil)
                 .FirstOrDefaultAsync(k => k.KullaniciId == id, ct);
         }
 
@@ -54,9 +55,13 @@ namespace OgrenciBilgiSistemi.Services.Implementations
 
             model.Sifre = _passwordHasher.HashPassword(model, model.Sifre);
 
-            // Ogretmen değilse profili temizle (form'dan gelmiş olabilir)
+            // Role uygun olmayan profilleri temizle (form'dan gelmiş olabilir)
             if (model.Rol != KullaniciRolu.Ogretmen)
                 model.OgretmenProfil = null;
+            if (model.Rol != KullaniciRolu.Servis)
+                model.ServisProfil = null;
+            if (model.Rol != KullaniciRolu.Veli)
+                model.VeliProfil = null;
 
             _db.Kullanicilar.Add(model);
             await _db.SaveChangesAsync(ct);
@@ -66,6 +71,8 @@ namespace OgrenciBilgiSistemi.Services.Implementations
         {
             var kullanici = await _db.Kullanicilar
                 .Include(k => k.OgretmenProfil)
+                .Include(k => k.ServisProfil)
+                .Include(k => k.VeliProfil)
                 .FirstOrDefaultAsync(k => k.KullaniciId == model.KullaniciId, ct)
                 ?? throw new KeyNotFoundException("Kullanıcı bulunamadı.");
 
@@ -90,6 +97,36 @@ namespace OgrenciBilgiSistemi.Services.Implementations
 
                 if (model.OgretmenProfil?.GorselFile != null && model.OgretmenProfil.GorselFile.Length > 0)
                     profil.GorselPath = await SaveImageAsync(model.OgretmenProfil.GorselFile, ct);
+            }
+
+            // ServisProfil yönetimi
+            if (model.Rol == KullaniciRolu.Servis)
+            {
+                var profil = kullanici.ServisProfil;
+                if (profil == null)
+                {
+                    profil = new ServisProfilModel { KullaniciId = kullanici.KullaniciId };
+                    _db.ServisProfiller.Add(profil);
+                }
+
+                profil.Plaka = model.ServisProfil?.Plaka ?? string.Empty;
+            }
+
+            // VeliProfil yönetimi
+            if (model.Rol == KullaniciRolu.Veli)
+            {
+                var profil = kullanici.VeliProfil;
+                if (profil == null)
+                {
+                    profil = new VeliProfilModel { KullaniciId = kullanici.KullaniciId };
+                    _db.VeliProfiller.Add(profil);
+                }
+
+                profil.VeliAdres = model.VeliProfil?.VeliAdres;
+                profil.VeliMeslek = model.VeliProfil?.VeliMeslek;
+                profil.VeliIsYeri = model.VeliProfil?.VeliIsYeri;
+                profil.VeliEmail = model.VeliProfil?.VeliEmail;
+                profil.VeliYakinlik = model.VeliProfil?.VeliYakinlik;
             }
 
             if (!string.IsNullOrWhiteSpace(model.Sifre))
@@ -148,10 +185,10 @@ namespace OgrenciBilgiSistemi.Services.Implementations
                 })
                 .ToListAsync(ct);
 
-        public async Task<List<SelectListItem>> GetSoforlerSelectListAsync(int? selectedId = null, CancellationToken ct = default)
+        public async Task<List<SelectListItem>> GetServislerByIdSelectListAsync(int? selectedId = null, CancellationToken ct = default)
             => await _db.Kullanicilar
                 .AsNoTracking()
-                .Where(k => k.KullaniciDurum && k.Rol == KullaniciRolu.Sofor)
+                .Where(k => k.KullaniciDurum && k.Rol == KullaniciRolu.Servis)
                 .OrderBy(k => k.KullaniciAdi)
                 .Select(k => new SelectListItem
                 {

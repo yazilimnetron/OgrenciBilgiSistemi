@@ -10,15 +10,6 @@ namespace OgrenciBilgiSistemi.Models
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int KullaniciId { get; set; }
 
-        [StringLength(50, ErrorMessage = "En fazla 50 karakter yazabilirsiniz!")]
-        [Display(Name = "Veli Ad Soyad")]
-        public string? VeliAdSoyad { get; set; }
-
-        [StringLength(15)]
-        [RegularExpression(@"^\d{10,15}$", ErrorMessage = "Telefon numarası yalnızca rakamlardan oluşmalıdır!")]
-        [Display(Name = "Veli Telefon")]
-        public string? VeliTelefon { get; set; }
-
         [StringLength(150)]
         [Display(Name = "Veli Adres")]
         public string? VeliAdres { get; set; }

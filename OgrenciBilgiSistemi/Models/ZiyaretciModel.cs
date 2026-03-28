@@ -62,5 +62,9 @@ namespace OgrenciBilgiSistemi.Models
 
         [Display(Name = "Giriş Kapısı")]
         public int? CihazId { get; set; }
+
+        [ForeignKey(nameof(CihazId))]
+        [ValidateNever]
+        public virtual CihazModel? Cihaz { get; set; }
     }
 }

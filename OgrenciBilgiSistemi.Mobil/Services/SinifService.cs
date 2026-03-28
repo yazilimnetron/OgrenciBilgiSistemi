@@ -8,19 +8,19 @@ namespace OgrenciBilgiSistemi.Mobil.Services
     {
         public async Task<List<SinifGorunumModel>> TumSiniflariOgrenciSayisiIleGetirAsync()
         {
-            // Demo modunda API çağrısı yapılmaz, sahte sınıf listesi döndürülür
-            if (KullaniciOturum.DemoModuMu)
-                return DemoSiniflariGetir();
-
             try
             {
                 // API'deki 'api/siniflar/all-with-count' endpoint'ine istek atıyoruz
-                var response = await _httpClient.GetFromJsonAsync<List<BirimOgrenciSayisiDto>>($"{BaseUrl}siniflar/all-with-count");
+                var response = await _httpClient.GetAsync($"{BaseUrl}siniflar/all-with-count");
+                if (!await YanitDurumuIsle(response))
+                    return new List<SinifGorunumModel>();
 
-                if (response != null)
+                var data = await response.Content.ReadFromJsonAsync<List<BirimOgrenciSayisiDto>>(_jsonOptions);
+
+                if (data != null)
                 {
                     // API'den gelen DTO listesini MAUI'nin beklediği ViewModel listesine dönüştürüyoruz
-                    return response.Select(dto => new SinifGorunumModel
+                    return data.Select(dto => new SinifGorunumModel
                     {
                         SinifVerisi = dto.Birim,
                         OgrenciSayisi = dto.OgrenciSayisi
@@ -29,31 +29,12 @@ namespace OgrenciBilgiSistemi.Mobil.Services
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"[API HATASI]: Sınıf listesi çekilemedi: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"[API HATASI]: Sınıf listesi çekilemedi: {ex.Message}");
             }
 
             return new List<SinifGorunumModel>();
         }
 
-        /// <summary>
-        /// Apple App Store incelemesi için sahte sınıf listesi döndürür.
-        /// </summary>
-        private List<SinifGorunumModel> DemoSiniflariGetir()
-        {
-            return new List<SinifGorunumModel>
-            {
-                new SinifGorunumModel
-                {
-                    SinifVerisi = new Birim { BirimId = -1, BirimAd = "4-A Şubesi", BirimDurum = true, BirimSinifMi = true },
-                    OgrenciSayisi = 5
-                },
-                new SinifGorunumModel
-                {
-                    SinifVerisi = new Birim { BirimId = -2, BirimAd = "5-B Şubesi", BirimDurum = true, BirimSinifMi = true },
-                    OgrenciSayisi = 5
-                }
-            };
-        }
     }
 
     // API'nin BirimOgrenciSayisiModel yapısını karşılayan DTO

@@ -18,21 +18,29 @@ namespace OgrenciBilgiSistemi.Api.Controllers
         }
 
         /// <summary>
-        /// Belirtilen şoföre (KullaniciId) atanmış öğrencileri getirir.
+        /// Belirtilen servise (KullaniciId) atanmış öğrencileri getirir.
+        /// Yalnızca servis kendi servis ID'si ile erişebilir.
         /// </summary>
         [HttpGet("{servisId}/ogrenciler")]
         public async Task<IActionResult> ServisOgrencileriGetir(int servisId)
         {
+            var yetkiSonucu = ServisErisimKontrol(servisId);
+            if (yetkiSonucu != null) return yetkiSonucu;
+
             var ogrenciler = await _servisService.ServisOgrencileriGetir(servisId);
             return Ok(ogrenciler);
         }
 
         /// <summary>
-        /// Belirtilen şoförün servis profil bilgilerini getirir.
+        /// Belirtilen servisün servis profil bilgilerini getirir.
+        /// Yalnızca servis kendi profilini görüntüleyebilir.
         /// </summary>
         [HttpGet("{servisId}")]
         public async Task<IActionResult> ServisProfilGetir(int servisId)
         {
+            var yetkiSonucu = ServisErisimKontrol(servisId);
+            if (yetkiSonucu != null) return yetkiSonucu;
+
             var profil = await _servisService.ServisProfilGetir(servisId);
             if (profil == null)
                 return NotFound("Servis profili bulunamadı.");
@@ -41,11 +49,15 @@ namespace OgrenciBilgiSistemi.Api.Controllers
         }
 
         /// <summary>
-        /// Belirtilen şoförün bugünkü yoklamasını periyoda göre getirir.
+        /// Belirtilen servisün bugünkü yoklamasını periyoda göre getirir.
+        /// Yalnızca servis kendi yoklamasını görüntüleyebilir.
         /// </summary>
         [HttpGet("{servisId}/yoklama/{periyot}")]
         public async Task<IActionResult> ServisYoklamaGetir(int servisId, int periyot)
         {
+            var yetkiSonucu = ServisErisimKontrol(servisId);
+            if (yetkiSonucu != null) return yetkiSonucu;
+
             try
             {
                 var yoklama = await _servisService.MevcutServisYoklamaGetir(servisId, periyot);
@@ -59,10 +71,19 @@ namespace OgrenciBilgiSistemi.Api.Controllers
 
         /// <summary>
         /// Servis yoklamasını toplu olarak kaydeder.
+        /// KullaniciId body'den değil, JWT token'dan alınır.
         /// </summary>
         [HttpPost("yoklama-kaydet")]
         public async Task<IActionResult> ServisYoklamaKaydet([FromBody] ServisYoklamaKaydetDto model)
         {
+            var rol = User.FindFirst("rol")?.Value;
+            if (rol != "Servis")
+                return Forbid();
+
+            var servisIdStr = User.FindFirst("servisId")?.Value;
+            if (!int.TryParse(servisIdStr, out var tokenServisId))
+                return Unauthorized("Oturum bilgileri eksik.");
+
             if (model.Kayitlar == null || model.Kayitlar.Count == 0)
                 return BadRequest(new { error = "Yoklama kaydı listesi boş olamaz." });
 
@@ -72,7 +93,7 @@ namespace OgrenciBilgiSistemi.Api.Controllers
 
                 await _servisService.ServisYoklamaKaydet(
                     formatliVeri,
-                    model.KullaniciId,
+                    tokenServisId,
                     model.Periyot
                 );
 
@@ -82,6 +103,22 @@ namespace OgrenciBilgiSistemi.Api.Controllers
             {
                 return StatusCode(500, new { error = "Servis yoklaması kaydedilirken bir hata oluştu." });
             }
+        }
+
+        /// <summary>
+        /// Servis rolü ve servisId eşleşmesini kontrol eder.
+        /// </summary>
+        private IActionResult? ServisErisimKontrol(int servisId)
+        {
+            var rol = User.FindFirst("rol")?.Value;
+            if (rol != "Servis")
+                return Forbid();
+
+            var servisIdStr = User.FindFirst("servisId")?.Value;
+            if (!int.TryParse(servisIdStr, out var tokenServisId) || tokenServisId != servisId)
+                return Forbid();
+
+            return null;
         }
     }
 }

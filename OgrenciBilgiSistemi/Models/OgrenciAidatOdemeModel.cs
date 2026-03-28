@@ -22,5 +22,7 @@ namespace OgrenciBilgiSistemi.Models
 
         [Column(TypeName = "nvarchar(255)")]
         public string? Aciklama { get; set; }
+
+        public bool AktifMi { get; set; } = true;
     }
 }

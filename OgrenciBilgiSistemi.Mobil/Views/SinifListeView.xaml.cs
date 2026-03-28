@@ -53,10 +53,6 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                 }
                 #endregion
 
-                // Demo modunda sarı banner'ı göster
-                if (DemoBanner != null)
-                    DemoBanner.IsVisible = KullaniciOturum.DemoModuMu;
-
                 // Liste seçimi temizleniyor (Geri dönüldüğünde tekrar tıklanabilmesi için)
                 if (ClassCollection != null)
                 {

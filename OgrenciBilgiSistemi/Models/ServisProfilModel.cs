@@ -15,11 +15,6 @@ namespace OgrenciBilgiSistemi.Models
         [Display(Name = "Plaka")]
         public string Plaka { get; set; } = string.Empty;
 
-        [StringLength(15)]
-        [RegularExpression(@"^\d{10,15}$", ErrorMessage = "Telefon numarası yalnızca rakamlardan oluşmalıdır!")]
-        [Display(Name = "Şoför Telefon")]
-        public string? SoforTelefon { get; set; }
-
         [Display(Name = "Durum (Aktif)")]
         public bool ServisDurum { get; set; } = true;
 

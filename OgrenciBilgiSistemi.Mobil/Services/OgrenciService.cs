@@ -29,15 +29,14 @@ namespace OgrenciBilgiSistemi.Mobil.Services
         /// </summary>
         public async Task<List<Ogrenci>> SinifaGoreOgrencileriGetirAsync(int sinifId)
         {
-            // Demo modunda API çağrısı yapılmaz, sahte öğrenci listesi döndürülür
-            if (KullaniciOturum.DemoModuMu)
-                return DemoOgrencileriGetir(sinifId);
-
             try
             {
                 // API Ucu: GET api/ogrenciler/class/{sinifId}
-                var response = await _httpClient.GetFromJsonAsync<List<Ogrenci>>($"{BaseUrl}ogrenciler/class/{sinifId}");
-                var list = response ?? new List<Ogrenci>();
+                var response = await _httpClient.GetAsync($"{BaseUrl}ogrenciler/class/{sinifId}");
+                if (!await YanitDurumuIsle(response))
+                    return new List<Ogrenci>();
+
+                var list = await response.Content.ReadFromJsonAsync<List<Ogrenci>>(_jsonOptions) ?? new List<Ogrenci>();
                 foreach (var o in list)
                     o.OgrenciGorsel = Constants.GorselUrl(o.OgrenciGorsel);
                 return list;
@@ -51,17 +50,16 @@ namespace OgrenciBilgiSistemi.Mobil.Services
         /// <summary>
         /// Öğrencinin veli, servis ve sınıf gibi tüm detaylı bilgilerini getirir.
         /// </summary>
-        public async Task<Dictionary<string, string>> OgrenciDetayGetirAsync(int ogrenciId)
+        public async Task<OgrenciDetay?> OgrenciDetayGetirAsync(int ogrenciId)
         {
-            // Demo modunda sahte detay bilgisi döndürülür
-            if (KullaniciOturum.DemoModuMu)
-                return DemoOgrenciDetayGetir(ogrenciId);
-
             try
             {
                 // API Ucu: GET api/ogrenciler/{id}/details
-                var response = await _httpClient.GetFromJsonAsync<Dictionary<string, string>>($"{BaseUrl}ogrenciler/{ogrenciId}/details");
-                return response ?? new Dictionary<string, string>();
+                var response = await _httpClient.GetAsync($"{BaseUrl}ogrenciler/{ogrenciId}/details");
+                if (!await YanitDurumuIsle(response))
+                    return null;
+
+                return await response.Content.ReadFromJsonAsync<OgrenciDetay>(_jsonOptions);
             }
             catch (Exception ex)
             {
@@ -78,15 +76,14 @@ namespace OgrenciBilgiSistemi.Mobil.Services
         /// </summary>
         public async Task<Dictionary<int, int>> MevcutYoklamaGetirAsync(int sinifId, int dersNumarasi)
         {
-            // Demo modunda boş yoklama döndürülür (tüm öğrenciler bekleme durumunda)
-            if (KullaniciOturum.DemoModuMu)
-                return new Dictionary<int, int>();
-
             try
             {
                 // API Ucu: GET api/ogrenciler/attendance/{sinifId}/{dersNumarasi}
-                var response = await _httpClient.GetFromJsonAsync<Dictionary<int, int>>($"{BaseUrl}ogrenciler/attendance/{sinifId}/{dersNumarasi}");
-                return response ?? new Dictionary<int, int>();
+                var response = await _httpClient.GetAsync($"{BaseUrl}ogrenciler/attendance/{sinifId}/{dersNumarasi}");
+                if (!await YanitDurumuIsle(response))
+                    return new Dictionary<int, int>();
+
+                return await response.Content.ReadFromJsonAsync<Dictionary<int, int>>(_jsonOptions) ?? new Dictionary<int, int>();
             }
             catch (Exception ex)
             {
@@ -97,19 +94,14 @@ namespace OgrenciBilgiSistemi.Mobil.Services
         /// <summary>
         /// Çoklu yoklama verisini API'ye göndererek veritabanına kaydeder/günceller.
         /// </summary>
-        public async Task TopluYoklamaKaydetAsync(IEnumerable<(int OgrenciId, int DurumId)> yoklamaVerisi, int sinifId, int ogretmenId, int dersNumarasi)
+        public async Task TopluYoklamaKaydetAsync(IEnumerable<(int OgrenciId, int DurumId)> yoklamaVerisi, int sinifId, int dersNumarasi)
         {
-            // Demo modunda API'ye istek gönderilmez, sessizce başarılı sayılır
-            if (KullaniciOturum.DemoModuMu)
-                return;
-
             try
             {
                 // API tarafındaki TopluYoklamaGuncelleDto yapısına uygun anonim nesne oluşturuluyor
                 var model = new
                 {
                     SinifId = sinifId,
-                    KullaniciId = ogretmenId,
                     DersNumarasi = dersNumarasi,
                     Kayitlar = yoklamaVerisi.Select(a => new
                     {
@@ -135,16 +127,15 @@ namespace OgrenciBilgiSistemi.Mobil.Services
         /// </summary>
         public async Task<List<SinifYoklama>> HaftalikYoklamaGetirAsync(int ogrenciId, DateTime baslangic, DateTime bitis)
         {
-            // Demo modunda boş yoklama geçmişi döndürülür
-            if (KullaniciOturum.DemoModuMu)
-                return new List<SinifYoklama>();
-
             try
             {
                 // API Ucu: GET api/ogrenciler/{id}/weekly-attendance?baslangic=...&bitis=...
                 string url = $"{BaseUrl}ogrenciler/{ogrenciId}/weekly-attendance?baslangic={baslangic:yyyy-MM-dd}&bitis={bitis:yyyy-MM-dd}";
-                var response = await _httpClient.GetFromJsonAsync<List<SinifYoklama>>(url);
-                return response ?? new List<SinifYoklama>();
+                var response = await _httpClient.GetAsync(url);
+                if (!await YanitDurumuIsle(response))
+                    return new List<SinifYoklama>();
+
+                return await response.Content.ReadFromJsonAsync<List<SinifYoklama>>(_jsonOptions) ?? new List<SinifYoklama>();
             }
             catch (Exception ex)
             {
@@ -154,35 +145,5 @@ namespace OgrenciBilgiSistemi.Mobil.Services
 
         #endregion
 
-        #region Demo Modu Verileri
-
-        private List<Ogrenci> DemoOgrencileriGetir(int sinifId)
-        {
-            int baseId = sinifId == -1 ? -100 : -200;
-            string sinifAdi = sinifId == -1 ? "4-A Şubesi" : "5-B Şubesi";
-
-            return new List<Ogrenci>
-            {
-                new Ogrenci { OgrenciId = baseId - 1, OgrenciAdSoyad = "Ahmet Yılmaz", OgrenciNo = 101, OgrenciDurum = true, BirimId = sinifId, OgrenciCikisDurumu = OglenCikisDurumu.Evet, SinifAdi = sinifAdi },
-                new Ogrenci { OgrenciId = baseId - 2, OgrenciAdSoyad = "Ayşe Kaya", OgrenciNo = 102, OgrenciDurum = true, BirimId = sinifId, OgrenciCikisDurumu = OglenCikisDurumu.Hayir, SinifAdi = sinifAdi },
-                new Ogrenci { OgrenciId = baseId - 3, OgrenciAdSoyad = "Mehmet Demir", OgrenciNo = 103, OgrenciDurum = true, BirimId = sinifId, OgrenciCikisDurumu = OglenCikisDurumu.Evet, SinifAdi = sinifAdi },
-                new Ogrenci { OgrenciId = baseId - 4, OgrenciAdSoyad = "Zeynep Çelik", OgrenciNo = 104, OgrenciDurum = true, BirimId = sinifId, OgrenciCikisDurumu = OglenCikisDurumu.Evet, SinifAdi = sinifAdi },
-                new Ogrenci { OgrenciId = baseId - 5, OgrenciAdSoyad = "Can Şahin", OgrenciNo = 105, OgrenciDurum = true, BirimId = sinifId, OgrenciCikisDurumu = OglenCikisDurumu.Hayir, SinifAdi = sinifAdi }
-            };
-        }
-
-        private Dictionary<string, string> DemoOgrenciDetayGetir(int ogrenciId)
-        {
-            return new Dictionary<string, string>
-            {
-                { "OgrenciAdSoyad", "Demo Öğrenci" },
-                { "BirimAd", "Demo Sınıf" },
-                { "VeliAdSoyad", "Demo Veli" },
-                { "VeliTelefon", "0532 000 00 00" },
-                { "Plaka", "34 ABC 123" }
-            };
-        }
-
-        #endregion
     }
 }

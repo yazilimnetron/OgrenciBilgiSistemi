@@ -22,7 +22,7 @@ namespace OgrenciBilgiSistemi.Api.Controllers
         #region Rol Bazlı Öğrenci Metotları
 
         // Rol bazlı: Giriş yapan kullanıcıya ait öğrencileri getirir
-        // Öğretmen → tüm sınıflar, Şoför → kendi servisi, Veli → kendi çocukları
+        // Öğretmen → tüm sınıflar, Servis → kendi servisi, Veli → kendi çocukları
         [HttpGet("benim")]
         public async Task<IActionResult> BenimOgrencilerim()
         {
@@ -43,7 +43,7 @@ namespace OgrenciBilgiSistemi.Api.Controllers
                         var cocuklar = await _ogrenciService.VeliyeGoreOgrencileriGetirAsync(veliId);
                         return Ok(cocuklar);
 
-                    case "Sofor":
+                    case "Servis":
                         var servisIdStr = User.FindFirst("servisId")?.Value;
                         if (string.IsNullOrEmpty(servisIdStr) || !int.TryParse(servisIdStr, out var servisId))
                             return BadRequest("Servis bilgisi bulunamadı.");
@@ -65,10 +65,14 @@ namespace OgrenciBilgiSistemi.Api.Controllers
 
         #region Öğrenci Bilgi Metotları
 
-        // 1. Sınıf ID'sine göre öğrenci listesini getirir
+        // 1. Sınıf ID'sine göre öğrenci listesini getirir — yalnızca öğretmen
         [HttpGet("class/{sinifId}")]
         public async Task<IActionResult> SinifaGoreGetir(int sinifId)
         {
+            var rol = User.FindFirst("rol")?.Value;
+            if (rol != "Ogretmen")
+                return Forbid();
+
             try
             {
                 var ogrenciler = await _ogrenciService.SinifaGoreOgrencileriGetirAsync(sinifId);
@@ -220,10 +224,14 @@ namespace OgrenciBilgiSistemi.Api.Controllers
             }
         }
 
-        // 8. Mevcut yoklama durumunu getirir (Dictionary döner)
+        // 8. Mevcut yoklama durumunu getirir (Dictionary döner) — yalnızca öğretmen
         [HttpGet("attendance/{sinifId}/{dersNumarasi}")]
         public async Task<IActionResult> YoklamaGetir(int sinifId, int dersNumarasi)
         {
+            var rol = User.FindFirst("rol")?.Value;
+            if (rol != "Ogretmen")
+                return Forbid();
+
             try
             {
                 var yoklama = await _ogrenciService.MevcutYoklamaGetirAsync(sinifId, dersNumarasi);
@@ -239,10 +247,18 @@ namespace OgrenciBilgiSistemi.Api.Controllers
             }
         }
 
-        // 8. Toplu yoklama kaydetme (POST)
+        // 8. Toplu yoklama kaydetme (POST) — yalnızca öğretmen
         [HttpPost("attendance/save-bulk")]
         public async Task<IActionResult> TopluYoklamaKaydet([FromBody] TopluYoklamaGuncelleDto model)
         {
+            var rol = User.FindFirst("rol")?.Value;
+            if (rol != "Ogretmen")
+                return Forbid();
+
+            var kullaniciIdStr = User.FindFirst("kullaniciId")?.Value;
+            if (!int.TryParse(kullaniciIdStr, out var tokenKullaniciId))
+                return Unauthorized("Oturum bilgileri eksik.");
+
             if (model.Kayitlar == null || model.Kayitlar.Count == 0)
                 return BadRequest(new { error = "Yoklama kaydı listesi boş olamaz." });
 
@@ -253,7 +269,7 @@ namespace OgrenciBilgiSistemi.Api.Controllers
                 await _ogrenciService.TopluYoklamaKaydetAsync(
                     formatliVeri,
                     model.SinifId,
-                    model.KullaniciId,
+                    tokenKullaniciId,
                     model.DersNumarasi
                 );
 
@@ -275,7 +291,7 @@ namespace OgrenciBilgiSistemi.Api.Controllers
 
         /// <summary>
         /// Rol bazlı öğrenci erişim kontrolü.
-        /// Veli sadece kendi çocuğunu, şoför sadece kendi servisindeki öğrenciyi görebilir.
+        /// Veli sadece kendi çocuğunu, servis sadece kendi servisindeki öğrenciyi görebilir.
         /// Öğretmen tüm öğrencilere erişebilir.
         /// </summary>
         private IActionResult? OgrenciyeErisimKontrol(int? ogrenciVeliId, int? ogrenciServisId)
@@ -290,13 +306,17 @@ namespace OgrenciBilgiSistemi.Api.Controllers
                         return Forbid();
                     break;
 
-                case "Sofor":
+                case "Servis":
                     var servisIdStr = User.FindFirst("servisId")?.Value;
                     if (!int.TryParse(servisIdStr, out var servisId) || ogrenciServisId != servisId)
                         return Forbid();
                     break;
 
-                // Öğretmen: tüm öğrencilere erişebilir
+                case "Ogretmen":
+                    break; // Tüm öğrencilere erişebilir
+
+                default:
+                    return Forbid();
             }
 
             return null; // Erişim onaylandı

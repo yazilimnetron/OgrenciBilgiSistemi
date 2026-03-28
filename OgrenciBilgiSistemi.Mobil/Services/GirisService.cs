@@ -29,10 +29,18 @@ namespace OgrenciBilgiSistemi.Mobil.Services
                     string token = null;
                     Kullanici kullanici = null;
 
+                    string refreshToken = null;
+
                     // Token varsa al
                     if (root.TryGetProperty("token", out var tokenElement))
                     {
                         token = tokenElement.GetString();
+                    }
+
+                    // Refresh token varsa al
+                    if (root.TryGetProperty("refreshToken", out var refreshTokenElement))
+                    {
+                        refreshToken = refreshTokenElement.GetString();
                     }
 
                     // Kullanici nesnesini "kullanici" alanından çöz
@@ -51,8 +59,8 @@ namespace OgrenciBilgiSistemi.Mobil.Services
                         // Veli rolünde veliId = KullaniciId (1:1 ilişki)
                         int? veliId = kullanici.Rol == KullaniciRolu.Veli ? kullanici.KullaniciId : null;
 
-                        // Sofor rolünde servisId = KullaniciId (1:1 ilişki)
-                        int? servisId = kullanici.Rol == KullaniciRolu.Sofor ? kullanici.KullaniciId : null;
+                        // Servis rolünde servisId = KullaniciId (1:1 ilişki)
+                        int? servisId = kullanici.Rol == KullaniciRolu.Servis ? kullanici.KullaniciId : null;
 
                         await KullaniciOturum.OturumAyarlaAsync(
                             kullaniciId: kullanici.KullaniciId,
@@ -61,7 +69,8 @@ namespace OgrenciBilgiSistemi.Mobil.Services
                             rol: kullanici.Rol,
                             servisId: servisId,
                             veliId: veliId,
-                            yetkiToken: token
+                            yetkiToken: token,
+                            refreshToken: refreshToken
                         );
 
                         // HttpClient header'ını güncelle
@@ -77,6 +86,31 @@ namespace OgrenciBilgiSistemi.Mobil.Services
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// Kullanıcı adının ilk harflerine göre eşleşen kullanıcı adlarını getirir.
+        /// JWT gerektirmez (anonim endpoint).
+        /// </summary>
+        public async Task<List<string>> KullaniciAdiAraAsync(string aranan)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(
+                    $"{BaseUrl}kimlik-dogrulama/kullanici-ara?q={Uri.EscapeDataString(aranan)}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonSerializer.Deserialize<List<string>>(json, _jsonOptions) ?? new List<string>();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[KullaniciAdiAra HATASI]: {ex.Message}");
+            }
+
+            return new List<string>();
         }
     }
 }

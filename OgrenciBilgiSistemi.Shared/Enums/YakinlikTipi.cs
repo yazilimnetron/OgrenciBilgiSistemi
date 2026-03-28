@@ -1,11 +1,19 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace OgrenciBilgiSistemi.Shared.Enums
 {
     public enum YakinlikTipi
     {
         Anne = 1,
+
         Baba = 2,
-        Kardeş = 3,
+
+        [Display(Name = "Kardeş")]
+        Kardes = 3,
+
         Dede = 4,
-        Diğer = 5
+
+        [Display(Name = "Diğer")]
+        Diger = 5
     }
 }

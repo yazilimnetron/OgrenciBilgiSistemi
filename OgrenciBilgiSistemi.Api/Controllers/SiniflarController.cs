@@ -19,14 +19,18 @@ namespace OgrenciBilgiSistemi.Api.Controllers
         [HttpGet("all-with-count")]
         public async Task<IActionResult> SiniflariSayiIleGetir()
         {
+            var rol = User.FindFirst("rol")?.Value;
+            if (rol != "Ogretmen")
+                return Forbid();
+
             try
             {
                 var data = await _sinifService.TumSiniflariOgrenciSayisiIleGetirAsync();
                 return Ok(data);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                return StatusCode(500, new { error = ex.Message });
+                return StatusCode(500, new { error = "Sınıf listesi alınırken bir hata oluştu." });
             }
         }
     }

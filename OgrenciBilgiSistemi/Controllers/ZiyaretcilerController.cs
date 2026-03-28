@@ -53,6 +53,9 @@ namespace OgrenciBilgiSistemi.Controllers
             int pageSize = 50,
             CancellationToken ct = default)
         {
+            if (pageSize <= 0) pageSize = 50;
+            pageSize = Math.Min(pageSize, 200);
+
             var model = await _ziyaretciService.SearchPagedAsync(
                 searchString,
                 page,

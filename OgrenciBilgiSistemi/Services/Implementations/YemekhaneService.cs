@@ -220,7 +220,7 @@ namespace OgrenciBilgiSistemi.Services.Implementations
 
             if (od != null)
             {
-                _ctx.OgrenciYemekOdemeler.Remove(od);
+                od.AktifMi = false;
                 await _ctx.SaveChangesAsync(ct);
                 _logger.LogInformation("Yemek OdemeSil: OdemeId={Id}", odemeId);
             }

@@ -33,7 +33,7 @@ namespace OgrenciBilgiSistemi.Controllers
         [HttpGet]
         public async Task<IActionResult> Ekle()
         {
-            ViewBag.Kullanicilar = await _kullaniciService.GetSoforlerSelectListAsync();
+            ViewBag.Kullanicilar = await _kullaniciService.GetServislerByIdSelectListAsync();
             return View(new ServisProfilModel());
         }
 
@@ -43,7 +43,7 @@ namespace OgrenciBilgiSistemi.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewBag.Kullanicilar = await _kullaniciService.GetSoforlerSelectListAsync();
+                ViewBag.Kullanicilar = await _kullaniciService.GetServislerByIdSelectListAsync();
                 return View(model);
             }
 
@@ -56,7 +56,7 @@ namespace OgrenciBilgiSistemi.Controllers
             {
                 _logger.LogError(ex, "Servis profili eklenirken hata oluştu.");
                 ModelState.AddModelError(string.Empty, "Kayıt sırasında bir hata oluştu.");
-                ViewBag.Kullanicilar = await _kullaniciService.GetSoforlerSelectListAsync();
+                ViewBag.Kullanicilar = await _kullaniciService.GetServislerByIdSelectListAsync();
                 return View(model);
             }
         }
@@ -69,7 +69,7 @@ namespace OgrenciBilgiSistemi.Controllers
             var profil = await _servisProfilService.GetByIdAsync(id.Value);
             if (profil == null) return NotFound();
 
-            ViewBag.Kullanicilar = await _kullaniciService.GetSoforlerSelectListAsync(profil.KullaniciId);
+            ViewBag.Kullanicilar = await _kullaniciService.GetServislerByIdSelectListAsync(profil.KullaniciId);
             return View(profil);
         }
 
@@ -79,7 +79,7 @@ namespace OgrenciBilgiSistemi.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewBag.Kullanicilar = await _kullaniciService.GetSoforlerSelectListAsync(model.KullaniciId);
+                ViewBag.Kullanicilar = await _kullaniciService.GetServislerByIdSelectListAsync(model.KullaniciId);
                 return View(model);
             }
 
@@ -92,7 +92,7 @@ namespace OgrenciBilgiSistemi.Controllers
             {
                 _logger.LogError(ex, "Servis profili güncellenirken hata oluştu.");
                 ModelState.AddModelError(string.Empty, "Güncelleme sırasında bir hata oluştu.");
-                ViewBag.Kullanicilar = await _kullaniciService.GetSoforlerSelectListAsync(model.KullaniciId);
+                ViewBag.Kullanicilar = await _kullaniciService.GetServislerByIdSelectListAsync(model.KullaniciId);
                 return View(model);
             }
         }

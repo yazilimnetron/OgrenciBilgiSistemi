@@ -21,17 +21,21 @@ namespace OgrenciBilgiSistemi.Api.Services
             DateTime? baslangic,
             DateTime? bitis,
             string?   arama,
-            int?      sinifId)
+            int?      sinifId,
+            int?      veliId = null,
+            int?      servisId = null)
         {
             var kayitlar = new List<GecisKayitModel>();
 
-            // Dinamik WHERE koşulları
-            var kosullar = new List<string>();
+            // Dinamik WHERE koşulları (soft-delete: sadece aktif öğrenciler)
+            var kosullar = new List<string> { "o.OgrenciDurum = 1" };
             if (baslangic.HasValue) kosullar.Add("COALESCE(od.OgrenciGTarih, od.OgrenciCTarih) >= @baslangic");
             if (bitis.HasValue)    kosullar.Add("COALESCE(od.OgrenciGTarih, od.OgrenciCTarih) <= @bitis");
             if (!string.IsNullOrWhiteSpace(arama))
                 kosullar.Add("(o.OgrenciAdSoyad LIKE @arama OR o.OgrenciKartNo LIKE @arama)");
             if (sinifId.HasValue)  kosullar.Add("o.BirimId = @sinifId");
+            if (veliId.HasValue)   kosullar.Add("o.VeliId = @veliId");
+            if (servisId.HasValue) kosullar.Add("o.ServisId = @servisId");
 
             string where = kosullar.Count > 0
                 ? "WHERE " + string.Join(" AND ", kosullar)
@@ -59,6 +63,8 @@ namespace OgrenciBilgiSistemi.Api.Services
                 if (!string.IsNullOrWhiteSpace(arama))
                     cmd.Parameters.AddWithValue("@arama", $"%{arama}%");
                 if (sinifId.HasValue)  cmd.Parameters.AddWithValue("@sinifId", sinifId.Value);
+                if (veliId.HasValue)   cmd.Parameters.AddWithValue("@veliId", veliId.Value);
+                if (servisId.HasValue) cmd.Parameters.AddWithValue("@servisId", servisId.Value);
 
                 await conn.OpenAsync();
                 await using var reader = await cmd.ExecuteReaderAsync();
@@ -90,7 +96,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                 INNER JOIN Ogrenciler  o ON od.OgrenciId = o.OgrenciId
                 LEFT  JOIN Birimler    b ON o.BirimId    = b.BirimId
                 LEFT  JOIN Cihazlar    c ON od.CihazId   = c.CihazId
-                WHERE od.OgrenciId = @ogrenciId
+                WHERE od.OgrenciId = @ogrenciId AND o.OgrenciDurum = 1
                 ORDER BY COALESCE(od.OgrenciGTarih, od.OgrenciCTarih) DESC";
 
             try

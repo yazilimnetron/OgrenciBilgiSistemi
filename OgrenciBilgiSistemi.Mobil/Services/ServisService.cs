@@ -60,13 +60,13 @@ namespace OgrenciBilgiSistemi.Mobil.Services
         /// </summary>
         public async Task<Dictionary<int, int>> MevcutServisYoklamaGetir(int servisId, int periyot)
         {
-            if (KullaniciOturum.DemoModuMu)
-                return new Dictionary<int, int>();
-
             try
             {
-                var response = await _httpClient.GetFromJsonAsync<Dictionary<int, int>>($"{BaseUrl}servisler/{servisId}/yoklama/{periyot}");
-                return response ?? new Dictionary<int, int>();
+                var response = await _httpClient.GetAsync($"{BaseUrl}servisler/{servisId}/yoklama/{periyot}");
+                if (!await YanitDurumuIsle(response))
+                    return new Dictionary<int, int>();
+
+                return await response.Content.ReadFromJsonAsync<Dictionary<int, int>>(_jsonOptions) ?? new Dictionary<int, int>();
             }
             catch (Exception ex)
             {
@@ -79,16 +79,12 @@ namespace OgrenciBilgiSistemi.Mobil.Services
         /// <summary>
         /// Servis yoklamasını toplu olarak API'ye göndererek kaydeder.
         /// </summary>
-        public async Task ServisYoklamaKaydet(IEnumerable<(int OgrenciId, int DurumId)> yoklamaVerisi, int kullaniciId, int periyot)
+        public async Task ServisYoklamaKaydet(IEnumerable<(int OgrenciId, int DurumId)> yoklamaVerisi, int periyot)
         {
-            if (KullaniciOturum.DemoModuMu)
-                return;
-
             try
             {
                 var model = new
                 {
-                    KullaniciId = kullaniciId,
                     Periyot = periyot,
                     Kayitlar = yoklamaVerisi.Select(a => new
                     {

@@ -6,7 +6,10 @@ namespace OgrenciBilgiSistemi.Api.Dtos
     // Öğrenci oluşturma ve güncelleme istekleri için ortak model
     public class OgrenciKaydetDto
     {
+        [Required(ErrorMessage = "Öğrenci adı soyadı zorunludur.")]
+        [StringLength(50, ErrorMessage = "Öğrenci adı soyadı en fazla 50 karakter olabilir.")]
         public string OgrenciAdSoyad { get; set; } = string.Empty;
+
         [Range(1, int.MaxValue, ErrorMessage = "Öğrenci numarası 0'dan büyük olmalıdır!")]
         public int OgrenciNo { get; set; }
         public string? OgrenciKartNo { get; set; }

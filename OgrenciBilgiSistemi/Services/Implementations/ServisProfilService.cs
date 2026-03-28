@@ -56,7 +56,6 @@ namespace OgrenciBilgiSistemi.Services.Implementations
                 ?? throw new KeyNotFoundException("Servis profili bulunamadı.");
 
             mevcut.Plaka = model.Plaka;
-            mevcut.SoforTelefon = model.SoforTelefon;
             mevcut.ServisDurum = model.ServisDurum;
 
             await _db.SaveChangesAsync(ct);
@@ -67,7 +66,7 @@ namespace OgrenciBilgiSistemi.Services.Implementations
             var profil = await _db.ServisProfiller.FindAsync([kullaniciId], ct);
             if (profil == null) return;
 
-            _db.ServisProfiller.Remove(profil);
+            profil.ServisDurum = false;
             await _db.SaveChangesAsync(ct);
         }
 

@@ -122,7 +122,7 @@ public partial class OgrenciListeView : ContentPage
 
             // Kayıt veya Güncelleme işlemini gerçekleştir
             // Giriş yapan öğretmenin ID'si KullaniciOturum üzerinden alınır
-            await _ogrenciService.TopluYoklamaKaydetAsync(attendanceData, _classId, KullaniciOturum.KullaniciId, lessonNumber);
+            await _ogrenciService.TopluYoklamaKaydetAsync(attendanceData, _classId, lessonNumber);
 
             string message = isUpdate ? "Yoklama güncellendi." : "Yoklama başarıyla kaydedildi.";
             await DisplayAlert("Bilgi", message, "Tamam");

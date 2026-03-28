@@ -22,6 +22,8 @@ namespace OgrenciBilgiSistemi.Models
         [StringLength(200)]
         public string? Aciklama { get; set; }
 
+        public bool AktifMi { get; set; } = true;
+
         public OgrenciModel Ogrenci { get; set; } = null!;
     }
 }

@@ -172,7 +172,7 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                     .Select(vm => (vm.OgrenciData.OgrenciId, vm.ServisDurumId))
                     .ToList();
 
-                await _servisService.ServisYoklamaKaydet(yoklamaVerisi, KullaniciOturum.KullaniciId, periyot);
+                await _servisService.ServisYoklamaKaydet(yoklamaVerisi, periyot);
 
                 string mesaj = guncelleme ? "Yoklama güncellendi." : "Yoklama başarıyla kaydedildi.";
                 await DisplayAlert("Bilgi", mesaj, "Tamam");

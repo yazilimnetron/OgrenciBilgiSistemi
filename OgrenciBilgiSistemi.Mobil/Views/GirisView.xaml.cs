@@ -1,6 +1,7 @@
 using OgrenciBilgiSistemi.Mobil.Services;
 using OgrenciBilgiSistemi.Mobil.Models;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Maui.Storage;
 
@@ -9,6 +10,8 @@ namespace OgrenciBilgiSistemi.Mobil.Views
     public partial class GirisView : ContentPage
     {
         private readonly GirisService _girisService;
+        private CancellationTokenSource _aramaIptalToken;
+        private bool _oneridenSecildi;
 
         public GirisView(GirisService girisService)
         {
@@ -69,7 +72,7 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                     // Role göre yönlendirme
                     if (KullaniciOturum.VeliMi)
                         await Shell.Current.GoToAsync("///VeliAnaSayfaView");
-                    else if (KullaniciOturum.SoforMu)
+                    else if (KullaniciOturum.ServisMi)
                         await Shell.Current.GoToAsync("///ServisEkraniView");
                     else
                         await Shell.Current.GoToAsync("///SinifListeView");
@@ -151,21 +154,79 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             catch { /**/ }
         }
 
-        /// <summary>
-        /// Apple App Store incelemesi için demo modunda giriş yapar.
-        /// API çağrısı yapılmaz, sahte verilerle uygulama gezilebilinir.
-        /// </summary>
-        private async void BtnDemoLogin_Clicked(object sender, EventArgs e)
+        private async void OnUsernameTextChanged(object sender, TextChangedEventArgs e)
         {
             try
             {
-                KullaniciOturum.DemoModuAyarla();
-                await Shell.Current.GoToAsync("///SinifListeView");
+                // Öneriden seçim yapıldığında tekrar arama tetiklenmesin
+                if (_oneridenSecildi)
+                {
+                    _oneridenSecildi = false;
+                    return;
+                }
+
+                var metin = e.NewTextValue?.Trim();
+
+                if (string.IsNullOrEmpty(metin) || metin.Length < 3)
+                {
+                    OneriKutusu.IsVisible = false;
+                    OneriListesi.ItemsSource = null;
+                    return;
+                }
+
+                // Önceki bekleyen aramayı iptal et (debounce)
+                _aramaIptalToken?.Cancel();
+                _aramaIptalToken = new CancellationTokenSource();
+                var token = _aramaIptalToken.Token;
+
+                await Task.Delay(300, token);
+
+                if (token.IsCancellationRequested)
+                    return;
+
+                var sonuclar = await _girisService.KullaniciAdiAraAsync(metin);
+
+                if (token.IsCancellationRequested)
+                    return;
+
+                if (sonuclar.Count > 0)
+                {
+                    OneriListesi.ItemsSource = sonuclar;
+                    OneriKutusu.IsVisible = true;
+                }
+                else
+                {
+                    OneriKutusu.IsVisible = false;
+                }
+            }
+            catch (TaskCanceledException)
+            {
+                // Debounce iptal — beklenen durum
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"Demo Giriş Hatası: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"KullaniciArama Hatası: {ex.Message}");
             }
         }
+
+        private void OnOneriSecildi(object sender, SelectionChangedEventArgs e)
+        {
+            try
+            {
+                if (e.CurrentSelection.FirstOrDefault() is string secilenKullaniciAdi)
+                {
+                    _oneridenSecildi = true;
+                    TxtUsername.Text = secilenKullaniciAdi;
+                    OneriKutusu.IsVisible = false;
+                    OneriListesi.SelectedItem = null;
+                    TxtPassword.Focus();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"OneriSecim Hatası: {ex.Message}");
+            }
+        }
+
     }
 }

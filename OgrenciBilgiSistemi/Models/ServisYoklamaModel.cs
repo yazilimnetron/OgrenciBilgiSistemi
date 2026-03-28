@@ -18,7 +18,7 @@ namespace OgrenciBilgiSistemi.Models
         public virtual OgrenciModel Ogrenci { get; set; } = null!;
 
         [Required]
-        [Display(Name = "Şoför")]
+        [Display(Name = "Servis")]
         public int KullaniciId { get; set; }
 
         [ForeignKey(nameof(KullaniciId))]

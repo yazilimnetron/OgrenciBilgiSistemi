@@ -204,6 +204,9 @@ namespace OgrenciBilgiSistemi.Migrations
                         .IsUnique()
                         .HasDatabaseName("UX_Kullanicilar_KullaniciAdi");
 
+                    b.HasIndex("Rol")
+                        .HasDatabaseName("IX_Kullanicilar_Rol");
+
                     b.ToTable("Kullanicilar");
                 });
 
@@ -510,6 +513,9 @@ namespace OgrenciBilgiSistemi.Migrations
                     b.Property<string>("Aciklama")
                         .HasColumnType("nvarchar(255)");
 
+                    b.Property<bool>("AktifMi")
+                        .HasColumnType("bit");
+
                     b.Property<DateTime>("OdemeTarihi")
                         .HasColumnType("datetime2");
 
@@ -653,7 +659,8 @@ namespace OgrenciBilgiSistemi.Migrations
 
                     b.HasKey("OgrenciId");
 
-                    b.HasIndex("BirimId");
+                    b.HasIndex("BirimId")
+                        .HasDatabaseName("IX_Ogrenciler_BirimId");
 
                     b.HasIndex("OgrenciKartNo")
                         .IsUnique()
@@ -716,6 +723,9 @@ namespace OgrenciBilgiSistemi.Migrations
                     b.Property<string>("Aciklama")
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
+
+                    b.Property<bool>("AktifMi")
+                        .HasColumnType("bit");
 
                     b.Property<int>("Ay")
                         .HasColumnType("int");
@@ -807,10 +817,6 @@ namespace OgrenciBilgiSistemi.Migrations
 
                     b.Property<bool>("ServisDurum")
                         .HasColumnType("bit");
-
-                    b.Property<string>("SoforTelefon")
-                        .HasMaxLength(15)
-                        .HasColumnType("nvarchar(15)");
 
                     b.HasKey("KullaniciId");
 
@@ -955,10 +961,6 @@ namespace OgrenciBilgiSistemi.Migrations
                     b.Property<int>("KullaniciId")
                         .HasColumnType("int");
 
-                    b.Property<string>("VeliAdSoyad")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<string>("VeliAdres")
                         .HasMaxLength(150)
                         .HasColumnType("nvarchar(150)");
@@ -977,10 +979,6 @@ namespace OgrenciBilgiSistemi.Migrations
                     b.Property<string>("VeliMeslek")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("VeliTelefon")
-                        .HasMaxLength(15)
-                        .HasColumnType("nvarchar(15)");
 
                     b.Property<int?>("VeliYakinlik")
                         .HasColumnType("int");
@@ -1043,6 +1041,8 @@ namespace OgrenciBilgiSistemi.Migrations
 
                     b.HasKey("ZiyaretciId");
 
+                    b.HasIndex("CihazId");
+
                     b.HasIndex("KullaniciId");
 
                     b.ToTable("Ziyaretciler");
@@ -1053,7 +1053,7 @@ namespace OgrenciBilgiSistemi.Migrations
                     b.HasOne("OgrenciBilgiSistemi.Models.KitapModel", "Kitap")
                         .WithMany()
                         .HasForeignKey("KitapId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("OgrenciBilgiSistemi.Models.OgrenciModel", "Ogrenci")
@@ -1148,7 +1148,7 @@ namespace OgrenciBilgiSistemi.Migrations
                         .HasForeignKey("OgretmenId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("OgrenciBilgiSistemi.Models.KullaniciModel", "Sofor")
+                    b.HasOne("OgrenciBilgiSistemi.Models.KullaniciModel", "ServisKullanici")
                         .WithMany()
                         .HasForeignKey("ServisId")
                         .OnDelete(DeleteBehavior.SetNull);
@@ -1162,7 +1162,7 @@ namespace OgrenciBilgiSistemi.Migrations
 
                     b.Navigation("Ogretmen");
 
-                    b.Navigation("Sofor");
+                    b.Navigation("ServisKullanici");
 
                     b.Navigation("Veli");
                 });
@@ -1232,13 +1232,13 @@ namespace OgrenciBilgiSistemi.Migrations
             modelBuilder.Entity("OgrenciBilgiSistemi.Models.ServisYoklamaModel", b =>
                 {
                     b.HasOne("OgrenciBilgiSistemi.Models.KullaniciModel", "Kullanici")
-                        .WithMany()
+                        .WithMany("ServisYoklamalar")
                         .HasForeignKey("KullaniciId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
                     b.HasOne("OgrenciBilgiSistemi.Models.OgrenciModel", "Ogrenci")
-                        .WithMany()
+                        .WithMany("ServisYoklamalar")
                         .HasForeignKey("OgrenciId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
@@ -1280,10 +1280,17 @@ namespace OgrenciBilgiSistemi.Migrations
 
             modelBuilder.Entity("OgrenciBilgiSistemi.Models.ZiyaretciModel", b =>
                 {
+                    b.HasOne("OgrenciBilgiSistemi.Models.CihazModel", "Cihaz")
+                        .WithMany()
+                        .HasForeignKey("CihazId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("OgrenciBilgiSistemi.Models.KullaniciModel", "Kullanici")
                         .WithMany("Ziyaretciler")
                         .HasForeignKey("KullaniciId")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Cihaz");
 
                     b.Navigation("Kullanici");
                 });
@@ -1302,6 +1309,8 @@ namespace OgrenciBilgiSistemi.Migrations
                     b.Navigation("OgretmenProfil");
 
                     b.Navigation("ServisProfil");
+
+                    b.Navigation("ServisYoklamalar");
 
                     b.Navigation("SinifYoklamalar");
 
@@ -1329,6 +1338,8 @@ namespace OgrenciBilgiSistemi.Migrations
                     b.Navigation("OgrenciDetaylar");
 
                     b.Navigation("OgrenciYemekler");
+
+                    b.Navigation("ServisYoklamalar");
 
                     b.Navigation("SinifYoklamalar");
                 });

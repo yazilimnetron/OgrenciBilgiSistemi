@@ -6,7 +6,7 @@
         public string OgrenciAdSoyad { get; set; } = "";
         public string? OgrenciNo { get; set; }
         public string? SinifAd { get; set; }
-        public string? VeliAdSoyad { get; set; }
+        public string? VeliKullaniciAdi { get; set; }
         public string? Yakinlik { get; set; }
         public string? VeliTelefon { get; set; }
         public string? VeliMeslek { get; set; }

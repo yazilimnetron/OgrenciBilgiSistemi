@@ -18,12 +18,6 @@ namespace OgrenciBilgiSistemi.Mobil.Services
         private static string _yetkiToken;
         private static bool _yuklendi;
 
-        /// <summary>
-        /// Apple App Store incelemesi için demo modunu belirtir.
-        /// Demo modunda API çağrıları yapılmaz, sahte veriler gösterilir.
-        /// </summary>
-        public static bool DemoModuMu { get; private set; }
-
         // SecureStorage anahtarları
         private const string AnahtarKullaniciId = "session_user_id";
         private const string AnahtarAdSoyad = "session_full_name";
@@ -33,27 +27,17 @@ namespace OgrenciBilgiSistemi.Mobil.Services
         private const string AnahtarRol = "session_rol";
         private const string AnahtarYetkiToken = "session_auth_token";
         private const string AnahtarGirisZamani = "session_login_time";
+        private const string AnahtarRefreshToken = "session_refresh_token";
 
         // Oturum zaman aşımı (8 saat)
         private static readonly TimeSpan OturumSuresi = TimeSpan.FromHours(8);
 
-        /// <summary>
-        /// Apple App Store incelemesi için demo modunu etkinleştirir.
-        /// </summary>
-        public static void DemoModuAyarla()
-        {
-            DemoModuMu = true;
-            _kullaniciId = -1;
-            _adSoyad = "Demo Kullanıcı";
-            _birimId = -1;
-            _yetkiToken = "demo-token";
-            _yuklendi = true;
-        }
+        private static string _refreshToken;
 
         /// <summary>
         /// Giriş başarılı olduğunda tüm oturum bilgilerini SecureStorage'a kaydeder.
         /// </summary>
-        public static async Task OturumAyarlaAsync(int kullaniciId, string adSoyad, int? birimId, KullaniciRolu rol = KullaniciRolu.Ogretmen, int? servisId = null, int? veliId = null, string yetkiToken = null)
+        public static async Task OturumAyarlaAsync(int kullaniciId, string adSoyad, int? birimId, KullaniciRolu rol = KullaniciRolu.Ogretmen, int? servisId = null, int? veliId = null, string yetkiToken = null, string refreshToken = null)
         {
             _kullaniciId = kullaniciId;
             _adSoyad = string.IsNullOrEmpty(adSoyad) ? "Kullanıcı" : adSoyad;
@@ -62,6 +46,7 @@ namespace OgrenciBilgiSistemi.Mobil.Services
             _servisId = servisId;
             _veliId = veliId;
             _yetkiToken = yetkiToken;
+            _refreshToken = refreshToken;
             _yuklendi = true;
 
             try
@@ -82,6 +67,9 @@ namespace OgrenciBilgiSistemi.Mobil.Services
 
                 if (!string.IsNullOrEmpty(yetkiToken))
                     await SecureStorage.Default.SetAsync(AnahtarYetkiToken, yetkiToken);
+
+                if (!string.IsNullOrEmpty(refreshToken))
+                    await SecureStorage.Default.SetAsync(AnahtarRefreshToken, refreshToken);
             }
             catch (Exception ex)
             {
@@ -131,6 +119,7 @@ namespace OgrenciBilgiSistemi.Mobil.Services
                     _rol = (KullaniciRolu)parsedRol;
 
                 _yetkiToken = await SecureStorage.Default.GetAsync(AnahtarYetkiToken);
+                _refreshToken = await SecureStorage.Default.GetAsync(AnahtarRefreshToken);
 
                 _yuklendi = true;
             }
@@ -142,9 +131,13 @@ namespace OgrenciBilgiSistemi.Mobil.Services
 
         /// <summary>
         /// Tüm oturum bilgilerini bellekten ve SecureStorage'dan temizler.
+        /// Sunucu tarafında refresh token'ı geçersiz kılmak için logout API'sini çağırır.
         /// </summary>
-        public static Task OturumTemizleAsync()
+        public static async Task OturumTemizleAsync()
         {
+            // Sunucudaki refresh token'ı geçersiz kıl
+            await LogoutApiCagirAsync();
+
             _kullaniciId = 0;
             _adSoyad = "Kullanıcı";
             _birimId = null;
@@ -152,8 +145,8 @@ namespace OgrenciBilgiSistemi.Mobil.Services
             _veliId = null;
             _rol = 0;
             _yetkiToken = null;
+            _refreshToken = null;
             _yuklendi = false;
-            DemoModuMu = false;
 
             try
             {
@@ -164,14 +157,38 @@ namespace OgrenciBilgiSistemi.Mobil.Services
                 SecureStorage.Default.Remove(AnahtarVeliId);
                 SecureStorage.Default.Remove(AnahtarRol);
                 SecureStorage.Default.Remove(AnahtarYetkiToken);
+                SecureStorage.Default.Remove(AnahtarRefreshToken);
                 SecureStorage.Default.Remove(AnahtarGirisZamani);
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[SecureStorage TEMİZLEME HATASI]: {ex.Message}");
             }
+        }
 
-            return Task.CompletedTask;
+        /// <summary>
+        /// Sunucudaki refresh token'ı geçersiz kılmak için logout endpoint'ini çağırır.
+        /// Başarısız olursa sessizce devam eder (lokal temizlik yine yapılır).
+        /// </summary>
+        private static async Task LogoutApiCagirAsync()
+        {
+            try
+            {
+                var token = _yetkiToken;
+                if (string.IsNullOrEmpty(token))
+                    return;
+
+                var baseUrl = Preferences.Default.Get("ApiBaseUrl", Constants.ApiBaseUrl);
+                using var client = new HttpClient { Timeout = TimeSpan.FromSeconds(10) };
+                client.DefaultRequestHeaders.Authorization =
+                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+
+                await client.PostAsync($"{baseUrl}kimlik-dogrulama/logout", null);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[LOGOUT API HATASI]: {ex.Message}");
+            }
         }
 
         public static bool GirisYapildiMi => _kullaniciId > 0;
@@ -212,7 +229,7 @@ namespace OgrenciBilgiSistemi.Mobil.Services
             set => _rol = value;
         }
 
-        public static bool SoforMu => _rol == KullaniciRolu.Sofor;
+        public static bool ServisMi => _rol == KullaniciRolu.Servis;
         public static bool VeliMi => _rol == KullaniciRolu.Veli;
         public static bool OgretmenMi => _rol == KullaniciRolu.Ogretmen;
 
@@ -220,6 +237,34 @@ namespace OgrenciBilgiSistemi.Mobil.Services
         {
             get => _yetkiToken;
             set => _yetkiToken = value;
+        }
+
+        public static string RefreshToken
+        {
+            get => _refreshToken;
+            set => _refreshToken = value;
+        }
+
+        /// <summary>
+        /// Token yenilemesi sonrası access ve refresh token'ları günceller.
+        /// </summary>
+        public static async Task TokenlariGuncelleAsync(string yetkiToken, string refreshToken)
+        {
+            _yetkiToken = yetkiToken;
+            _refreshToken = refreshToken;
+
+            try
+            {
+                if (!string.IsNullOrEmpty(yetkiToken))
+                    await SecureStorage.Default.SetAsync(AnahtarYetkiToken, yetkiToken);
+                if (!string.IsNullOrEmpty(refreshToken))
+                    await SecureStorage.Default.SetAsync(AnahtarRefreshToken, refreshToken);
+                await SecureStorage.Default.SetAsync(AnahtarGirisZamani, DateTime.UtcNow.ToString("O"));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SecureStorage TOKEN GÜNCELLEME HATASI]: {ex.Message}");
+            }
         }
     }
 }
