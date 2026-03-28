@@ -5,9 +5,6 @@
 @{
     ViewData["Title"] = "Birim İşlemleri";
     var q = ViewData["CurrentFilter"] as string;
-    var page = Model.SayfaIndeks;
-    var total = Model.ToplamSayfa;
-    var count = Model.ToplamSayi;
 
     var durum = (BirimFiltre)(ViewData["Durum"] ?? BirimFiltre.Aktif);
 }
@@ -106,29 +103,9 @@
                     </table>
                 </div>
 
-                <!-- Sayfalama -->
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                    <div class="text-muted">
-                        Toplam <strong>@count</strong> kayıt • Sayfa <strong>@(page)</strong>/<strong>@(total)</strong>
-                    </div>
-                    <div class="btn-group btn-group-gap">
-                        <a class="btn btn-outline-secondary @(Model.OncekiSayfaVar ? "" : "disabled")"
-                           asp-action="Index"
-                           asp-route-searchString="@q"
-                           asp-route-durum="@((int)durum)"
-                           asp-route-pageNumber="@(page - 1)">
-                            ‹ Önceki
-                        </a>
-
-                        <a class="btn btn-outline-secondary @(Model.SonrakiSayfaVar ? "" : "disabled")"
-                           asp-action="Index"
-                           asp-route-searchString="@q"
-                           asp-route-durum="@((int)durum)"
-                           asp-route-pageNumber="@(page + 1)">
-                            Sonraki ›
-                        </a>
-                    </div>
-                </div>
+                @await Html.PartialAsync("_SayfalamaFormPartial", OgrenciBilgiSistemi.ViewModels.SayfalamaVm.Olustur(Model,
+                    sayfaParametreAdi: "pageNumber",
+                    routeValues: new Dictionary<string, string?> { ["searchString"] = q, ["durum"] = ((int)durum).ToString() }))
             }
         </div>
     </div>

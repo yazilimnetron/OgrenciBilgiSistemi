@@ -21,7 +21,7 @@ namespace OgrenciBilgiSistemi.Controllers
         public async Task<IActionResult> Index(string searchString, int page = 1, CancellationToken ct = default)
         {
             ViewData["CurrentFilter"] = searchString;
-            var paged = await _kullaniciService.SearchPagedAsync(searchString, page, 10, ct);
+            var paged = await _kullaniciService.SearchPagedAsync(searchString, page, 50, ct);
             return View(paged);
         }
 
@@ -71,7 +71,7 @@ namespace OgrenciBilgiSistemi.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> Guncelle(int? id)
+        public async Task<IActionResult> Guncelle(int? id, int? returnPage, string? returnFilter)
         {
             if (id == null) return NotFound();
 
@@ -79,18 +79,22 @@ namespace OgrenciBilgiSistemi.Controllers
             if (kullanici == null) return NotFound();
 
             kullanici.Sifre = string.Empty;
+            ViewData["ReturnPage"] = returnPage;
+            ViewData["ReturnFilter"] = returnFilter;
             await DropdownDoldur(kullanici);
             return View(kullanici);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Guncelle(KullaniciModel model)
+        public async Task<IActionResult> Guncelle(KullaniciModel model, int? returnPage, string? returnFilter)
         {
             ModelState.Remove(nameof(model.Sifre));
 
             if (!ModelState.IsValid)
             {
+                ViewData["ReturnPage"] = returnPage;
+                ViewData["ReturnFilter"] = returnFilter;
                 await DropdownDoldur(model);
                 return View(model);
             }
@@ -98,6 +102,8 @@ namespace OgrenciBilgiSistemi.Controllers
             if (await _kullaniciService.KullaniciAdiVarMiAsync(model.KullaniciAdi, model.KullaniciId))
             {
                 ModelState.AddModelError(nameof(model.KullaniciAdi), "Bu kullanıcı adı zaten kayıtlı.");
+                ViewData["ReturnPage"] = returnPage;
+                ViewData["ReturnFilter"] = returnFilter;
                 await DropdownDoldur(model);
                 return View(model);
             }
@@ -105,7 +111,9 @@ namespace OgrenciBilgiSistemi.Controllers
             try
             {
                 await _kullaniciService.GuncelleAsync(model);
-                return RedirectToAction(nameof(Index));
+                TempData["GuncellenenId"] = model.KullaniciId;
+                var url = Url.Action(nameof(Index), new { page = returnPage, searchString = returnFilter });
+                return Redirect(url + $"#kullanici-{model.KullaniciId}");
             }
             catch (InvalidOperationException ex)
             {

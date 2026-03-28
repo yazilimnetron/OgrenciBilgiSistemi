@@ -189,27 +189,13 @@
                 </table>
             </div>
 
-            <!-- Sayfalama -->
-            <div class="d-flex justify-content-between align-items-center mt-3">
-                <div class="text-muted">
-                    Toplam <strong>@Model.Page.ToplamSayi</strong> kayıt • Sayfa <strong>@Model.Page.SayfaIndeks</strong>/<strong>@Model.Page.ToplamSayfa</strong>
-                </div>
-                <div class="btn-group btn-group-gap">
-                    <a class="btn btn-outline-secondary @(Model.Page.OncekiSayfaVar ? "" : "disabled")"
-                       asp-action="Index"
-                       asp-route-pageNumber="@(Model.Page.SayfaIndeks - 1)"
-                       asp-route-searchString="@Model.CurrentFilter"
-                       asp-route-sortOrder="@Model.CurrentSort"
-                       asp-route-birimId="@Model.BirimId">‹ Önceki</a>
-
-                    <a class="btn btn-outline-secondary @(Model.Page.SonrakiSayfaVar ? "" : "disabled")"
-                       asp-action="Index"
-                       asp-route-pageNumber="@(Model.Page.SayfaIndeks + 1)"
-                       asp-route-searchString="@Model.CurrentFilter"
-                       asp-route-sortOrder="@Model.CurrentSort"
-                       asp-route-birimId="@Model.BirimId">Sonraki ›</a>
-                </div>
-            </div>
+            @await Html.PartialAsync("_SayfalamaFormPartial", OgrenciBilgiSistemi.ViewModels.SayfalamaVm.Olustur(Model.Page,
+                sayfaParametreAdi: "pageNumber",
+                routeValues: new Dictionary<string, string?> {
+                    ["searchString"] = Model.CurrentFilter,
+                    ["sortOrder"] = Model.CurrentSort,
+                    ["birimId"] = Model.BirimId?.ToString()
+                }))
 
         </div>
     </div>

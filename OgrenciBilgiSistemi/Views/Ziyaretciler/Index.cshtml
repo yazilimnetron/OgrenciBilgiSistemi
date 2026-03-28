@@ -6,9 +6,6 @@
     ViewData["Title"] = "Ziyaretçi İşlemleri";
 
     var q = ViewData["CurrentFilter"] as string;
-    var page = Model?.SayfaIndeks ?? 1;
-    var total = Model?.ToplamSayfa ?? 1;
-    var count = Model?.ToplamSayi ?? 0;
 
     var sadeceAktif = ViewData["SadeceAktif"] as bool? ?? true;
     var seciliKullaniciId = ViewData["KullaniciId"] as int?;
@@ -188,34 +185,12 @@
                     </table>
                 </div>
 
-                <!-- Sayfalama -->
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                    <div class="text-muted">
-                        Toplam <strong>@count</strong> kayıt • Sayfa <strong>@(page)</strong>/<strong>@(total)</strong>
-                    </div>
-
-                    <div class="btn-group btn-group-gap">
-                        <a class="btn btn-outline-secondary @(Model.OncekiSayfaVar ? "" : "disabled")"
-                           asp-controller="Ziyaretciler"
-                           asp-action="Index"
-                           asp-route-searchString="@q"
-                           asp-route-kullaniciId="@seciliKullaniciId"
-                           asp-route-sadeceAktif="@sadeceAktif"
-                           asp-route-page="@(page - 1)">
-                            ‹ Önceki
-                        </a>
-
-                        <a class="btn btn-outline-secondary @(Model.SonrakiSayfaVar ? "" : "disabled")"
-                           asp-controller="Ziyaretciler"
-                           asp-action="Index"
-                           asp-route-searchString="@q"
-                           asp-route-kullaniciId="@seciliKullaniciId"
-                           asp-route-sadeceAktif="@sadeceAktif"
-                           asp-route-page="@(page + 1)">
-                            Sonraki ›
-                        </a>
-                    </div>
-                </div>
+                @await Html.PartialAsync("_SayfalamaFormPartial", OgrenciBilgiSistemi.ViewModels.SayfalamaVm.Olustur(Model,
+                    routeValues: new Dictionary<string, string?> {
+                        ["searchString"] = q,
+                        ["kullaniciId"] = seciliKullaniciId?.ToString(),
+                        ["sadeceAktif"] = sadeceAktif.ToString()
+                    }))
             }
         </div>
     </div>

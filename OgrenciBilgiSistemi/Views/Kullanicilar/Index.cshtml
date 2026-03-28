@@ -3,9 +3,7 @@
 @{
     ViewData["Title"] = "Kullanıcı İşlemleri";
     var q = ViewData["CurrentFilter"] as string;
-    var page = Model.SayfaIndeks;
-    var total = Model.ToplamSayfa;
-    var count = Model.ToplamSayi;
+    var guncellenenId = TempData["GuncellenenId"] as int?;
 }
 
 <div class="viewport-scroller">
@@ -70,7 +68,7 @@
                         <tbody>
                             @foreach (var s in Model)
                             {
-                                <tr class="text-center">
+                                <tr id="kullanici-@s.KullaniciId" class="text-center @(guncellenenId == s.KullaniciId ? "table-warning" : "")">
                                     <td class="text-start fw-semibold text-primary">@s.KullaniciAdi</td>
                                     <td>
                                         <span class="badge bg-info text-dark">@s.Rol</span>
@@ -83,7 +81,10 @@
                                     </td>
                                     <td>
                                         <div class="btn-group btn-group-gap" role="group" aria-label="İşlemler" style="min-width: 220px;">
-                                            <a asp-controller="Kullanicilar" asp-action="Guncelle" asp-route-id="@s.KullaniciId"
+                                            <a asp-controller="Kullanicilar" asp-action="Guncelle"
+                                               asp-route-id="@s.KullaniciId"
+                                               asp-route-returnPage="@Model.SayfaIndeks"
+                                               asp-route-returnFilter="@q"
                                                class="btn btn-primary btn-sm">
                                                 <i class="bi bi-pencil-square"></i> Güncelle
                                             </a>
@@ -106,26 +107,8 @@
                     </table>
                 </div>
 
-                <div class="d-flex justify-content-between align-items-center mt-3">
-                    <div class="text-muted">
-                        Toplam <strong>@count</strong> kayıt • Sayfa <strong>@(page)</strong>/<strong>@(total)</strong>
-                    </div>
-                    <div class="btn-group btn-group-gap">
-                        <a class="btn btn-outline-secondary @(Model.OncekiSayfaVar ? "" : "disabled")"
-                           asp-action="Index"
-                           asp-route-searchString="@q"
-                           asp-route-page="@(page - 1)">
-                            ‹ Önceki
-                        </a>
-
-                        <a class="btn btn-outline-secondary @(Model.SonrakiSayfaVar ? "" : "disabled")"
-                           asp-action="Index"
-                           asp-route-searchString="@q"
-                           asp-route-page="@(page + 1)">
-                            Sonraki ›
-                        </a>
-                    </div>
-                </div>
+                @await Html.PartialAsync("_SayfalamaFormPartial", OgrenciBilgiSistemi.ViewModels.SayfalamaVm.Olustur(Model,
+                    routeValues: new Dictionary<string, string?> { ["searchString"] = q }))
             }
         </div>
     </div>

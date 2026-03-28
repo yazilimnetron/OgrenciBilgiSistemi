@@ -105,7 +105,7 @@ namespace OgrenciBilgiSistemi.Controllers
             ViewData["Bit"] = bit?.ToString("yyyy-MM-dd");
 
             // Yeni tarih-bazlı overload (önerilen)
-            var pageSize = 20; // formda kaldırıldığı için sabit
+            var pageSize = 50; // formda kaldırıldığı için sabit
             var vm = await _svc.GetTopluRaporAsync(bas, bit, q, page, pageSize, ct);
 
             return View(vm);

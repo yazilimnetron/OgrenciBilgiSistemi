@@ -24,7 +24,7 @@ namespace OgrenciBilgiSistemi.Controllers
             var paged = await _birimService.SearchPagedAsync(
                 searchString: searchString,
                 page: pageNumber,
-                pageSize: 10,
+                pageSize: 50,
                 filtre: durum,
                 sinifMi: null,
                 ct: ct);

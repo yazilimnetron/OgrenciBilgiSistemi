@@ -29,7 +29,7 @@ namespace OgrenciBilgiSistemi.Controllers
         public async Task<IActionResult> Index(string searchString, int page = 1, CancellationToken ct = default)
         {
             ViewData["CurrentFilter"] = searchString;
-            var paged = await _ogretmenProfilService.SearchPagedAsync(searchString, page, 20, ct);
+            var paged = await _ogretmenProfilService.SearchPagedAsync(searchString, page, 50, ct);
             return View(paged);
         }
 
