@@ -81,7 +81,7 @@
                                                 <input asp-for="Sifre"
                                                        class="form-control"
                                                        type="password"
-                                                       minlength="3"
+                                                       data-val="false"
                                                        placeholder="Değiştirmek istemiyorsanız boş bırakın" />
                                                 <small class="text-muted">Boş bırakırsanız mevcut şifre korunur.</small>
                                             }
@@ -145,8 +145,8 @@
                                         <!-- Servis Profil Alanları -->
                                         <div id="servisAlanlari" style="display:none;">
                                             <div class="mb-3">
-                                                <label asp-for="ServisProfil.Plaka" class="form-label fw-semibold">Şoför Adı</label>
-                                                <input asp-for="ServisProfil.Plaka" class="form-control" placeholder="Şoför Adı" />
+                                                <label asp-for="ServisProfil.Plaka" class="form-label fw-semibold">Plaka</label>
+                                                <input asp-for="ServisProfil.Plaka" class="form-control" placeholder="Plaka" />
                                                 <span asp-validation-for="ServisProfil.Plaka" class="text-danger"></span>
                                             </div>
                                         </div>
