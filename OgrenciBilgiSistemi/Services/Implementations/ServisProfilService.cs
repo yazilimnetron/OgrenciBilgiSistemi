@@ -72,7 +72,16 @@ namespace OgrenciBilgiSistemi.Services.Implementations
 
         public async Task<ServisProfilModel?> GetByIdAsync(int kullaniciId, CancellationToken ct = default)
             => await _db.ServisProfiller
+                .Include(s => s.Kullanici)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(s => s.KullaniciId == kullaniciId, ct);
+
+        public async Task<List<OgrenciModel>> GetOgrencilerAsync(int kullaniciId, CancellationToken ct = default)
+            => await _db.Ogrenciler
+                .Include(o => o.Birim)
+                .Where(o => o.ServisId == kullaniciId && o.OgrenciDurum)
+                .OrderBy(o => o.OgrenciAdSoyad)
+                .AsNoTracking()
+                .ToListAsync(ct);
     }
 }

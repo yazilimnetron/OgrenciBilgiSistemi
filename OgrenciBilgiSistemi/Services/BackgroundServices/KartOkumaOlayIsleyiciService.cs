@@ -78,6 +78,21 @@ public class KartOkumaOlayIsleyiciService : IHostedService
             // 3) Geçişi kaydet — yön kararı (giriş/çıkış) GecisService.KaydetAsync içinde belirlenir
             var sonuc = await svc.KaydetAsync(cihaz.CihazId, ogr.OgrenciId, cihaz.IstasyonTipi, now);
 
+            // 3.5) SMS bildirimi (fire-and-forget)
+            _ = Task.Run(async () =>
+            {
+                try
+                {
+                    using var smsScope = _scopeFactory.CreateScope();
+                    var smsSvc = smsScope.ServiceProvider.GetRequiredService<ISmsGonderimService>();
+                    await smsSvc.GecisSmsBildir(ogr.OgrenciId, ogr.OgrenciAdSoyad, sonuc.GecisTipi, now);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "SMS gönderim hatası. Öğrenci: {OgrId}", ogr.OgrenciId);
+                }
+            });
+
             // 4) Sınıf bilgisini çek
             var sinifAdi = await db.Birimler.AsNoTracking()
                 .Where(b => b.BirimId == ogr.BirimId)

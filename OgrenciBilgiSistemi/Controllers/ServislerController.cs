@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OgrenciBilgiSistemi.Models;
 using OgrenciBilgiSistemi.Services.Interfaces;
+using OgrenciBilgiSistemi.ViewModels;
 
 namespace OgrenciBilgiSistemi.Controllers
 {
@@ -26,7 +27,7 @@ namespace OgrenciBilgiSistemi.Controllers
         public async Task<IActionResult> Index(string searchString, int page = 1, CancellationToken ct = default)
         {
             ViewData["CurrentFilter"] = searchString;
-            var paged = await _servisProfilService.SearchPagedAsync(searchString, page, 20, ct);
+            var paged = await _servisProfilService.SearchPagedAsync(searchString, page, 50, ct);
             return View(paged);
         }
 
@@ -95,6 +96,23 @@ namespace OgrenciBilgiSistemi.Controllers
                 ViewBag.Kullanicilar = await _kullaniciService.GetServislerByIdSelectListAsync(model.KullaniciId);
                 return View(model);
             }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> Detay(int id, CancellationToken ct = default)
+        {
+            var servis = await _servisProfilService.GetByIdAsync(id, ct);
+            if (servis == null) return NotFound();
+
+            var ogrenciler = await _servisProfilService.GetOgrencilerAsync(id, ct);
+
+            var vm = new ServisDetayVm
+            {
+                Servis = servis,
+                Ogrenciler = ogrenciler
+            };
+
+            return View(vm);
         }
 
         [HttpPost]

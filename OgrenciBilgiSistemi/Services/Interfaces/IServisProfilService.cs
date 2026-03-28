@@ -11,5 +11,6 @@ namespace OgrenciBilgiSistemi.Services.Interfaces
         Task GuncelleAsync(ServisProfilModel model, CancellationToken ct = default);
         Task SilAsync(int kullaniciId, CancellationToken ct = default);
         Task<ServisProfilModel?> GetByIdAsync(int kullaniciId, CancellationToken ct = default);
+        Task<List<OgrenciModel>> GetOgrencilerAsync(int kullaniciId, CancellationToken ct = default);
     }
 }

@@ -5,6 +5,7 @@ using OgrenciBilgiSistemi.Abstractions;
 using OgrenciBilgiSistemi.Infrastructure.FileStorage;
 using OgrenciBilgiSistemi.Data;
 using OgrenciBilgiSistemi.Hubs;
+using OgrenciBilgiSistemi.Models.Options;
 using OgrenciBilgiSistemi.Services;
 using OgrenciBilgiSistemi.Services.Implementations;
 using OgrenciBilgiSistemi.Services.Interfaces;
@@ -63,6 +64,11 @@ builder.Services.AddScoped<IZiyaretciService, ZiyaretciService>();
 builder.Services.AddScoped<IKitapService, KitapService>();
 builder.Services.AddScoped<IKitapDetayService, KitapDetayService>();
 builder.Services.AddScoped<IKullaniciService, KullaniciService>();
+
+// SMS
+builder.Services.Configure<SmsAyarlari>(builder.Configuration.GetSection(SmsAyarlari.SectionName));
+builder.Services.AddHttpClient<ISmsService, SmsService>();
+builder.Services.AddScoped<ISmsGonderimService, SmsGonderimService>();
 
 // Hosted services
 builder.Services.AddHostedService<KartOkumaOlayIsleyiciService>();
