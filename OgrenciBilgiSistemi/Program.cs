@@ -7,6 +7,7 @@ using OgrenciBilgiSistemi.Data;
 using OgrenciBilgiSistemi.Hubs;
 using OgrenciBilgiSistemi.Models.Options;
 using OgrenciBilgiSistemi.Services;
+using OgrenciBilgiSistemi.Services.BackgroundServices;
 using OgrenciBilgiSistemi.Services.Implementations;
 using OgrenciBilgiSistemi.Services.Interfaces;
 
@@ -73,6 +74,7 @@ builder.Services.AddScoped<ISmsGonderimService, SmsGonderimService>();
 // Hosted services
 builder.Services.AddHostedService<KartOkumaOlayIsleyiciService>();
 builder.Services.AddHostedService<ZkBaglantiIzleyiciHostedService>();
+builder.Services.AddHostedService<YemekhanePollingService>();
 
 // SignalR + Cache
 builder.Services.AddSignalR();

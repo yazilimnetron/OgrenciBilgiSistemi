@@ -25,7 +25,7 @@ public sealed class YoklamaSmsBildirimService
     }
 
     /// <summary>
-    /// Servis yoklamasında "Binmedi" (DurumId=2) olan öğrencilerin velilerine SMS gönderir.
+    /// Servis yoklamasında tüm öğrencilerin (Bindi/Binmedi) velilerine SMS gönderir.
     /// </summary>
     public async Task ServisYoklamaBildir(
         IReadOnlyList<(int OgrenciId, int DurumId)> yoklamaVerisi,
@@ -33,21 +33,24 @@ public sealed class YoklamaSmsBildirimService
         CancellationToken ct = default)
     {
         if (!_ayar.Aktif) return;
+        if (yoklamaVerisi.Count == 0) return;
 
-        var binmeyenler = yoklamaVerisi.Where(x => x.DurumId == 2).Select(x => x.OgrenciId).ToList();
-        if (binmeyenler.Count == 0) return;
+        var tumOgrenciIdler = yoklamaVerisi.Select(x => x.OgrenciId).ToList();
+        var durumMap = yoklamaVerisi.ToDictionary(x => x.OgrenciId, x => x.DurumId);
 
-        var ogrenciBilgileri = await VeliTelefonlariGetir(binmeyenler, ct);
+        var ogrenciBilgileri = await VeliTelefonlariGetir(tumOgrenciIdler, ct);
 
         var periyotMetni = periyot == 1 ? "sabah" : "akşam";
 
         foreach (var (ogrenciId, adSoyad, veliTelefon) in ogrenciBilgileri)
         {
-            var mesaj = $"Sayın Veli, {adSoyad} bugün {periyotMetni} servisine binmemiştir.";
+            var durum = durumMap.GetValueOrDefault(ogrenciId, 0);
+            var durumMetni = durum == 1 ? "binmiştir" : "binmemiştir";
+            var mesaj = $"Sayın Veli, {adSoyad} bugün {periyotMetni} servisine {durumMetni}.";
 
             var (basarili, hata) = await _smsService.Gonder(veliTelefon, mesaj, ct);
             if (basarili)
-                _logger.LogInformation("[SMS OK][ServisYoklama] OgrId:{OgrId}, Periyot:{Periyot}", ogrenciId, periyotMetni);
+                _logger.LogInformation("[SMS OK][ServisYoklama] OgrId:{OgrId}, Periyot:{Periyot}, Durum:{Durum}", ogrenciId, periyotMetni, durumMetni);
             else
                 _logger.LogWarning("[SMS FAIL][ServisYoklama] OgrId:{OgrId}, Hata:{Hata}", ogrenciId, hata);
         }
