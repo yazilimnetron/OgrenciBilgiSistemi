@@ -48,7 +48,7 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                 _tumOgrenciler = ogrenciler.Select(o => new OgrenciGorunumModel
                 {
                     OgrenciData = o,
-                    ServisDurumId = 1 // Bindi
+                    ServisDurumId = 0 // Periyot seçilene kadar seçimsiz
                 }).ToList();
 
                 OgrenciCollection.ItemsSource = _tumOgrenciler;
@@ -104,7 +104,7 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                         if (kayitVar && mevcutYoklama.TryGetValue(vm.OgrenciData.OgrenciId, out int durumId))
                             vm.ServisDurumId = durumId;
                         else
-                            vm.ServisDurumId = 0; // Bekliyor
+                            vm.ServisDurumId = 1; // Bindi
                     }
                 }
             }
