@@ -1112,17 +1112,17 @@ namespace OgrenciBilgiSistemi.Migrations
                     b.HasOne("OgrenciBilgiSistemi.Models.KullaniciModel", "Ogretmen")
                         .WithMany("Ogrenciler")
                         .HasForeignKey("OgretmenId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("OgrenciBilgiSistemi.Models.KullaniciModel", "ServisKullanici")
                         .WithMany()
                         .HasForeignKey("ServisId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("OgrenciBilgiSistemi.Models.KullaniciModel", "Veli")
                         .WithMany()
                         .HasForeignKey("VeliId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.Restrict);
 
                     b.Navigation("Birim");
 

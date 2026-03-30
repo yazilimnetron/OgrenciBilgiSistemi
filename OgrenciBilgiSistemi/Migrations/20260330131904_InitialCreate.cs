@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace OgrenciBilgiSistemi.Migrations
 {
     /// <inheritdoc />
-    public partial class yeniveritabanı : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -65,6 +65,24 @@ namespace OgrenciBilgiSistemi.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Kullanicilar",
+                columns: table => new
+                {
+                    KullaniciId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    KullaniciAdi = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Sifre = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    BeniHatirla = table.Column<bool>(type: "bit", nullable: false),
+                    Rol = table.Column<int>(type: "int", nullable: false),
+                    KullaniciDurum = table.Column<bool>(type: "bit", nullable: false),
+                    Telefon = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Kullanicilar", x => x.KullaniciId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "MenuOgeler",
                 columns: table => new
                 {
@@ -106,51 +124,154 @@ namespace OgrenciBilgiSistemi.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Kullanicilar",
+                name: "Ogrenciler",
                 columns: table => new
                 {
-                    KullaniciId = table.Column<int>(type: "int", nullable: false)
+                    OgrenciId = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    KullaniciAdi = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    Sifre = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    BeniHatirla = table.Column<bool>(type: "bit", nullable: false),
-                    AdminMi = table.Column<bool>(type: "bit", nullable: false),
-                    KullaniciDurum = table.Column<bool>(type: "bit", nullable: false),
-                    BirimId = table.Column<int>(type: "int", nullable: true)
+                    OgrenciAdSoyad = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    OgrenciNo = table.Column<int>(type: "int", nullable: false),
+                    OgrenciKartNo = table.Column<string>(type: "nvarchar(10)", maxLength: 10, nullable: true),
+                    VeliId = table.Column<int>(type: "int", nullable: true),
+                    OgrenciCikisDurumu = table.Column<int>(type: "int", nullable: false),
+                    OgrenciDurum = table.Column<bool>(type: "bit", nullable: false),
+                    OgretmenId = table.Column<int>(type: "int", nullable: true),
+                    BirimId = table.Column<int>(type: "int", nullable: true),
+                    ServisId = table.Column<int>(type: "int", nullable: true),
+                    OgrenciGorsel = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Kullanicilar", x => x.KullaniciId);
+                    table.PrimaryKey("PK_Ogrenciler", x => x.OgrenciId);
                     table.ForeignKey(
-                        name: "FK_Kullanicilar_Birimler_BirimId",
+                        name: "FK_Ogrenciler_Birimler_BirimId",
                         column: x => x.BirimId,
                         principalTable: "Birimler",
-                        principalColumn: "BirimId");
+                        principalColumn: "BirimId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Ogrenciler_Kullanicilar_OgretmenId",
+                        column: x => x.OgretmenId,
+                        principalTable: "Kullanicilar",
+                        principalColumn: "KullaniciId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Ogrenciler_Kullanicilar_ServisId",
+                        column: x => x.ServisId,
+                        principalTable: "Kullanicilar",
+                        principalColumn: "KullaniciId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Ogrenciler_Kullanicilar_VeliId",
+                        column: x => x.VeliId,
+                        principalTable: "Kullanicilar",
+                        principalColumn: "KullaniciId",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
-                name: "Personeller",
+                name: "OgretmenProfiller",
                 columns: table => new
                 {
-                    PersonelId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    PersonelAdSoyad = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: false),
-                    PersonelGorselPath = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PersonelDurum = table.Column<bool>(type: "bit", nullable: false),
-                    PersonelTipi = table.Column<byte>(type: "tinyint", nullable: false),
-                    PersonelKartNo = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: true),
+                    KullaniciId = table.Column<int>(type: "int", nullable: false),
                     BirimId = table.Column<int>(type: "int", nullable: true),
-                    PersonelEmail = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: true),
-                    PersonelTelefon = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: true)
+                    Email = table.Column<string>(type: "nvarchar(120)", maxLength: 120, nullable: true),
+                    GorselPath = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    OgretmenDurum = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Personeller", x => x.PersonelId);
+                    table.PrimaryKey("PK_OgretmenProfiller", x => x.KullaniciId);
                     table.ForeignKey(
-                        name: "FK_Personeller_Birimler_BirimId",
+                        name: "FK_OgretmenProfiller_Birimler_BirimId",
                         column: x => x.BirimId,
                         principalTable: "Birimler",
-                        principalColumn: "BirimId");
+                        principalColumn: "BirimId",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_OgretmenProfiller_Kullanicilar_KullaniciId",
+                        column: x => x.KullaniciId,
+                        principalTable: "Kullanicilar",
+                        principalColumn: "KullaniciId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "ServisProfiller",
+                columns: table => new
+                {
+                    KullaniciId = table.Column<int>(type: "int", nullable: false),
+                    Plaka = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    ServisDurum = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ServisProfiller", x => x.KullaniciId);
+                    table.ForeignKey(
+                        name: "FK_ServisProfiller_Kullanicilar_KullaniciId",
+                        column: x => x.KullaniciId,
+                        principalTable: "Kullanicilar",
+                        principalColumn: "KullaniciId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "VeliProfiller",
+                columns: table => new
+                {
+                    KullaniciId = table.Column<int>(type: "int", nullable: false),
+                    VeliAdres = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: true),
+                    VeliMeslek = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    VeliIsYeri = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    VeliEmail = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    VeliYakinlik = table.Column<int>(type: "int", nullable: true),
+                    VeliDurum = table.Column<bool>(type: "bit", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_VeliProfiller", x => x.KullaniciId);
+                    table.ForeignKey(
+                        name: "FK_VeliProfiller_Kullanicilar_KullaniciId",
+                        column: x => x.KullaniciId,
+                        principalTable: "Kullanicilar",
+                        principalColumn: "KullaniciId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Ziyaretciler",
+                columns: table => new
+                {
+                    ZiyaretciId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    AdSoyad = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    TcKimlikNo = table.Column<string>(type: "nvarchar(11)", maxLength: 11, nullable: true),
+                    Telefon = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: true),
+                    Adres = table.Column<string>(type: "nvarchar(150)", maxLength: 150, nullable: true),
+                    KullaniciId = table.Column<int>(type: "int", nullable: true),
+                    ZiyaretSebebi = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
+                    KartNo = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
+                    KartVerildiMi = table.Column<bool>(type: "bit", nullable: false),
+                    GirisZamani = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CikisZamani = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    AktifMi = table.Column<bool>(type: "bit", nullable: false),
+                    CihazId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Ziyaretciler", x => x.ZiyaretciId);
+                    table.ForeignKey(
+                        name: "FK_Ziyaretciler_Cihazlar_CihazId",
+                        column: x => x.CihazId,
+                        principalTable: "Cihazlar",
+                        principalColumn: "CihazId",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Ziyaretciler_Kullanicilar_KullaniciId",
+                        column: x => x.KullaniciId,
+                        principalTable: "Kullanicilar",
+                        principalColumn: "KullaniciId",
+                        onDelete: ReferentialAction.SetNull);
                 });
 
             migrationBuilder.CreateTable(
@@ -178,71 +299,6 @@ namespace OgrenciBilgiSistemi.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Ogrenciler",
-                columns: table => new
-                {
-                    OgrenciId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    OgrenciAdSoyad = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    OgrenciNo = table.Column<int>(type: "int", nullable: false),
-                    OgrenciGorsel = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    OgrenciKartNo = table.Column<string>(type: "nvarchar(30)", maxLength: 30, nullable: false),
-                    OgrenciVeliAdSoyad = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: true),
-                    OgrenciVeliTelefon = table.Column<string>(type: "nvarchar(15)", maxLength: 15, nullable: true),
-                    OgrenciCikisDurumu = table.Column<int>(type: "int", nullable: false),
-                    OgrenciDurum = table.Column<bool>(type: "bit", nullable: false),
-                    PersonelId = table.Column<int>(type: "int", nullable: true),
-                    BirimId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Ogrenciler", x => x.OgrenciId);
-                    table.ForeignKey(
-                        name: "FK_Ogrenciler_Birimler_BirimId",
-                        column: x => x.BirimId,
-                        principalTable: "Birimler",
-                        principalColumn: "BirimId",
-                        onDelete: ReferentialAction.Restrict);
-                    table.ForeignKey(
-                        name: "FK_Ogrenciler_Personeller_PersonelId",
-                        column: x => x.PersonelId,
-                        principalTable: "Personeller",
-                        principalColumn: "PersonelId",
-                        onDelete: ReferentialAction.SetNull);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "PersonelDetaylar",
-                columns: table => new
-                {
-                    PersonelDetayId = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    PersonelId = table.Column<int>(type: "int", nullable: false),
-                    IstasyonTipi = table.Column<short>(type: "smallint", nullable: false),
-                    PersonelGTarih = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    PersonelCTarih = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    PersonelGecisTipi = table.Column<string>(type: "nvarchar(5)", maxLength: 5, nullable: true),
-                    PersonelSmsGonderildi = table.Column<bool>(type: "bit", nullable: true),
-                    PersonelResimYolu = table.Column<string>(type: "nvarchar(255)", nullable: true),
-                    CihazId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PersonelDetaylar", x => x.PersonelDetayId);
-                    table.ForeignKey(
-                        name: "FK_PersonelDetaylar_Cihazlar_CihazId",
-                        column: x => x.CihazId,
-                        principalTable: "Cihazlar",
-                        principalColumn: "CihazId");
-                    table.ForeignKey(
-                        name: "FK_PersonelDetaylar_Personeller_PersonelId",
-                        column: x => x.PersonelId,
-                        principalTable: "Personeller",
-                        principalColumn: "PersonelId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "KitapDetaylar",
                 columns: table => new
                 {
@@ -262,7 +318,7 @@ namespace OgrenciBilgiSistemi.Migrations
                         column: x => x.KitapId,
                         principalTable: "Kitaplar",
                         principalColumn: "KitapId",
-                        onDelete: ReferentialAction.Cascade);
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_KitapDetaylar_Ogrenciler_OgrenciId",
                         column: x => x.OgrenciId,
@@ -363,7 +419,8 @@ namespace OgrenciBilgiSistemi.Migrations
                     Ay = table.Column<int>(type: "int", nullable: false),
                     Tutar = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     Tarih = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    Aciklama = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true)
+                    Aciklama = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: true),
+                    AktifMi = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -399,6 +456,72 @@ namespace OgrenciBilgiSistemi.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "ServisYoklamalar",
+                columns: table => new
+                {
+                    ServisYoklamaId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OgrenciId = table.Column<int>(type: "int", nullable: false),
+                    KullaniciId = table.Column<int>(type: "int", nullable: false),
+                    DurumId = table.Column<int>(type: "int", nullable: false),
+                    Periyot = table.Column<int>(type: "int", nullable: false),
+                    OlusturulmaTarihi = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    GuncellenmeTarihi = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ServisYoklamalar", x => x.ServisYoklamaId);
+                    table.ForeignKey(
+                        name: "FK_ServisYoklamalar_Kullanicilar_KullaniciId",
+                        column: x => x.KullaniciId,
+                        principalTable: "Kullanicilar",
+                        principalColumn: "KullaniciId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_ServisYoklamalar_Ogrenciler_OgrenciId",
+                        column: x => x.OgrenciId,
+                        principalTable: "Ogrenciler",
+                        principalColumn: "OgrenciId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "SinifYoklamalar",
+                columns: table => new
+                {
+                    SinifYoklamaId = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    OgrenciId = table.Column<int>(type: "int", nullable: false),
+                    KullaniciId = table.Column<int>(type: "int", nullable: false),
+                    Ders1 = table.Column<int>(type: "int", nullable: true),
+                    Ders2 = table.Column<int>(type: "int", nullable: true),
+                    Ders3 = table.Column<int>(type: "int", nullable: true),
+                    Ders4 = table.Column<int>(type: "int", nullable: true),
+                    Ders5 = table.Column<int>(type: "int", nullable: true),
+                    Ders6 = table.Column<int>(type: "int", nullable: true),
+                    Ders7 = table.Column<int>(type: "int", nullable: true),
+                    Ders8 = table.Column<int>(type: "int", nullable: true),
+                    OlusturulmaTarihi = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    GuncellenmeTarihi = table.Column<DateTime>(type: "datetime2", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_SinifYoklamalar", x => x.SinifYoklamaId);
+                    table.ForeignKey(
+                        name: "FK_SinifYoklamalar_Kullanicilar_KullaniciId",
+                        column: x => x.KullaniciId,
+                        principalTable: "Kullanicilar",
+                        principalColumn: "KullaniciId",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_SinifYoklamalar_Ogrenciler_OgrenciId",
+                        column: x => x.OgrenciId,
+                        principalTable: "Ogrenciler",
+                        principalColumn: "OgrenciId",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "OgrenciAidatOdemeler",
                 columns: table => new
                 {
@@ -408,7 +531,8 @@ namespace OgrenciBilgiSistemi.Migrations
                     OdemeTarihi = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Tutar = table.Column<decimal>(type: "decimal(18,2)", precision: 18, scale: 2, nullable: false),
                     OdemeTipi = table.Column<string>(type: "nvarchar(50)", nullable: true),
-                    Aciklama = table.Column<string>(type: "nvarchar(255)", nullable: true)
+                    Aciklama = table.Column<string>(type: "nvarchar(255)", nullable: true),
+                    AktifMi = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -428,26 +552,34 @@ namespace OgrenciBilgiSistemi.Migrations
                 values: new object[,]
                 {
                     { 1, "Index", null, "Ana Sayfa", "Home", null, 1 },
-                    { 2, null, null, "Personeller", null, null, 2 },
+                    { 2, null, null, "Öğretmenler", null, null, 2 },
                     { 5, null, null, "Öğrenciler", null, null, 3 },
-                    { 10, null, null, "Kullanıcılar", null, null, 4 },
-                    { 13, null, null, "Kitaplar", null, null, 5 },
-                    { 16, null, null, "Cihazlar", null, null, 6 },
-                    { 18, null, null, "Raporlar", null, null, 7 },
-                    { 22, null, null, "KartOku", null, null, 8 },
-                    { 3, "Index", 2, "Birim Listesi", "Birimler", null, 1 },
-                    { 4, "Index", 2, "Personel Listesi", "Personeller", null, 2 },
-                    { 7, "Index", 5, "Öğrenci İşlemleri", "Ogrenciler", null, 1 },
-                    { 8, "Index", 5, "Aidat İşlemleri", "OgrenciAidat", null, 2 },
-                    { 9, "Index", 5, "Yemekhane İşlemleri", "OgrenciYemekhane", null, 3 },
-                    { 12, "Index", 10, "Kullanıcı Listesi", "Kullanicilar", null, 1 },
-                    { 14, "Index", 13, "Kitap Listesi", "Kitaplar", null, 1 },
+                    { 9, null, null, "Ziyaretçiler", null, null, 4 },
+                    { 11, null, null, "Kullanıcılar", null, null, 5 },
+                    { 13, null, null, "Kitaplar", null, null, 6 },
+                    { 16, null, null, "Cihazlar", null, null, 7 },
+                    { 18, null, null, "Raporlar", null, null, 8 },
+                    { 24, null, null, "Kart Oku", null, null, 9 },
+                    { 26, null, null, "Servisler", null, null, 10 },
+                    { 28, null, null, "Veliler", null, null, 11 },
+                    { 3, "Index", 2, "Birim İşlemleri", "Birimler", null, 1 },
+                    { 4, "Index", 2, "Öğretmen İşlemleri", "Ogretmenler", null, 2 },
+                    { 6, "Index", 5, "Öğrenci İşlemleri", "Ogrenciler", null, 1 },
+                    { 7, "Index", 5, "Aidat İşlemleri", "Aidat", null, 2 },
+                    { 8, "Index", 5, "Yemekhane İşlemleri", "Yemekhane", null, 3 },
+                    { 10, "Index", 9, "Ziyaretçi İşlemleri", "Ziyaretciler", null, 1 },
+                    { 12, "Index", 11, "Kullanıcı İşlemleri", "Kullanicilar", null, 1 },
+                    { 14, "Index", 13, "Kitap İşlemleri", "Kitaplar", null, 1 },
                     { 15, "Index", 13, "Kitap Hareketleri", "KitapDetaylar", null, 2 },
-                    { 17, "Index", 16, "Cihaz Listesi", "Cihazlar", null, 1 },
+                    { 17, "Index", 16, "Cihaz İşlemleri", "Cihazlar", null, 1 },
                     { 19, "Detay", 18, "Öğrenci Giriş Çıkış Raporları", "OgrenciGirisCikis", null, 1 },
-                    { 20, "AidatRapor", 18, "Öğrenci Aidat Raporu", "OgrenciAidat", null, 2 },
-                    { 21, "YemekRapor", 18, "Öğrenci Yemek Raporu", "OgrenciYemekhane", null, 3 },
-                    { 23, "Index", 22, "Kart Okuma Ekranı", "KartOku", null, 1 }
+                    { 20, "OgrenciVeliRapor", 18, "Öğrenci Veli Raporu", "Ogrenciler", null, 2 },
+                    { 21, "AidatRapor", 18, "Öğrenci Aidat Raporu", "Aidat", null, 3 },
+                    { 22, "ZiyaretciRapor", 18, "Öğrenci Ziyaretçi Raporu", "Ziyaretciler", null, 4 },
+                    { 23, "YemekRapor", 18, "Öğrenci Yemek Raporu", "Yemekhane", null, 5 },
+                    { 25, "Index", 24, "Kart Okuma Ekranı", "KartOku", null, 1 },
+                    { 27, "Index", 26, "Servis İşlemleri", "Servisler", null, 1 },
+                    { 29, "Index", 28, "Veli İşlemleri", "Veliler", null, 1 }
                 });
 
             migrationBuilder.CreateIndex(
@@ -478,9 +610,9 @@ namespace OgrenciBilgiSistemi.Migrations
                 column: "OgrenciId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Kullanicilar_BirimId",
+                name: "IX_Kullanicilar_Rol",
                 table: "Kullanicilar",
-                column: "BirimId");
+                column: "Rol");
 
             migrationBuilder.CreateIndex(
                 name: "IX_KullaniciMenuOgeler_MenuOgeId",
@@ -535,9 +667,32 @@ namespace OgrenciBilgiSistemi.Migrations
                 column: "BirimId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Ogrenciler_PersonelId",
+                name: "IX_Ogrenciler_OgretmenId",
                 table: "Ogrenciler",
-                column: "PersonelId");
+                column: "OgretmenId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Ogrenciler_ServisId",
+                table: "Ogrenciler",
+                column: "ServisId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Ogrenciler_VeliId",
+                table: "Ogrenciler",
+                column: "VeliId");
+
+            migrationBuilder.CreateIndex(
+                name: "UX_Ogrenciler_OgrenciKartNo",
+                table: "Ogrenciler",
+                column: "OgrenciKartNo",
+                unique: true,
+                filter: "[OgrenciKartNo] IS NOT NULL AND [OgrenciKartNo] != ''");
+
+            migrationBuilder.CreateIndex(
+                name: "UX_Ogrenciler_OgrenciNo",
+                table: "Ogrenciler",
+                column: "OgrenciNo",
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_OgrenciYemekler_OgrenciId_Yil_Ay",
@@ -557,19 +712,39 @@ namespace OgrenciBilgiSistemi.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_PersonelDetaylar_CihazId",
-                table: "PersonelDetaylar",
+                name: "IX_OgretmenProfiller_BirimId",
+                table: "OgretmenProfiller",
+                column: "BirimId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ServisYoklamalar_KullaniciId_OgrenciId_Periyot_OlusturulmaTarihi",
+                table: "ServisYoklamalar",
+                columns: new[] { "KullaniciId", "OgrenciId", "Periyot", "OlusturulmaTarihi" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_ServisYoklamalar_OgrenciId",
+                table: "ServisYoklamalar",
+                column: "OgrenciId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SinifYoklamalar_KullaniciId",
+                table: "SinifYoklamalar",
+                column: "KullaniciId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_SinifYoklamalar_OgrenciId_OlusturulmaTarihi",
+                table: "SinifYoklamalar",
+                columns: new[] { "OgrenciId", "OlusturulmaTarihi" });
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Ziyaretciler_CihazId",
+                table: "Ziyaretciler",
                 column: "CihazId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PersonelDetaylar_PersonelId",
-                table: "PersonelDetaylar",
-                column: "PersonelId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Personeller_BirimId",
-                table: "Personeller",
-                column: "BirimId");
+                name: "IX_Ziyaretciler_KullaniciId",
+                table: "Ziyaretciler",
+                column: "KullaniciId");
         }
 
         /// <inheritdoc />
@@ -600,13 +775,25 @@ namespace OgrenciBilgiSistemi.Migrations
                 name: "OgrenciYemekTarifeler");
 
             migrationBuilder.DropTable(
-                name: "PersonelDetaylar");
+                name: "OgretmenProfiller");
+
+            migrationBuilder.DropTable(
+                name: "ServisProfiller");
+
+            migrationBuilder.DropTable(
+                name: "ServisYoklamalar");
+
+            migrationBuilder.DropTable(
+                name: "SinifYoklamalar");
+
+            migrationBuilder.DropTable(
+                name: "VeliProfiller");
+
+            migrationBuilder.DropTable(
+                name: "Ziyaretciler");
 
             migrationBuilder.DropTable(
                 name: "Kitaplar");
-
-            migrationBuilder.DropTable(
-                name: "Kullanicilar");
 
             migrationBuilder.DropTable(
                 name: "MenuOgeler");
@@ -621,10 +808,10 @@ namespace OgrenciBilgiSistemi.Migrations
                 name: "Ogrenciler");
 
             migrationBuilder.DropTable(
-                name: "Personeller");
+                name: "Birimler");
 
             migrationBuilder.DropTable(
-                name: "Birimler");
+                name: "Kullanicilar");
         }
     }
 }

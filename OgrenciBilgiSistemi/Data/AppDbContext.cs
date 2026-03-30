@@ -49,13 +49,13 @@ namespace OgrenciBilgiSistemi.Data
                 .HasMany(k => k.Ogrenciler)
                 .WithOne(o => o.Ogretmen)
                 .HasForeignKey(o => o.OgretmenId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<OgrenciModel>()
                 .HasOne(o => o.Veli)
                 .WithMany()
                 .HasForeignKey(o => o.VeliId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Restrict);
 
             // =========================
             // OGRENCI <-> BIRIM (optional)
@@ -215,12 +215,12 @@ namespace OgrenciBilgiSistemi.Data
 
             // =========================
             // OGRENCI <-> KULLANICI/SERVIS (optional)
-            // =========================
+            // =========================            
             modelBuilder.Entity<OgrenciModel>()
                 .HasOne(o => o.ServisKullanici)
                 .WithMany()
                 .HasForeignKey(o => o.ServisId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Restrict); 
 
             // =========================
             // KULLANICI <-> VELIPROFIL (1:1)
