@@ -10,7 +10,6 @@
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 
-		<ApplicationId>com.netronyazilim.ogrencibilgisistemi</ApplicationId>
 		<ApplicationTitle>OgrenciBilgiSistemi</ApplicationTitle>
 
 		<ApplicationDisplayVersion>1.1.19</ApplicationDisplayVersion>
@@ -20,10 +19,13 @@
 	<!-- Platform versiyonları -->
 	<PropertyGroup Condition="'$(TargetFramework)' == 'net9.0-ios'">
 		<SupportedOSPlatformVersion>14.2</SupportedOSPlatformVersion>
+		<ApplicationId>com.netronyazilim.ogrencibilgisistemi</ApplicationId>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(TargetFramework)' == 'net9.0-android'">
 		<SupportedOSPlatformVersion>21.0</SupportedOSPlatformVersion>
+		<RuntimeIdentifier>android-arm64</RuntimeIdentifier>
+		<ApplicationId>com.netronyazilimvebilisimteknolojileri.ogrencibilgisistemi</ApplicationId>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -44,6 +46,5 @@
 		<PackageReference Include="CommunityToolkit.Maui" Version="9.0.0" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.0" />
 	</ItemGroup>
-
-
+	
 </Project>
