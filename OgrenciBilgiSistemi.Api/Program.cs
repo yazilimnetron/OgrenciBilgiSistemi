@@ -96,8 +96,10 @@ app.UseCors("ConfiguredOrigins");
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// MVC projesinin wwwroot/uploads klasörünü /uploads altında sun
-var mvcWwwRoot = Path.Combine(app.Environment.ContentRootPath, "..", "OgrenciBilgiSistemi", "wwwroot");
+// MVC projesinin wwwroot klasörünü statik dosya olarak sun
+var mvcWwwRoot = app.Configuration["MvcWwwRootPath"];
+if (string.IsNullOrWhiteSpace(mvcWwwRoot))
+    mvcWwwRoot = Path.Combine(app.Environment.ContentRootPath, "..", "OgrenciBilgiSistemi", "wwwroot");
 if (Directory.Exists(mvcWwwRoot))
 {
     app.UseStaticFiles(new StaticFileOptions

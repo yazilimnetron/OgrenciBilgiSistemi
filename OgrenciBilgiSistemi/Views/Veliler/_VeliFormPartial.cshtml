@@ -5,6 +5,9 @@
 
     var formId = "veliForm";
     var submitBtnId = "submitBtn";
+
+    var yakinlikDeger = ViewData["VeliYakinlik"] as YakinlikTipi?;
+    var durumDeger = ViewData["VeliDurum"] as bool? ?? true;
 }
 
 <div class="viewport-scroller">
@@ -33,37 +36,49 @@
                                 <div class="row g-3">
                                     <!-- Sol Sütun: Kullanıcı Bilgileri -->
                                     <div class="col-6">
-                                        @if (isEkle)
-                                        {
-                                            <div class="mb-3">
-                                                <label for="KullaniciAdi" class="form-label fw-semibold">Kullanıcı Adı</label>
-                                                <input name="KullaniciAdi" id="KullaniciAdi"
-                                                       class="form-control" required minlength="3"
-                                                       placeholder="Kullanıcı adı giriniz" />
-                                                <span class="text-danger field-validation-valid" data-valmsg-for="KullaniciAdi" data-valmsg-replace="true"></span>
-                                            </div>
+                                        <div class="mb-3">
+                                            <label for="KullaniciAdi" class="form-label fw-semibold">Kullanıcı Adı</label>
+                                            <input name="KullaniciAdi" id="KullaniciAdi"
+                                                   class="form-control" required minlength="3"
+                                                   placeholder="Kullanıcı adı giriniz"
+                                                   value="@ViewData["KullaniciAdi"]" />
+                                            <span class="text-danger field-validation-valid" data-valmsg-for="KullaniciAdi" data-valmsg-replace="true"></span>
+                                        </div>
 
-                                            <div class="mb-3">
-                                                <label for="Sifre" class="form-label fw-semibold">Şifre</label>
+                                        <div class="mb-3">
+                                            <label for="Sifre" class="form-label fw-semibold">Şifre</label>
+                                            @if (isEkle)
+                                            {
                                                 <input name="Sifre" id="Sifre" type="password"
                                                        class="form-control" required minlength="3"
                                                        placeholder="Şifre giriniz" />
-                                                <span class="text-danger field-validation-valid" data-valmsg-for="Sifre" data-valmsg-replace="true"></span>
-                                            </div>
+                                            }
+                                            else
+                                            {
+                                                <input name="Sifre" id="Sifre" type="password"
+                                                       class="form-control" data-val="false"
+                                                       placeholder="Değiştirmek istemiyorsanız boş bırakın" />
+                                                <small class="text-muted">Boş bırakırsanız mevcut şifre korunur.</small>
+                                            }
+                                            <span class="text-danger field-validation-valid" data-valmsg-for="Sifre" data-valmsg-replace="true"></span>
+                                        </div>
 
-                                            <div class="mb-3">
-                                                <label for="Telefon" class="form-label fw-semibold">Telefon</label>
-                                                <input name="Telefon" id="Telefon"
-                                                       class="form-control" placeholder="5XXXXXXXXX" />
-                                                <span class="text-danger field-validation-valid" data-valmsg-for="Telefon" data-valmsg-replace="true"></span>
-                                            </div>
-                                        }
+                                        <div class="mb-3">
+                                            <label for="Telefon" class="form-label fw-semibold">Telefon</label>
+                                            <input name="Telefon" id="Telefon"
+                                                   class="form-control" placeholder="5XXXXXXXXX"
+                                                   value="@ViewData["Telefon"]" />
+                                            <span class="text-danger field-validation-valid" data-valmsg-for="Telefon" data-valmsg-replace="true"></span>
+                                        </div>
 
                                         <div class="mb-3">
                                             <label for="VeliYakinlik" class="form-label fw-semibold">Yakınlık</label>
-                                            <select name="VeliYakinlik" id="VeliYakinlik" class="form-select"
-                                                    asp-items="Html.GetEnumSelectList<YakinlikTipi>()">
+                                            <select name="VeliYakinlik" id="VeliYakinlik" class="form-select">
                                                 <option value="">-- Seçiniz --</option>
+                                                @foreach (var item in Html.GetEnumSelectList<YakinlikTipi>())
+                                                {
+                                                    <option value="@item.Value" selected="@(yakinlikDeger.HasValue && item.Value == ((int)yakinlikDeger.Value).ToString() ? "selected" : null)">@item.Text</option>
+                                                }
                                             </select>
                                             <span class="text-danger field-validation-valid" data-valmsg-for="VeliYakinlik" data-valmsg-replace="true"></span>
                                         </div>
@@ -73,8 +88,8 @@
                                             <div class="mb-3">
                                                 <label for="VeliDurum" class="form-label fw-semibold">Durum</label>
                                                 <select name="VeliDurum" id="VeliDurum" class="form-select">
-                                                    <option value="true">Aktif</option>
-                                                    <option value="false">Pasif</option>
+                                                    <option value="true" selected="@(durumDeger ? "selected" : null)">Aktif</option>
+                                                    <option value="false" selected="@(!durumDeger ? "selected" : null)">Pasif</option>
                                                 </select>
                                                 <span class="text-danger field-validation-valid" data-valmsg-for="VeliDurum" data-valmsg-replace="true"></span>
                                             </div>
@@ -85,25 +100,29 @@
                                     <div class="col-6">
                                         <div class="mb-3">
                                             <label for="VeliAdres" class="form-label fw-semibold">Adres</label>
-                                            <input name="VeliAdres" id="VeliAdres" class="form-control" placeholder="Adres" />
+                                            <input name="VeliAdres" id="VeliAdres" class="form-control" placeholder="Adres"
+                                                   value="@ViewData["VeliAdres"]" />
                                             <span class="text-danger field-validation-valid" data-valmsg-for="VeliAdres" data-valmsg-replace="true"></span>
                                         </div>
 
                                         <div class="mb-3">
                                             <label for="VeliMeslek" class="form-label fw-semibold">Meslek</label>
-                                            <input name="VeliMeslek" id="VeliMeslek" class="form-control" placeholder="Meslek" />
+                                            <input name="VeliMeslek" id="VeliMeslek" class="form-control" placeholder="Meslek"
+                                                   value="@ViewData["VeliMeslek"]" />
                                             <span class="text-danger field-validation-valid" data-valmsg-for="VeliMeslek" data-valmsg-replace="true"></span>
                                         </div>
 
                                         <div class="mb-3">
                                             <label for="VeliIsYeri" class="form-label fw-semibold">İş Yeri</label>
-                                            <input name="VeliIsYeri" id="VeliIsYeri" class="form-control" placeholder="İş yeri" />
+                                            <input name="VeliIsYeri" id="VeliIsYeri" class="form-control" placeholder="İş yeri"
+                                                   value="@ViewData["VeliIsYeri"]" />
                                             <span class="text-danger field-validation-valid" data-valmsg-for="VeliIsYeri" data-valmsg-replace="true"></span>
                                         </div>
 
                                         <div class="mb-3">
                                             <label for="VeliEmail" class="form-label fw-semibold">E-posta</label>
-                                            <input name="VeliEmail" id="VeliEmail" type="email" class="form-control" placeholder="ornek@email.com" />
+                                            <input name="VeliEmail" id="VeliEmail" type="email" class="form-control" placeholder="ornek@email.com"
+                                                   value="@ViewData["VeliEmail"]" />
                                             <span class="text-danger field-validation-valid" data-valmsg-for="VeliEmail" data-valmsg-replace="true"></span>
                                         </div>
                                     </div>

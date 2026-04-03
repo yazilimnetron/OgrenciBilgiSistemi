@@ -79,8 +79,10 @@ namespace OgrenciBilgiSistemi.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Guncelle(OgretmenProfilModel model, CancellationToken ct = default)
+        public async Task<IActionResult> Guncelle(OgretmenProfilModel model, string? kullaniciAdi, string? telefon, string? sifre, CancellationToken ct = default)
         {
+            ModelState.Remove(nameof(sifre));
+
             if (!ModelState.IsValid)
             {
                 ViewBag.Birimler = await _kullaniciService.GetBirimlerSelectListAsync(ct);
@@ -89,7 +91,7 @@ namespace OgrenciBilgiSistemi.Controllers
 
             try
             {
-                await _ogretmenProfilService.GuncelleAsync(model, ct);
+                await _ogretmenProfilService.GuncelleAsync(model, kullaniciAdi, telefon, sifre, ct);
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)

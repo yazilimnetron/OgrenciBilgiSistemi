@@ -94,6 +94,7 @@ namespace OgrenciBilgiSistemi.Services.Implementations
 
                 profil.BirimId = model.OgretmenProfil?.BirimId;
                 profil.Email = model.OgretmenProfil?.Email;
+                profil.OgretmenDurum = kullanici.KullaniciDurum;
 
                 if (model.OgretmenProfil?.GorselFile != null && model.OgretmenProfil.GorselFile.Length > 0)
                     profil.GorselPath = await SaveImageAsync(model.OgretmenProfil.GorselFile, ct);
@@ -110,6 +111,7 @@ namespace OgrenciBilgiSistemi.Services.Implementations
                 }
 
                 profil.Plaka = model.ServisProfil?.Plaka ?? string.Empty;
+                profil.ServisDurum = kullanici.KullaniciDurum;
             }
 
             // VeliProfil yönetimi

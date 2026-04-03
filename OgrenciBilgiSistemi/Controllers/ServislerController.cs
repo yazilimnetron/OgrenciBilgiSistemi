@@ -71,14 +71,16 @@ namespace OgrenciBilgiSistemi.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Guncelle(ServisProfilModel model, CancellationToken ct = default)
+        public async Task<IActionResult> Guncelle(ServisProfilModel model, string? kullaniciAdi, string? telefon, string? sifre, CancellationToken ct = default)
         {
+            ModelState.Remove(nameof(sifre));
+
             if (!ModelState.IsValid)
                 return View(model);
 
             try
             {
-                await _servisProfilService.GuncelleAsync(model, ct);
+                await _servisProfilService.GuncelleAsync(model, kullaniciAdi, telefon, sifre, ct);
                 return RedirectToAction(nameof(Index));
             }
             catch (Exception ex)

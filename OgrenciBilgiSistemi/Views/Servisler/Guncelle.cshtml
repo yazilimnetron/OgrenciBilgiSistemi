@@ -4,5 +4,9 @@
     ViewData["Action"] = "Guncelle";
     ViewData["SubmitText"] = "Güncelle";
     ViewData["KullaniciId"] = Model.KullaniciId;
+    ViewData["KullaniciAdi"] = Model.Kullanici?.KullaniciAdi;
+    ViewData["Telefon"] = Model.Kullanici?.Telefon;
+    ViewData["Plaka"] = Model.Plaka;
+    ViewData["ServisDurum"] = Model.ServisDurum;
 }
 <partial name="~/Views/Shared/_ServisFormPartial.cshtml" />

@@ -70,7 +70,7 @@ namespace OgrenciBilgiSistemi.Services.Implementations
             return kullanici.KullaniciId;
         }
 
-        public async Task GuncelleAsync(OgretmenProfilModel model, CancellationToken ct = default)
+        public async Task GuncelleAsync(OgretmenProfilModel model, string? kullaniciAdi, string? telefon, string? sifre, CancellationToken ct = default)
         {
             var mevcut = await _db.OgretmenProfiller.FindAsync([model.KullaniciId], ct)
                 ?? throw new KeyNotFoundException("Öğretmen profili bulunamadı.");
@@ -81,6 +81,17 @@ namespace OgrenciBilgiSistemi.Services.Implementations
 
             if (model.GorselFile != null && model.GorselFile.Length > 0)
                 mevcut.GorselPath = await SaveImageAsync(model.GorselFile, ct);
+
+            var kullanici = await _db.Kullanicilar.FindAsync([model.KullaniciId], ct);
+            if (kullanici != null)
+            {
+                kullanici.KullaniciAdi = kullaniciAdi ?? kullanici.KullaniciAdi;
+                kullanici.Telefon = telefon;
+                kullanici.KullaniciDurum = model.OgretmenDurum;
+
+                if (!string.IsNullOrWhiteSpace(sifre))
+                    kullanici.Sifre = _passwordHasher.HashPassword(kullanici, sifre);
+            }
 
             await _db.SaveChangesAsync(ct);
         }
@@ -97,6 +108,7 @@ namespace OgrenciBilgiSistemi.Services.Implementations
         public async Task<OgretmenProfilModel?> GetByIdAsync(int kullaniciId, CancellationToken ct = default)
             => await _db.OgretmenProfiller
                 .Include(o => o.Birim)
+                .Include(o => o.Kullanici)
                 .AsNoTracking()
                 .FirstOrDefaultAsync(o => o.KullaniciId == kullaniciId, ct);
 

@@ -2,6 +2,7 @@
     var action = (ViewData["Action"] as string) ?? "Ekle";
     var submitText = (ViewData["SubmitText"] as string) ?? "Kaydet";
     var isEkle = action == "Ekle";
+    var durumDeger = ViewData["ServisDurum"] as bool? ?? true;
 
     var formId = "servisForm";
     var submitBtnId = "submitBtn";
@@ -30,43 +31,53 @@
 
                                 <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
 
-                                @if (isEkle)
-                                {
-                                    <!-- Kullanıcı Adı -->
-                                    <div class="mb-3">
-                                        <label for="KullaniciAdi" class="form-label fw-semibold">Kullanıcı Adı</label>
-                                        <input name="KullaniciAdi" id="KullaniciAdi"
-                                               class="form-control" required minlength="3"
-                                               placeholder="Kullanıcı adı giriniz" />
-                                        <span class="text-danger field-validation-valid" data-valmsg-for="KullaniciAdi" data-valmsg-replace="true"></span>
-                                    </div>
+                                <!-- Kullanıcı Adı -->
+                                <div class="mb-3">
+                                    <label for="KullaniciAdi" class="form-label fw-semibold">Kullanıcı Adı</label>
+                                    <input name="KullaniciAdi" id="KullaniciAdi"
+                                           class="form-control" required minlength="3"
+                                           placeholder="Kullanıcı adı giriniz"
+                                           value="@ViewData["KullaniciAdi"]" />
+                                    <span class="text-danger field-validation-valid" data-valmsg-for="KullaniciAdi" data-valmsg-replace="true"></span>
+                                </div>
 
-                                    <!-- Şifre -->
-                                    <div class="mb-3">
-                                        <label for="Sifre" class="form-label fw-semibold">Şifre</label>
+                                <!-- Şifre -->
+                                <div class="mb-3">
+                                    <label for="Sifre" class="form-label fw-semibold">Şifre</label>
+                                    @if (isEkle)
+                                    {
                                         <input name="Sifre" id="Sifre" type="password"
                                                class="form-control" required minlength="3"
                                                placeholder="Şifre giriniz" />
-                                        <span class="text-danger field-validation-valid" data-valmsg-for="Sifre" data-valmsg-replace="true"></span>
-                                    </div>
+                                    }
+                                    else
+                                    {
+                                        <input name="Sifre" id="Sifre" type="password"
+                                               class="form-control" data-val="false"
+                                               placeholder="Değiştirmek istemiyorsanız boş bırakın" />
+                                        <small class="text-muted">Boş bırakırsanız mevcut şifre korunur.</small>
+                                    }
+                                    <span class="text-danger field-validation-valid" data-valmsg-for="Sifre" data-valmsg-replace="true"></span>
+                                </div>
 
-                                    <!-- Telefon -->
-                                    <div class="mb-3">
-                                        <label for="Telefon" class="form-label fw-semibold">Telefon</label>
-                                        <input name="Telefon" id="Telefon"
-                                               class="form-control" placeholder="5XXXXXXXXX" />
-                                        <span class="text-danger field-validation-valid" data-valmsg-for="Telefon" data-valmsg-replace="true"></span>
-                                    </div>
+                                <!-- Telefon -->
+                                <div class="mb-3">
+                                    <label for="Telefon" class="form-label fw-semibold">Telefon</label>
+                                    <input name="Telefon" id="Telefon"
+                                           class="form-control" placeholder="5XXXXXXXXX"
+                                           value="@ViewData["Telefon"]" />
+                                    <span class="text-danger field-validation-valid" data-valmsg-for="Telefon" data-valmsg-replace="true"></span>
+                                </div>
 
-                                    <hr class="my-3" />
-                                }
+                                <hr class="my-3" />
 
                                 <!-- Plaka -->
                                 <div class="mb-3">
                                     <label for="Plaka" class="form-label fw-semibold">Plaka</label>
                                     <input name="Plaka" id="Plaka"
                                            class="form-control" required
-                                           placeholder="34 ABC 123" />
+                                           placeholder="34 ABC 123"
+                                           value="@ViewData["Plaka"]" />
                                     <span class="text-danger field-validation-valid" data-valmsg-for="Plaka" data-valmsg-replace="true"></span>
                                 </div>
 
@@ -76,8 +87,8 @@
                                     <div class="mb-3">
                                         <label for="ServisDurum" class="form-label fw-semibold">Durum</label>
                                         <select name="ServisDurum" id="ServisDurum" class="form-select">
-                                            <option value="true">Aktif</option>
-                                            <option value="false">Pasif</option>
+                                            <option value="true" selected="@(durumDeger ? "selected" : null)">Aktif</option>
+                                            <option value="false" selected="@(!durumDeger ? "selected" : null)">Pasif</option>
                                         </select>
                                         <span class="text-danger field-validation-valid" data-valmsg-for="ServisDurum" data-valmsg-replace="true"></span>
                                     </div>

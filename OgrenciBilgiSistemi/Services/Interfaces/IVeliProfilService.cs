@@ -8,7 +8,7 @@ namespace OgrenciBilgiSistemi.Services.Interfaces
         Task<SayfalanmisListeModel<VeliProfilModel>> SearchPagedAsync(
             string? searchString, int page, int pageSize = 20, CancellationToken ct = default);
         Task<int> EkleKullaniciVeProfilAsync(VeliEkleVm vm, CancellationToken ct = default);
-        Task GuncelleAsync(VeliProfilModel model, CancellationToken ct = default);
+        Task GuncelleAsync(VeliProfilModel model, string? kullaniciAdi, string? telefon, string? sifre, CancellationToken ct = default);
         Task SilAsync(int kullaniciId, CancellationToken ct = default);
         Task<VeliProfilModel?> GetByIdAsync(int kullaniciId, CancellationToken ct = default);
         Task<List<OgrenciModel>> GetOgrencilerAsync(int kullaniciId, CancellationToken ct = default);

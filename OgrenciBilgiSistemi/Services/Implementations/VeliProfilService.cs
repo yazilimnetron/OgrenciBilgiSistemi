@@ -76,7 +76,7 @@ namespace OgrenciBilgiSistemi.Services.Implementations
             return kullanici.KullaniciId;
         }
 
-        public async Task GuncelleAsync(VeliProfilModel model, CancellationToken ct = default)
+        public async Task GuncelleAsync(VeliProfilModel model, string? kullaniciAdi, string? telefon, string? sifre, CancellationToken ct = default)
         {
             var mevcut = await _db.VeliProfiller.FindAsync([model.KullaniciId], ct)
                 ?? throw new KeyNotFoundException("Veli profili bulunamadı.");
@@ -87,6 +87,17 @@ namespace OgrenciBilgiSistemi.Services.Implementations
             mevcut.VeliEmail = model.VeliEmail;
             mevcut.VeliYakinlik = model.VeliYakinlik;
             mevcut.VeliDurum = model.VeliDurum;
+
+            var kullanici = await _db.Kullanicilar.FindAsync([model.KullaniciId], ct);
+            if (kullanici != null)
+            {
+                kullanici.KullaniciAdi = kullaniciAdi ?? kullanici.KullaniciAdi;
+                kullanici.Telefon = telefon;
+                kullanici.KullaniciDurum = model.VeliDurum;
+
+                if (!string.IsNullOrWhiteSpace(sifre))
+                    kullanici.Sifre = _passwordHasher.HashPassword(kullanici, sifre);
+            }
 
             await _db.SaveChangesAsync(ct);
         }

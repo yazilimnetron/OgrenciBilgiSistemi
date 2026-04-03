@@ -69,13 +69,24 @@ namespace OgrenciBilgiSistemi.Services.Implementations
             return kullanici.KullaniciId;
         }
 
-        public async Task GuncelleAsync(ServisProfilModel model, CancellationToken ct = default)
+        public async Task GuncelleAsync(ServisProfilModel model, string? kullaniciAdi, string? telefon, string? sifre, CancellationToken ct = default)
         {
             var mevcut = await _db.ServisProfiller.FindAsync([model.KullaniciId], ct)
                 ?? throw new KeyNotFoundException("Servis profili bulunamadı.");
 
             mevcut.Plaka = model.Plaka;
             mevcut.ServisDurum = model.ServisDurum;
+
+            var kullanici = await _db.Kullanicilar.FindAsync([model.KullaniciId], ct);
+            if (kullanici != null)
+            {
+                kullanici.KullaniciAdi = kullaniciAdi ?? kullanici.KullaniciAdi;
+                kullanici.Telefon = telefon;
+                kullanici.KullaniciDurum = model.ServisDurum;
+
+                if (!string.IsNullOrWhiteSpace(sifre))
+                    kullanici.Sifre = _passwordHasher.HashPassword(kullanici, sifre);
+            }
 
             await _db.SaveChangesAsync(ct);
         }
