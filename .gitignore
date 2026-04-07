@@ -3,9 +3,14 @@ bin/
 obj/
 
 # User secrets and local config overrides
+appsettings.json
 appsettings.Local.json
+appsettings.Development.json
 appsettings.Production.json
 secrets.json
+
+# Mobile embedded config hariç tutulmaz (build-time gömülü)
+!OgrenciBilgiSistemi.Mobil/appsettings.json
 
 # Visual Studio
 .vs/
