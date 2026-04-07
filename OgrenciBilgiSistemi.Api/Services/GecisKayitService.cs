@@ -1,17 +1,19 @@
 using Microsoft.Data.SqlClient;
 using OgrenciBilgiSistemi.Api.Models;
+using OgrenciBilgiSistemi.Shared.Services;
 
 namespace OgrenciBilgiSistemi.Api.Services
 {
     public class GecisKayitService
     {
-        private readonly string _connectionString;
+        private readonly TenantBaglami _tenantBaglami;
 
-        public GecisKayitService(IConfiguration configuration)
+        public GecisKayitService(TenantBaglami tenantBaglami)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException("DefaultConnection bağlantı dizesi eksik.");
+            _tenantBaglami = tenantBaglami;
         }
+
+        private string _connectionString => _tenantBaglami.ConnectionString;
 
         /// <summary>
         /// OgrenciDetaylar tablosundan filtrelenmiş giriş/çıkış kayıtlarını getirir.

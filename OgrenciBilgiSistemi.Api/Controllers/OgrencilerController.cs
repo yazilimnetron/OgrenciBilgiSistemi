@@ -128,7 +128,7 @@ namespace OgrenciBilgiSistemi.Api.Controllers
                 if (yetkiSonucu != null) return yetkiSonucu;
 
                 var detaylar = await _ogrenciService.OgrenciDetayGetirAsync(id);
-                if (detaylar.Count == 0)
+                if (detaylar is null)
                     return NotFound(new { message = $"{id} numaralı öğrenci bulunamadı." });
                 return Ok(detaylar);
             }

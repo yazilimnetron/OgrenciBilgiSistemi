@@ -17,6 +17,7 @@ namespace OgrenciBilgiSistemi.Mobil.Services
         private static KullaniciRolu _rol;
         private static string _yetkiToken;
         private static bool _yuklendi;
+        private static string _okulKodu = string.Empty;
 
         // SecureStorage anahtarları
         private const string AnahtarKullaniciId = "session_user_id";
@@ -28,6 +29,7 @@ namespace OgrenciBilgiSistemi.Mobil.Services
         private const string AnahtarYetkiToken = "session_auth_token";
         private const string AnahtarGirisZamani = "session_login_time";
         private const string AnahtarRefreshToken = "session_refresh_token";
+        private const string AnahtarOkulKodu = "session_okul_kodu";
 
         // Oturum zaman aşımı (8 saat)
         private static readonly TimeSpan OturumSuresi = TimeSpan.FromHours(8);
@@ -37,7 +39,7 @@ namespace OgrenciBilgiSistemi.Mobil.Services
         /// <summary>
         /// Giriş başarılı olduğunda tüm oturum bilgilerini SecureStorage'a kaydeder.
         /// </summary>
-        public static async Task OturumAyarlaAsync(int kullaniciId, string adSoyad, int? birimId, KullaniciRolu rol = KullaniciRolu.Ogretmen, int? servisId = null, int? veliId = null, string yetkiToken = null, string refreshToken = null)
+        public static async Task OturumAyarlaAsync(int kullaniciId, string adSoyad, int? birimId, KullaniciRolu rol = KullaniciRolu.Ogretmen, int? servisId = null, int? veliId = null, string yetkiToken = null, string refreshToken = null, string okulKodu = null)
         {
             _kullaniciId = kullaniciId;
             _adSoyad = string.IsNullOrEmpty(adSoyad) ? "Kullanıcı" : adSoyad;
@@ -47,6 +49,7 @@ namespace OgrenciBilgiSistemi.Mobil.Services
             _veliId = veliId;
             _yetkiToken = yetkiToken;
             _refreshToken = refreshToken;
+            _okulKodu = okulKodu ?? string.Empty;
             _yuklendi = true;
 
             try
@@ -55,6 +58,9 @@ namespace OgrenciBilgiSistemi.Mobil.Services
                 await SecureStorage.Default.SetAsync(AnahtarAdSoyad, _adSoyad);
                 await SecureStorage.Default.SetAsync(AnahtarRol, ((int)rol).ToString());
                 await SecureStorage.Default.SetAsync(AnahtarGirisZamani, DateTime.UtcNow.ToString("O"));
+
+                if (!string.IsNullOrEmpty(okulKodu))
+                    await SecureStorage.Default.SetAsync(AnahtarOkulKodu, okulKodu);
 
                 if (birimId.HasValue)
                     await SecureStorage.Default.SetAsync(AnahtarBirimId, birimId.Value.ToString());
@@ -120,6 +126,7 @@ namespace OgrenciBilgiSistemi.Mobil.Services
 
                 _yetkiToken = await SecureStorage.Default.GetAsync(AnahtarYetkiToken);
                 _refreshToken = await SecureStorage.Default.GetAsync(AnahtarRefreshToken);
+                _okulKodu = await SecureStorage.Default.GetAsync(AnahtarOkulKodu) ?? string.Empty;
 
                 _yuklendi = true;
             }
@@ -146,6 +153,7 @@ namespace OgrenciBilgiSistemi.Mobil.Services
             _rol = 0;
             _yetkiToken = null;
             _refreshToken = null;
+            _okulKodu = string.Empty;
             _yuklendi = false;
 
             try
@@ -158,6 +166,7 @@ namespace OgrenciBilgiSistemi.Mobil.Services
                 SecureStorage.Default.Remove(AnahtarRol);
                 SecureStorage.Default.Remove(AnahtarYetkiToken);
                 SecureStorage.Default.Remove(AnahtarRefreshToken);
+                SecureStorage.Default.Remove(AnahtarOkulKodu);
                 SecureStorage.Default.Remove(AnahtarGirisZamani);
             }
             catch (Exception ex)
@@ -232,6 +241,12 @@ namespace OgrenciBilgiSistemi.Mobil.Services
         public static bool ServisMi => _rol == KullaniciRolu.Servis;
         public static bool VeliMi => _rol == KullaniciRolu.Veli;
         public static bool OgretmenMi => _rol == KullaniciRolu.Ogretmen;
+
+        public static string OkulKodu
+        {
+            get => _okulKodu;
+            set => _okulKodu = value ?? string.Empty;
+        }
 
         public static string YetkiToken
         {

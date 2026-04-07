@@ -7,12 +7,33 @@ namespace OgrenciBilgiSistemi.Mobil.Services
 {
     public class GirisService : TemelApiService
     {
-        public async Task<bool> KullaniciGirisYapAsync(string kullaniciAdi, string sifre)
+        /// <summary>
+        /// Yapılandırılmış okul listesini API'den çeker.
+        /// </summary>
+        public async Task<List<OkulBilgi>> OkullariGetirAsync()
         {
             try
             {
-                // API GirisIstegiDto: KullaniciAdi ve Sifre alanlarını bekler
-                var loginData = new { KullaniciAdi = kullaniciAdi, Sifre = sifre };
+                var response = await _httpClient.GetAsync($"{BaseUrl}kimlik-dogrulama/okullar");
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonSerializer.Deserialize<List<OkulBilgi>>(json, _jsonOptions) ?? new List<OkulBilgi>();
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[OkullariGetir HATASI]: {ex.Message}");
+            }
+
+            return new List<OkulBilgi>();
+        }
+
+        public async Task<bool> KullaniciGirisYapAsync(string kullaniciAdi, string sifre, string okulKodu)
+        {
+            try
+            {
+                var loginData = new { KullaniciAdi = kullaniciAdi, Sifre = sifre, OkulKodu = okulKodu };
                 var json = JsonSerializer.Serialize(loginData);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
@@ -22,44 +43,29 @@ namespace OgrenciBilgiSistemi.Mobil.Services
                 {
                     var responseString = await response.Content.ReadAsStringAsync();
 
-                    // API'den dönen JSON: { token: "...", expiresIn: 28800, kullanici: {...} }
                     using var doc = JsonDocument.Parse(responseString);
                     var root = doc.RootElement;
 
                     string token = null;
                     Kullanici kullanici = null;
-
                     string refreshToken = null;
 
-                    // Token varsa al
                     if (root.TryGetProperty("token", out var tokenElement))
-                    {
                         token = tokenElement.GetString();
-                    }
 
-                    // Refresh token varsa al
                     if (root.TryGetProperty("refreshToken", out var refreshTokenElement))
-                    {
                         refreshToken = refreshTokenElement.GetString();
-                    }
 
-                    // Kullanici nesnesini "kullanici" alanından çöz
                     if (root.TryGetProperty("kullanici", out var userElement))
-                    {
                         kullanici = JsonSerializer.Deserialize<Kullanici>(userElement.GetRawText(), _jsonOptions);
-                    }
 
                     if (kullanici != null)
                     {
-                        // Oturum bilgilerini SecureStorage'a kaydet
                         string gorunenAd = !string.IsNullOrWhiteSpace(kullanici.AdSoyad)
                             ? kullanici.AdSoyad
                             : kullanici.KullaniciAdi;
 
-                        // Veli rolünde veliId = KullaniciId (1:1 ilişki)
                         int? veliId = kullanici.Rol == KullaniciRolu.Veli ? kullanici.KullaniciId : null;
-
-                        // Servis rolünde servisId = KullaniciId (1:1 ilişki)
                         int? servisId = kullanici.Rol == KullaniciRolu.Servis ? kullanici.KullaniciId : null;
 
                         await KullaniciOturum.OturumAyarlaAsync(
@@ -70,10 +76,10 @@ namespace OgrenciBilgiSistemi.Mobil.Services
                             servisId: servisId,
                             veliId: veliId,
                             yetkiToken: token,
-                            refreshToken: refreshToken
+                            refreshToken: refreshToken,
+                            okulKodu: okulKodu
                         );
 
-                        // HttpClient header'ını güncelle
                         YetkiBasliginiYenile();
 
                         return true;
@@ -108,14 +114,14 @@ namespace OgrenciBilgiSistemi.Mobil.Services
 
         /// <summary>
         /// Kullanıcı adının ilk harflerine göre eşleşen kullanıcı adlarını getirir.
-        /// JWT gerektirmez (anonim endpoint).
+        /// Okul kodu ile birlikte aranır.
         /// </summary>
-        public async Task<List<string>> KullaniciAdiAraAsync(string aranan)
+        public async Task<List<string>> KullaniciAdiAraAsync(string aranan, string okulKodu)
         {
             try
             {
                 var response = await _httpClient.GetAsync(
-                    $"{BaseUrl}kimlik-dogrulama/kullanici-ara?q={Uri.EscapeDataString(aranan)}");
+                    $"{BaseUrl}kimlik-dogrulama/kullanici-ara?q={Uri.EscapeDataString(aranan)}&okulKodu={Uri.EscapeDataString(okulKodu)}");
 
                 if (response.IsSuccessStatusCode)
                 {

@@ -1,17 +1,19 @@
 using Microsoft.Data.SqlClient;
 using OgrenciBilgiSistemi.Api.Models;
+using OgrenciBilgiSistemi.Shared.Services;
 
 namespace OgrenciBilgiSistemi.Api.Services
 {
     public class ServisService
     {
-        private readonly string _connectionString;
+        private readonly TenantBaglami _tenantBaglami;
 
-        public ServisService(IConfiguration configuration)
+        public ServisService(TenantBaglami tenantBaglami)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException("DefaultConnection bağlantı dizesi eksik.");
+            _tenantBaglami = tenantBaglami;
         }
+
+        private string _connectionString => _tenantBaglami.ConnectionString;
 
         /// <summary>
         /// Belirtilen servise (KullaniciId) atanmış aktif öğrencileri getirir.

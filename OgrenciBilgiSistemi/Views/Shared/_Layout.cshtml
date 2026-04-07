@@ -18,7 +18,9 @@
         (ViewContext.RouteData.Values["action"]?.ToString() == "Index");
 
         var isAuthenticated = User.Identity?.IsAuthenticated ?? false;
-        var isAdmin = isAuthenticated && User.IsInRole("Admin");
+        var isAdmin = isAuthenticated && (User.IsInRole("Admin") || User.IsInRole("GenelAdmin"));
+        var isGenelAdmin = isAuthenticated && User.IsInRole("GenelAdmin");
+        var okulAdi = User.FindFirst("okulAdi")?.Value ?? Context.Session.GetString("SeciliOkulKodu") ?? "";
     }
 
     @if (isAuthenticated)
@@ -30,11 +32,27 @@
                         @await Component.InvokeAsync("Menu")
                     </ul>
 
-                    <ul class="navbar-nav ms-auto mb-0">
-                        <li class="nav-item">
+                    <ul class="navbar-nav ms-auto mb-0 align-items-center">
+                        @if (!string.IsNullOrEmpty(okulAdi))
+                        {
+                            <li class="nav-item">
+                                <span class="nav-link text-muted">
+                                    <i class="bi bi-building"></i> @okulAdi
+                                </span>
+                            </li>
+                        }
+                        @if (isGenelAdmin)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" asp-controller="OkulSecim" asp-action="Index">
+                                    <i class="bi bi-arrow-left-right"></i> Okul Değiştir
+                                </a>
+                            </li>
+                        }
+                        <li class="nav-item d-flex align-items-center">
                             <form asp-controller="Hesaplar" asp-action="Cikis" method="post" class="d-inline">
                                 @Html.AntiForgeryToken()
-                                <button type="submit" class="btn btn-link nav-link p-0">
+                                <button type="submit" class="btn btn-link nav-link">
                                     <i class="bi bi-box-arrow-right"></i> Çıkış Yap
                                 </button>
                             </form>
@@ -62,11 +80,8 @@
         {
             <!-- ANONİM veya ADMIN OLMAYAN KULLANICI: LOGO (HERO) -->
             <section class="d-flex flex-column justify-content-center align-items-center text-center" style="min-height:70vh;">
-                <img src="~/images/logo.png" alt="Okul Logosu" width="280" height="280" class="mb-4" />
+                <img src="~/images/ilcelogo.png" alt="Okul Logosu" width="280" height="280" class="mb-4" />
                 <div>
-                    <h1 class="fw-bold text-primary mb-2" style="font-size:1.6rem;">
-                        Abdülhamit Han Ortaokulu
-                    </h1>
                     <h2 class="fw-normal text-primary mb-1" style="font-size:1.6rem; letter-spacing:0.5px;">
                         Öğrenci Bilgi Sistemi
                     </h2>

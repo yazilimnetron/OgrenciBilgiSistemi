@@ -14,5 +14,7 @@ namespace OgrenciBilgiSistemi.Dtos
         public string Sifre { get; set; } = string.Empty;
 
         public bool BeniHatirla { get; set; }
+
+        public string? OkulKodu { get; set; }
     }
 }

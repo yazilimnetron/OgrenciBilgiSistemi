@@ -1,5 +1,7 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using OgrenciBilgiSistemi.Data;
 using OgrenciBilgiSistemi.Services.Interfaces;
 using OgrenciBilgiSistemi.DTOs;
 
@@ -11,9 +13,24 @@ public class MenuViewComponent : ViewComponent
     public async Task<IViewComponentResult> InvokeAsync()
     {
         var user = ViewContext?.HttpContext?.User;
-        // 🔧 Mantık ifadesi sadeleştirildi
         if (user is null || user.Identity?.IsAuthenticated != true)
             return View("Default", Array.Empty<MenuOgeDto>());
+
+        // GenelAdmin: DB'deki menü atamalarına göre göster
+        if (user.IsInRole("GenelAdmin"))
+        {
+            var db = HttpContext.RequestServices.GetRequiredService<AppDbContext>();
+            var genelAdminKullanici = await db.Kullanicilar
+                .AsNoTracking()
+                .FirstOrDefaultAsync(k => k.Rol == KullaniciRolu.GenelAdmin);
+
+            if (genelAdminKullanici == null)
+                return View("Default", new List<MenuOgeDto>());
+
+            var genelMenuler = await _menuService.GetSidebarForUserAsync(
+                genelAdminKullanici.KullaniciId, user);
+            return View("Default", genelMenuler ?? new List<MenuOgeDto>());
+        }
 
         // Kullanıcı ID'yi bul
         var idStr = user.FindFirst("KullaniciId")?.Value

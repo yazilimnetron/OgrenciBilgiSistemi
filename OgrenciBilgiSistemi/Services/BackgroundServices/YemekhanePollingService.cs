@@ -22,7 +22,6 @@ public sealed class YemekhanePollingService : BackgroundService
     private const int MAX_DEGREE_OF_PARALLELISM = 3;
     private static readonly TimeSpan POLL_INTERVAL = TimeSpan.FromMinutes(1);
 
-    private const string OkulAdi = "Abdülhamit Han Ortaokulu";
     private static readonly CultureInfo Tr = CultureInfo.GetCultureInfo("tr-TR");
 
     private readonly IServiceScopeFactory _scopeFactory;
@@ -391,7 +390,7 @@ public sealed class YemekhanePollingService : BackgroundService
             if (string.IsNullOrWhiteSpace(bilgi.VeliTelefon)) continue;
 
             var ts = log.OgrenciGTarih ?? DateTime.Now;
-            var mesaj = $"{OkulAdi} öğrencimiz {bilgi.OgrenciAdSoyad} yemekhaneye giriş yaptı. Zaman: {ts:dd.MM.yyyy HH:mm:ss}";
+            var mesaj = $"Sayın Veli, {bilgi.OgrenciAdSoyad} {ts:HH:mm} saatinde yemekhaneye giriş yapmıştır.";
 
             try
             {

@@ -2,26 +2,27 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using OgrenciBilgiSistemi.Api.Models;
 using OgrenciBilgiSistemi.Shared.Enums;
+using OgrenciBilgiSistemi.Shared.Services;
 
 namespace OgrenciBilgiSistemi.Api.Services
 {
     public class GirisService
     {
-        private readonly string _connectionString;
+        private readonly TenantBaglami _tenantBaglami;
 
-        public GirisService(IConfiguration configuration)
+        public GirisService(TenantBaglami tenantBaglami)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException("DefaultConnection bağlantı dizesi eksik.");
+            _tenantBaglami = tenantBaglami;
         }
+
+        private string ConnectionString => _tenantBaglami.ConnectionString;
 
         /// <summary>
         /// Kullanıcı adıyla kullanıcıyı bulur, ardından PasswordHasher ile şifreyi doğrular.
-        /// Düz metin SQL karşılaştırması yapılmaz; hash doğrulaması C# katmanında gerçekleşir.
+        /// Login akışında explicit connectionString kullanılır (TenantBaglami henüz dolu değil).
         /// </summary>
-        public async Task<KullaniciModel?> KimlikDogrulaAsync(string kullaniciAdi, string sifre)
+        public async Task<KullaniciModel?> KimlikDogrulaAsync(string kullaniciAdi, string sifre, string connectionString)
         {
-            // 1) Kullanıcıyı sadece KullaniciAdi ile sorgula; şifre SQL'de karşılaştırılmaz.
             const string query = @"
                 SELECT
                     K.KullaniciId,
@@ -43,7 +44,7 @@ namespace OgrenciBilgiSistemi.Api.Services
 
             try
             {
-                await using var conn = new SqlConnection(_connectionString);
+                await using var conn = new SqlConnection(connectionString);
                 await using var cmd  = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@kullaniciAdi", kullaniciAdi);
 
@@ -73,7 +74,6 @@ namespace OgrenciBilgiSistemi.Api.Services
             if (found is null || string.IsNullOrEmpty(storedHash))
                 return null;
 
-            // 2) Hash doğrulaması — MVC uygulaması ile aynı PasswordHasher kullanılır.
             var hasher = new PasswordHasher<KullaniciModel>();
             var result = hasher.VerifyHashedPassword(found, storedHash, sifre);
 
@@ -85,8 +85,9 @@ namespace OgrenciBilgiSistemi.Api.Services
 
         /// <summary>
         /// Kullanıcı ID'si ile aktif kullanıcıyı getirir (refresh token doğrulaması için).
+        /// Explicit connectionString kabul eder (refresh endpoint anonymous olduğu için).
         /// </summary>
-        public async Task<KullaniciModel?> KullaniciIdIleGetirAsync(int kullaniciId)
+        public async Task<KullaniciModel?> KimlikDogrulaAsync_IdIle(int kullaniciId, string connectionString)
         {
             const string query = @"
                 SELECT
@@ -105,7 +106,7 @@ namespace OgrenciBilgiSistemi.Api.Services
 
             try
             {
-                await using var conn = new SqlConnection(_connectionString);
+                await using var conn = new SqlConnection(connectionString);
                 await using var cmd  = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@kullaniciId", kullaniciId);
 
@@ -135,7 +136,7 @@ namespace OgrenciBilgiSistemi.Api.Services
         }
 
         /// <summary>
-        /// Kullanıcının şifresini günceller. Yeni şifre PasswordHasher ile hash'lenir.
+        /// Kullanıcının şifresini günceller. TenantBaglami'dan connection string kullanır.
         /// </summary>
         public async Task<bool> SifreDegistirAsync(int kullaniciId, string yeniSifre)
         {
@@ -147,7 +148,7 @@ namespace OgrenciBilgiSistemi.Api.Services
 
             try
             {
-                await using var conn = new SqlConnection(_connectionString);
+                await using var conn = new SqlConnection(ConnectionString);
                 await using var cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@sifre", hash);
                 cmd.Parameters.AddWithValue("@id", kullaniciId);
@@ -164,9 +165,9 @@ namespace OgrenciBilgiSistemi.Api.Services
 
         /// <summary>
         /// Kullanıcı adının ilk harflerine göre eşleşen aktif kullanıcıları arar.
-        /// Admin kullanıcıları hariç tutulur (mobilde giriş yapamıyorlar).
+        /// Login akışında explicit connectionString kullanılır.
         /// </summary>
-        public async Task<List<string>> KullaniciAdiAraAsync(string aranan)
+        public async Task<List<string>> KullaniciAdiAraAsync(string aranan, string connectionString)
         {
             const string query = @"
                 SELECT TOP 10 KullaniciAdi
@@ -180,7 +181,7 @@ namespace OgrenciBilgiSistemi.Api.Services
 
             try
             {
-                await using var conn = new SqlConnection(_connectionString);
+                await using var conn = new SqlConnection(connectionString);
                 await using var cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@aranan", aranan);
                 cmd.Parameters.AddWithValue("@adminRol", (int)KullaniciRolu.Admin);

@@ -17,7 +17,7 @@ namespace OgrenciBilgiSistemi.Api.Services
         /// Kullanıcı için yeni bir refresh token üretir ve depoya kaydeder.
         /// Aynı kullanıcının önceki refresh token'ı varsa geçersiz kılınır.
         /// </summary>
-        public string TokenOlustur(int kullaniciId)
+        public string TokenOlustur(int kullaniciId, string okulKodu)
         {
             // Eski tokenları temizle
             var eskiTokenlar = _tokenlar
@@ -32,6 +32,7 @@ namespace OgrenciBilgiSistemi.Api.Services
             _tokenlar[token] = new RefreshTokenBilgi
             {
                 KullaniciId = kullaniciId,
+                OkulKodu = okulKodu,
                 SonKullanim = DateTime.UtcNow.Add(TokenSuresi)
             };
 
@@ -39,10 +40,10 @@ namespace OgrenciBilgiSistemi.Api.Services
         }
 
         /// <summary>
-        /// Refresh token'ı doğrular. Geçerliyse kullanıcı ID döner, değilse null.
+        /// Refresh token'ı doğrular. Geçerliyse (kullanıcıId, okulKodu) döner, değilse null.
         /// Doğrulanan token tüketilir (tek kullanımlık).
         /// </summary>
-        public int? TokenDogrula(string refreshToken)
+        public (int KullaniciId, string OkulKodu)? TokenDogrula(string refreshToken)
         {
             if (!_tokenlar.TryRemove(refreshToken, out var bilgi))
                 return null;
@@ -50,7 +51,7 @@ namespace OgrenciBilgiSistemi.Api.Services
             if (DateTime.UtcNow > bilgi.SonKullanim)
                 return null;
 
-            return bilgi.KullaniciId;
+            return (bilgi.KullaniciId, bilgi.OkulKodu);
         }
 
         /// <summary>
@@ -70,6 +71,7 @@ namespace OgrenciBilgiSistemi.Api.Services
         private class RefreshTokenBilgi
         {
             public int KullaniciId { get; set; }
+            public string OkulKodu { get; set; } = string.Empty;
             public DateTime SonKullanim { get; set; }
         }
     }

@@ -12,6 +12,9 @@ namespace OgrenciBilgiSistemi.Shared.Enums
 
         Servis = 3,
 
-        Veli = 4
+        Veli = 4,
+
+        [Display(Name = "Genel Yönetici")]
+        GenelAdmin = 5
     }
 }

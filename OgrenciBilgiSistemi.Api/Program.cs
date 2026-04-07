@@ -1,7 +1,12 @@
+using System.Threading.RateLimiting;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.IdentityModel.Tokens;
+using OgrenciBilgiSistemi.Api.Middleware;
 using OgrenciBilgiSistemi.Api.Services;
+using OgrenciBilgiSistemi.Shared.Models;
+using OgrenciBilgiSistemi.Shared.Services;
 using OgrenciBilgiSistemi.Sms;
 using System.Text;
 
@@ -10,17 +15,23 @@ var builder = WebApplication.CreateBuilder(args);
 // --------------------
 // Yapılandırma doğrulama
 // --------------------
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (string.IsNullOrWhiteSpace(connectionString))
+var okullar = builder.Configuration.GetSection("Okullar").Get<List<OkulBilgiAyari>>();
+if (okullar is null || okullar.Count == 0)
     throw new InvalidOperationException(
-        "ConnectionStrings:DefaultConnection yapılandırılmamış. " +
-        "Environment variable veya appsettings.Development.json kullanın.");
+        "Okullar yapılandırılmamış. appsettings.json içinde Okullar bölümünü ekleyin.");
 
 var jwtKey = builder.Configuration["Jwt:SecretKey"];
 if (string.IsNullOrWhiteSpace(jwtKey))
     throw new InvalidOperationException(
         "Jwt:SecretKey yapılandırılmamış. " +
         "appsettings.Development.json veya ortam değişkeni kullanın.");
+
+// --------------------
+// Multi-tenant yapılandırma
+// --------------------
+builder.Services.Configure<List<OkulBilgiAyari>>(builder.Configuration.GetSection("Okullar"));
+builder.Services.AddSingleton<OkulYapilandirmaServisi>();
+builder.Services.AddScoped<TenantBaglami>();
 
 // --------------------
 // CORS — appsettings'ten yapılandırılmış origin'ler
@@ -64,7 +75,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 // AdminOnly policy: rol claim'i "Admin" olan kullanıcılar
 builder.Services.AddAuthorization(opts =>
 {
-    opts.AddPolicy("AdminOnly", p => p.RequireClaim("rol", "Admin"));
+    opts.AddPolicy("AdminOnly", p => p.RequireClaim("rol", "Admin", "GenelAdmin"));
 });
 
 // --------------------
@@ -78,6 +89,18 @@ builder.Services.AddScoped<OgrenciService>();
 builder.Services.AddScoped<BirimService>();
 builder.Services.AddScoped<GecisKayitService>();
 builder.Services.AddScoped<ServisService>();
+
+// Rate Limiting — anonim arama endpointleri için IP bazlı sınırlama
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddFixedWindowLimiter("arama", opt =>
+    {
+        opt.PermitLimit = 10;
+        opt.Window = TimeSpan.FromMinutes(1);
+        opt.QueueLimit = 0;
+    });
+});
 
 // SMS
 builder.Services.AddSmsAltyapisi(builder.Configuration);
@@ -109,9 +132,15 @@ if (Directory.Exists(mvcWwwRoot))
     });
 }
 
+// Rate limiting
+app.UseRateLimiter();
+
 // Kimlik doğrulama ve yetkilendirme middleware'i
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Tenant çözümleyici: JWT'deki okulKodu claim'inden connection string belirler
+app.UseMiddleware<TenantCozumleyiciMiddleware>();
 
 app.MapControllers();
 app.Run();

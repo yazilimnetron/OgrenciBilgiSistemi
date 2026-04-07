@@ -37,19 +37,9 @@ namespace OgrenciBilgiSistemi.Infrastructure
             if (user.Identity?.IsAuthenticated != true)
                 return;
 
-            // Admin her yere erişebilir
+            // Local Admin her yere erişebilir
             if (user.IsInRole("Admin"))
                 return;
-
-            // Kullanıcı ID'sini al
-            var kullaniciIdStr = user.FindFirstValue("KullaniciId")
-                              ?? user.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (!int.TryParse(kullaniciIdStr, out var kullaniciId))
-            {
-                context.Result = new ForbidResult();
-                return;
-            }
 
             // Mevcut controller ve action adlarını al
             var controllerName = context.RouteData.Values["controller"]?.ToString();
@@ -61,11 +51,46 @@ namespace OgrenciBilgiSistemi.Infrastructure
             // Menü kontrolünden muaf controller'lar (giriş/çıkış, ana sayfa vb.)
             var muafControllerlar = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
             {
-                "Hesaplar", "Home"
+                "Hesaplar", "Home", "OkulSecim"
             };
 
             if (muafControllerlar.Contains(controllerName))
                 return;
+
+            // GenelAdmin: DB'deki menü atamalarına göre kontrol
+            if (user.IsInRole("GenelAdmin"))
+            {
+                var genelAdminKullanici = await _db.Kullanicilar
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(k => k.Rol == KullaniciRolu.GenelAdmin);
+
+                if (genelAdminKullanici == null)
+                {
+                    context.Result = new RedirectToActionResult("YetkisizGiris", "Hesaplar", null);
+                    return;
+                }
+
+                var genelYetkiVarMi = await _db.KullaniciMenuOgeler
+                    .AsNoTracking()
+                    .AnyAsync(km =>
+                        km.KullaniciId == genelAdminKullanici.KullaniciId &&
+                        km.MenuOge.Controller == controllerName);
+
+                if (!genelYetkiVarMi)
+                    context.Result = new RedirectToActionResult("YetkisizGiris", "Hesaplar", null);
+
+                return;
+            }
+
+            // Kullanıcı ID'sini al
+            var kullaniciIdStr = user.FindFirstValue("KullaniciId")
+                              ?? user.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            if (!int.TryParse(kullaniciIdStr, out var kullaniciId))
+            {
+                context.Result = new ForbidResult();
+                return;
+            }
 
             // Bu controller için tanımlı bir menü ögesi var mı kontrol et
             var menuVarMi = await _db.MenuOgeler

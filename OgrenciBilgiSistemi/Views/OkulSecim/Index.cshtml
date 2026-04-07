@@ -1,0 +1,32 @@
+@model List<OgrenciBilgiSistemi.Shared.Models.OkulBilgiAyari>
+@{
+    ViewData["Title"] = "Okul Seçimi";
+    var seciliOkulKodu = ViewBag.SeciliOkulKodu as string;
+}
+
+<div class="container py-4">
+    <h3 class="mb-4">Okul Seçimi</h3>
+    <p class="text-muted mb-4">Yönetmek istediğiniz okulu seçin.</p>
+
+    <div class="row g-3">
+        @foreach (var okul in Model)
+        {
+            var aktif = okul.OkulKodu == seciliOkulKodu;
+            <div class="col-md-4 col-lg-3">
+                <div class="card h-100 @(aktif ? "border-primary" : "")">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">@okul.OkulAdi</h5>
+                        <p class="text-muted small">@okul.OkulKodu</p>
+                        <form asp-action="OkulSec" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="okulKodu" value="@okul.OkulKodu" />
+                            <button type="submit" class="btn @(aktif ? "btn-primary" : "btn-outline-primary") btn-sm">
+                                @(aktif ? "Seçili" : "Seç")
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>

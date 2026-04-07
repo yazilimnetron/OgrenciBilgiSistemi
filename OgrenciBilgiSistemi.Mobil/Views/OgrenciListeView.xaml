@@ -18,7 +18,7 @@
         </Style>
     </ContentPage.Resources>
 
-    <Grid RowDefinitions="125, Auto, Auto, *, Auto">
+    <Grid RowDefinitions="125, Auto, Auto, Auto, *, Auto">
 
         <Border Grid.Row="0"
                 StrokeThickness="0"
@@ -72,13 +72,27 @@
             </Grid>
         </Border>
 
-        <Border x:Name="StatusWarningFrame" Grid.Row="2" IsVisible="False" Margin="15,5,15,10" 
+        <Border Grid.Row="2" Margin="15,0,15,5" HeightRequest="45"
+                StrokeShape="RoundRectangle 22" StrokeThickness="0" BackgroundColor="White">
+            <Border.Shadow>
+                <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.06" />
+            </Border.Shadow>
+            <Grid ColumnDefinitions="45, *">
+                <Label Grid.Column="0" Text="&#x1F50D;" VerticalOptions="Center" HorizontalOptions="Center" FontSize="16" />
+                <Entry x:Name="SearchEntry" Grid.Column="1" Placeholder="Ad Soyad veya No ile ara..."
+                       PlaceholderColor="#95A5A6" TextColor="#2C3E50" FontSize="14"
+                       VerticalOptions="Center" BackgroundColor="Transparent"
+                       TextChanged="OnSearchTextChanged" />
+            </Grid>
+        </Border>
+
+        <Border x:Name="StatusWarningFrame" Grid.Row="3" IsVisible="False" Margin="15,5,15,10"
                 StrokeShape="RoundRectangle 10" StrokeThickness="0" BackgroundColor="#FFF3CD">
-            <Label Text="⚠️ Bu dersin yoklaması daha önce kaydedilmiştir." Padding="12" 
+            <Label Text="&#x26A0;&#xFE0F; Bu dersin yoklaması daha önce kaydedilmiştir." Padding="12"
                    TextColor="#856404" HorizontalOptions="Center" FontSize="13" />
         </Border>
 
-        <CollectionView x:Name="StudentCollection" Grid.Row="3" Margin="15,5">
+        <CollectionView x:Name="StudentCollection" Grid.Row="4" Margin="15,5">
             <CollectionView.ItemsLayout>
                 <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
             </CollectionView.ItemsLayout>
@@ -249,7 +263,7 @@
             </CollectionView.ItemTemplate>
         </CollectionView>
 
-        <Border Grid.Row="4" Padding="15,10,15,20" BackgroundColor="White" StrokeThickness="0">
+        <Border Grid.Row="5" Padding="15,10,15,20" BackgroundColor="White" StrokeThickness="0">
             <Border.Shadow>
                 <Shadow Brush="Black" Offset="0,-5" Radius="10" Opacity="0.05" />
             </Border.Shadow>

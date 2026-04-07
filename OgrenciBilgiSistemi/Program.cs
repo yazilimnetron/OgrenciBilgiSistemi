@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using OgrenciBilgiSistemi.Abstractions;
+using OgrenciBilgiSistemi.Infrastructure;
 using OgrenciBilgiSistemi.Infrastructure.FileStorage;
 using OgrenciBilgiSistemi.Data;
 using OgrenciBilgiSistemi.Hubs;
+using OgrenciBilgiSistemi.Shared.Models;
+using OgrenciBilgiSistemi.Shared.Services;
 using OgrenciBilgiSistemi.Sms;
 using OgrenciBilgiSistemi.Services;
 using OgrenciBilgiSistemi.Services.BackgroundServices;
@@ -15,29 +18,64 @@ var builder = WebApplication.CreateBuilder(args);
 var env = builder.Environment;
 
 // --------------------
-// Connection string
+// Multi-tenant yapılandırma
 // --------------------
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-if (string.IsNullOrWhiteSpace(connectionString))
-    throw new InvalidOperationException("ConnectionStrings:DefaultConnection bulunamadı.");
+var okullar = builder.Configuration.GetSection("Okullar").Get<List<OkulBilgiAyari>>();
+if (okullar is null || okullar.Count == 0)
+    throw new InvalidOperationException("Okullar yapılandırılmamış. appsettings.json içinde Okullar bölümünü ekleyin.");
+
+builder.Services.Configure<List<OkulBilgiAyari>>(builder.Configuration.GetSection("Okullar"));
+builder.Services.AddSingleton<OkulYapilandirmaServisi>();
+builder.Services.AddScoped<TenantBaglami>();
 
 // --------------------
-// DbContext
+// DbContext — per-request connection string (pool kullanılamaz)
 // --------------------
-builder.Services.AddDbContextPool<AppDbContext>(options =>
-    options.UseSqlServer(connectionString, sql =>
-        sql.EnableRetryOnFailure(
-            maxRetryCount: 5,
-            maxRetryDelay: TimeSpan.FromSeconds(10),
-            errorNumbersToAdd: null)));
+builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
+{
+    var tenantBaglami = serviceProvider.GetRequiredService<TenantBaglami>();
+    if (!string.IsNullOrEmpty(tenantBaglami.ConnectionString))
+    {
+        options.UseSqlServer(tenantBaglami.ConnectionString, sql =>
+            sql.EnableRetryOnFailure(
+                maxRetryCount: 5,
+                maxRetryDelay: TimeSpan.FromSeconds(10),
+                errorNumbersToAdd: null));
+    }
+    else
+    {
+        // Fallback: ilk okulun connection string'i (background service'ler için)
+        var firstOkul = okullar.FirstOrDefault();
+        if (firstOkul is not null && !string.IsNullOrEmpty(firstOkul.ConnectionString))
+        {
+            options.UseSqlServer(firstOkul.ConnectionString, sql =>
+                sql.EnableRetryOnFailure(
+                    maxRetryCount: 5,
+                    maxRetryDelay: TimeSpan.FromSeconds(10),
+                    errorNumbersToAdd: null));
+        }
+    }
+});
 
 // --------------------
-// MVC + Global Authorize + Menu Yetki
+// MVC + Global Authorize + Menu Yetki + Tenant Zorunlu
 // --------------------
 builder.Services.AddControllersWithViews(o =>
 {
     o.Filters.Add(new AuthorizeFilter());
-    o.Filters.Add(typeof(OgrenciBilgiSistemi.Infrastructure.MenuYetkiFilter));
+    o.Filters.Add(typeof(MenuYetkiFilter));
+    o.Filters.Add(typeof(TenantZorunluFilter));
+});
+
+// --------------------
+// Session (Genel Admin okul seçimi için)
+// --------------------
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(8);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
 });
 
 // --------------------
@@ -92,7 +130,7 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 
 builder.Services.AddAuthorization(o =>
 {
-    o.AddPolicy("AdminOnly", p => p.RequireRole("Admin"));
+    o.AddPolicy("AdminOnly", p => p.RequireRole("Admin", "GenelAdmin"));
     o.FallbackPolicy = new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
         .Build();
@@ -118,8 +156,12 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseSession();
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Tenant çözümleyici: cookie claim veya session'daki okulKodu'ndan connection string belirler
+app.UseMiddleware<MvcTenantCozumleyiciMiddleware>();
 
 // --------------------
 // Endpoints

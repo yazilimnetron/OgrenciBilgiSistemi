@@ -1,28 +1,30 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Options;
+using OgrenciBilgiSistemi.Shared.Services;
 using OgrenciBilgiSistemi.Sms;
 
 namespace OgrenciBilgiSistemi.Api.Services;
 
 public sealed class YoklamaSmsBildirimService
 {
-    private readonly string _connectionString;
+    private readonly TenantBaglami _tenantBaglami;
     private readonly ISmsService _smsService;
     private readonly SmsAyarlari _ayar;
     private readonly ILogger<YoklamaSmsBildirimService> _logger;
 
     public YoklamaSmsBildirimService(
-        IConfiguration configuration,
+        TenantBaglami tenantBaglami,
         ISmsService smsService,
         IOptions<SmsAyarlari> ayar,
         ILogger<YoklamaSmsBildirimService> logger)
     {
-        _connectionString = configuration.GetConnectionString("DefaultConnection")
-            ?? throw new InvalidOperationException("DefaultConnection bağlantı dizesi eksik.");
+        _tenantBaglami = tenantBaglami;
         _smsService = smsService;
         _ayar = ayar.Value;
         _logger = logger;
     }
+
+    private string _connectionString => _tenantBaglami.ConnectionString;
 
     /// <summary>
     /// Servis yoklamasında tüm öğrencilerin (Bindi/Binmedi) velilerine SMS gönderir.

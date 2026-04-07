@@ -12,19 +12,46 @@ namespace OgrenciBilgiSistemi.Mobil.Views
         private readonly GirisService _girisService;
         private CancellationTokenSource _aramaIptalToken;
         private bool _oneridenSecildi;
+        private List<OkulBilgi> _okullar = new();
 
         public GirisView(GirisService girisService)
         {
             try
             {
                 InitializeComponent();
-                // DI üzerinden gelen singleton GirisService kullanılıyor
                 _girisService = girisService;
-                _ = LoadSavedCredentialsAsync();
+                _ = IlkYuklemeAsync();
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"GirisView Init Hatası: {ex.Message}");
+            }
+        }
+
+        private async Task IlkYuklemeAsync()
+        {
+            await LoadSavedCredentialsAsync();
+            await OkullariYukleAsync();
+        }
+
+        private async Task OkullariYukleAsync()
+        {
+            try
+            {
+                _okullar = await _girisService.OkullariGetirAsync();
+                PckOkul.ItemsSource = _okullar.Select(o => o.OkulAdi).ToList();
+
+                // Kayıtlı okul seçimini geri yükle
+                var savedOkulKodu = await SecureStorage.Default.GetAsync("SavedOkulKodu");
+                if (!string.IsNullOrEmpty(savedOkulKodu))
+                {
+                    var idx = _okullar.FindIndex(o => o.OkulKodu == savedOkulKodu);
+                    if (idx >= 0) PckOkul.SelectedIndex = idx;
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"OkullariYukle Hatası: {ex.Message}");
             }
         }
 
@@ -42,6 +69,12 @@ namespace OgrenciBilgiSistemi.Mobil.Views
         {
             try
             {
+                if (PckOkul.SelectedIndex < 0)
+                {
+                    await DisplayAlert("Uyarı", "Lütfen okul seçiniz.", "Tamam");
+                    return;
+                }
+
                 string username = TxtUsername.Text?.Trim();
                 string password = TxtPassword.Text?.Trim();
 
@@ -51,10 +84,12 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                     return;
                 }
 
+                var secilenOkul = _okullar[PckOkul.SelectedIndex];
+
                 BtnLogin.IsEnabled = false;
                 BtnLogin.Text = "Giriş Yapılıyor...";
 
-                bool isSuccess = await _girisService.KullaniciGirisYapAsync(username, password);
+                bool isSuccess = await _girisService.KullaniciGirisYapAsync(username, password, secilenOkul.OkulKodu);
 
                 if (isSuccess)
                 {
@@ -67,7 +102,7 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                     }
 
                     // "Beni Hatırla" bilgilerini SecureStorage'a kaydet
-                    await ManageRememberMeAsync(username, password);
+                    await ManageRememberMeAsync(username, password, secilenOkul.OkulKodu);
 
                     // Role göre yönlendirme
                     if (KullaniciOturum.VeliMi)
@@ -97,12 +132,14 @@ namespace OgrenciBilgiSistemi.Mobil.Views
 
         /// <summary>
         /// "Beni Hatırla" bilgilerini SecureStorage ile şifreli olarak saklar.
-        /// Preferences yerine SecureStorage kullanılarak şifre güvenliği sağlanır.
         /// </summary>
-        private async Task ManageRememberMeAsync(string user, string pass)
+        private async Task ManageRememberMeAsync(string user, string pass, string okulKodu)
         {
             try
             {
+                // Okul seçimi her başarılı girişte kalıcı olarak hatırlanır
+                await SecureStorage.Default.SetAsync("SavedOkulKodu", okulKodu);
+
                 if (ChkRememberMe.IsChecked)
                 {
                     await SecureStorage.Default.SetAsync("SavedUsername", user);
@@ -158,7 +195,6 @@ namespace OgrenciBilgiSistemi.Mobil.Views
         {
             try
             {
-                // Öneriden seçim yapıldığında tekrar arama tetiklenmesin
                 if (_oneridenSecildi)
                 {
                     _oneridenSecildi = false;
@@ -174,7 +210,12 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                     return;
                 }
 
-                // Önceki bekleyen aramayı iptal et (debounce)
+                // Okul seçilmemişse arama yapma
+                if (PckOkul.SelectedIndex < 0)
+                    return;
+
+                var secilenOkul = _okullar[PckOkul.SelectedIndex];
+
                 _aramaIptalToken?.Cancel();
                 _aramaIptalToken = new CancellationTokenSource();
                 var token = _aramaIptalToken.Token;
@@ -184,7 +225,7 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                 if (token.IsCancellationRequested)
                     return;
 
-                var sonuclar = await _girisService.KullaniciAdiAraAsync(metin);
+                var sonuclar = await _girisService.KullaniciAdiAraAsync(metin, secilenOkul.OkulKodu);
 
                 if (token.IsCancellationRequested)
                     return;

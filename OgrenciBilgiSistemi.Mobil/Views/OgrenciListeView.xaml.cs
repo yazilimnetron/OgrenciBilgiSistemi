@@ -58,6 +58,36 @@ public partial class OgrenciListeView : ContentPage
     }
     #endregion
 
+    #region Arama
+    private void OnSearchTextChanged(object sender, TextChangedEventArgs e)
+    {
+        try
+        {
+            if (_studentViewModels == null) return;
+
+            var searchTerm = e.NewTextValue?.Trim() ?? string.Empty;
+
+            if (string.IsNullOrEmpty(searchTerm))
+            {
+                StudentCollection.ItemsSource = _studentViewModels;
+                return;
+            }
+
+            var lower = searchTerm.ToLower();
+            var filtered = _studentViewModels.Where(vm =>
+                (vm.OgrenciData.OgrenciAdSoyad?.ToLower().Contains(lower) == true) ||
+                vm.OgrenciData.OgrenciNo.ToString().Contains(searchTerm)
+            ).ToList();
+
+            StudentCollection.ItemsSource = filtered;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[HATA] Arama sırasında hata: {ex.Message}");
+        }
+    }
+    #endregion
+
     #region Kullanıcı Etkileşimleri
     private async void OnPeriodChanged(object sender, EventArgs e)
     {

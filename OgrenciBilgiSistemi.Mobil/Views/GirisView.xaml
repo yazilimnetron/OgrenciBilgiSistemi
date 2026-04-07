@@ -82,6 +82,31 @@
                                TextColor="#2C3E50"
                                Margin="0,0,0,10"/>
 
+                        <!-- Okul seçimi -->
+                        <VerticalStackLayout Spacing="5">
+
+                            <Label Text="Okul"
+                                   FontSize="13"
+                                   TextColor="#7F8C8D"
+                                   Margin="5,0"/>
+
+                            <Border Stroke="#E5E8E8"
+                                    StrokeThickness="1"
+                                    StrokeShape="RoundRectangle 10"
+                                    BackgroundColor="#F8F9F9"
+                                    HeightRequest="45">
+
+                                <Picker x:Name="PckOkul"
+                                        Title="Okul Seçiniz"
+                                        TextColor="#2C3E50"
+                                        TitleColor="#95A5A6"
+                                        BackgroundColor="Transparent"
+                                        Margin="12,0"
+                                        VerticalOptions="Center" />
+                            </Border>
+
+                        </VerticalStackLayout>
+
                         <VerticalStackLayout Spacing="5">
 
                             <Label Text="Kullanıcı Adı"

@@ -1,17 +1,19 @@
 using Microsoft.Data.SqlClient;
 using OgrenciBilgiSistemi.Api.Models;
+using OgrenciBilgiSistemi.Shared.Services;
 
 namespace OgrenciBilgiSistemi.Api.Services
 {
     public class SinifService
     {
-        private readonly string _connectionString;
+        private readonly TenantBaglami _tenantBaglami;
 
-        public SinifService(IConfiguration configuration)
+        public SinifService(TenantBaglami tenantBaglami)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException("DefaultConnection bağlantı dizesi eksik.");
+            _tenantBaglami = tenantBaglami;
         }
+
+        private string _connectionString => _tenantBaglami.ConnectionString;
 
         public async Task<List<BirimOgrenciSayisiModel>> TumSiniflariOgrenciSayisiIleGetirAsync()
         {

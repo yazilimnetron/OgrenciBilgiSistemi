@@ -10,8 +10,8 @@
 
         <!-- Logo & başlık -->
         <div class="card-body text-center pb-0">
-            <img src="~/images/logo.svg"
-                 onerror="this.src='@Url.Content("~/images/logo.png")'"
+            <img src="~/images/ilcelogo.png"
+                 onerror="this.src='@Url.Content("~/images/ilcelogo.png")'"
                  alt="Okul Logosu"
                  class="img-fluid mx-auto d-block my-3"
                  style="max-width:110px;" />
@@ -25,6 +25,23 @@
                 @Html.AntiForgeryToken()
 
                 <div asp-validation-summary="All" class="text-danger mb-3"></div>
+
+                @{
+                    var okullar = ViewBag.Okullar as List<OgrenciBilgiSistemi.Shared.Models.OkulBilgiAyari>;
+                }
+                @if (okullar?.Count > 0)
+                {
+                    <div class="form-floating mb-3">
+                        <select asp-for="OkulKodu" class="form-select">
+                            <option value="">Okul Seçiniz</option>
+                            @foreach (var okul in okullar)
+                            {
+                                <option value="@okul.OkulKodu">@okul.OkulAdi</option>
+                            }
+                        </select>
+                        <label asp-for="OkulKodu">Okul</label>
+                    </div>
+                }
 
                 <div class="form-floating mb-3">
                     <input asp-for="KullaniciAdi" class="form-control" placeholder="Kullanıcı Adınız" required />
@@ -54,7 +71,7 @@
 
         <!-- Alt bilgi -->
         <div class="card-footer bg-transparent border-0 text-center small text-muted py-3">
-            © @DateTime.Now.Year • Abdülhamit Han Ortaokulu
+            © @DateTime.Now.Year
         </div>
     </div>
 </div>

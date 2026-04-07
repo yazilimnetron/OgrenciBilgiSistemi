@@ -39,8 +39,8 @@ namespace OgrenciBilgiSistemi.Services.Implementations
             }
 
             // 2) Admin / roller / atamalar (rol >= atama politikası korunuyor)
-            var isAdmin = kullanici.Rol == KullaniciRolu.Admin || user.IsInRole("Admin");
-            var assignedMenuIds = kullanici.KullaniciMenuler.Select(x => x.MenuOgeId).ToHashSet();
+            var isAdmin = (kullanici.Rol == KullaniciRolu.Admin) || user.IsInRole("Admin");
+            var assignedMenuIds = kullanici.KullaniciMenuler?.Select(x => x.MenuOgeId).ToHashSet() ?? new HashSet<int>();
             var userRoleSet = GetUserRoles(user); // lower-case set
 
             // 3) Tüm menüler

@@ -1,12 +1,13 @@
 using Microsoft.Data.SqlClient;
 using OgrenciBilgiSistemi.Api.Dtos;
 using OgrenciBilgiSistemi.Api.Models;
+using OgrenciBilgiSistemi.Shared.Services;
 
 namespace OgrenciBilgiSistemi.Api.Services
 {
     public class OgrenciService
     {
-        private readonly string _connectionString;
+        private readonly TenantBaglami _tenantBaglami;
 
         // SQL injection'a karşı whitelist: sadece bu sabit değerler SQL'e girer
         private static readonly Dictionary<int, string> _dersKolonlari = new()
@@ -15,11 +16,12 @@ namespace OgrenciBilgiSistemi.Api.Services
             [5] = "Ders5", [6] = "Ders6", [7] = "Ders7", [8] = "Ders8"
         };
 
-        public OgrenciService(IConfiguration configuration)
+        public OgrenciService(TenantBaglami tenantBaglami)
         {
-            _connectionString = configuration.GetConnectionString("DefaultConnection")
-                ?? throw new InvalidOperationException("DefaultConnection bağlantı dizesi eksik.");
+            _tenantBaglami = tenantBaglami;
         }
+
+        private string _connectionString => _tenantBaglami.ConnectionString;
 
         public async Task<List<OgrenciModel>> SinifaGoreOgrencileriGetirAsync(int sinifId)
         {
@@ -265,15 +267,15 @@ namespace OgrenciBilgiSistemi.Api.Services
             return sonuc;
         }
 
-        public async Task<Dictionary<string, string>> OgrenciDetayGetirAsync(int ogrenciId)
+        public async Task<OgrenciDetayDto?> OgrenciDetayGetirAsync(int ogrenciId)
         {
-            var detaylar = new Dictionary<string, string>();
             try
             {
                 await using var conn = new SqlConnection(_connectionString);
                 const string query = @"
                     SELECT
                         s.OgrenciAdSoyad, s.OgrenciNo, s.OgrenciKartNo, s.OgrenciGorsel,
+                        s.OgrenciCikisDurumu,
                         u.BirimAd,
                         vk.KullaniciAdi AS VeliAdSoyad, vk.Telefon AS VeliTelefon,
                         p.VeliEmail, p.VeliMeslek, p.VeliIsYeri, p.VeliAdres,
@@ -295,28 +297,33 @@ namespace OgrenciBilgiSistemi.Api.Services
                 {
                     string rawFileName = reader["OgrenciGorsel"]?.ToString() ?? string.Empty;
 
-                    detaylar["OgrenciAdSoyad"]  = reader["OgrenciAdSoyad"]?.ToString()   ?? "Bilinmiyor";
-                    detaylar["OgrenciNo"]        = reader["OgrenciNo"]?.ToString()         ?? "-";
-                    detaylar["OgrenciKartNo"]    = reader["OgrenciKartNo"]?.ToString()     ?? "-";
-                    detaylar["OgrenciGorsel"]    = string.IsNullOrEmpty(rawFileName)
-                                                    ? "user_icon.png"
-                                                    : rawFileName.Trim().ToLower();
-                    detaylar["BirimAd"]          = reader["BirimAd"]?.ToString()           ?? "Atanmamış";
-                    detaylar["VeliAdSoyad"]      = reader["VeliAdSoyad"]?.ToString()       ?? "Belirtilmemiş";
-                    detaylar["VeliTelefon"]      = reader["VeliTelefon"]?.ToString()       ?? "-";
-                    detaylar["VeliEmail"]        = reader["VeliEmail"]?.ToString()         ?? "-";
-                    detaylar["VeliMeslek"]       = reader["VeliMeslek"]?.ToString()        ?? "-";
-                    detaylar["VeliIsYeri"]       = reader["VeliIsYeri"]?.ToString()        ?? "-";
-                    detaylar["VeliAdres"]        = reader["VeliAdres"]?.ToString()         ?? "-";
-                    detaylar["OgretmenAdSoyad"]  = reader["OgretmenAdSoyad"]?.ToString()  ?? "Atanmamış";
-                    detaylar["Plaka"]            = reader["Plaka"]?.ToString()             ?? "Kullanmıyor";
+                    return new OgrenciDetayDto
+                    {
+                        OgrenciAdSoyad   = reader["OgrenciAdSoyad"]?.ToString()  ?? "Bilinmiyor",
+                        OgrenciNo        = reader["OgrenciNo"]?.ToString()       ?? "-",
+                        OgrenciKartNo    = reader["OgrenciKartNo"]?.ToString()   ?? "-",
+                        OgrenciGorsel    = string.IsNullOrEmpty(rawFileName)
+                                             ? "user_icon.png"
+                                             : rawFileName.Trim().ToLower(),
+                        OgrenciCikisDurumu = reader["OgrenciCikisDurumu"] != DBNull.Value
+                                             ? (int)reader["OgrenciCikisDurumu"] : 0,
+                        BirimAd          = reader["BirimAd"]?.ToString()         ?? "Atanmamış",
+                        VeliAdSoyad      = reader["VeliAdSoyad"]?.ToString()     ?? "Belirtilmemiş",
+                        VeliTelefon      = reader["VeliTelefon"]?.ToString()     ?? "-",
+                        VeliEmail        = reader["VeliEmail"]?.ToString()       ?? "-",
+                        VeliMeslek       = reader["VeliMeslek"]?.ToString()      ?? "-",
+                        VeliIsYeri       = reader["VeliIsYeri"]?.ToString()      ?? "-",
+                        VeliAdres        = reader["VeliAdres"]?.ToString()       ?? "-",
+                        OgretmenAdSoyad  = reader["OgretmenAdSoyad"]?.ToString() ?? "Atanmamış",
+                        Plaka            = reader["Plaka"]?.ToString()           ?? "Kullanmıyor"
+                    };
                 }
             }
             catch (SqlException ex)
             {
                 throw new InvalidOperationException("Öğrenci detayları alınamadı.", ex);
             }
-            return detaylar;
+            return null;
         }
 
         /// <summary>

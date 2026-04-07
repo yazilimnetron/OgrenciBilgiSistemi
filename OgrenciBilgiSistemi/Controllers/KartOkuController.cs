@@ -16,17 +16,20 @@ namespace OgrenciBilgiSistemi.Controllers
         private readonly AppDbContext _db;
         private readonly IGecisService _gecisService;
         private readonly IHubContext<KartOkuHub> _hub;
+        private readonly ISmsGonderimService _smsGonderimService;
         private readonly ILogger<KartOkuController> _logger;
 
         public KartOkuController(
             AppDbContext db,
             IGecisService gecisService,
             IHubContext<KartOkuHub> hub,
+            ISmsGonderimService smsGonderimService,
             ILogger<KartOkuController> logger)
         {
             _db = db;
             _gecisService = gecisService;
             _hub = hub;
+            _smsGonderimService = smsGonderimService;
             _logger = logger;
         }
 
@@ -323,6 +326,15 @@ namespace OgrenciBilgiSistemi.Controllers
                 };
 
                 await _hub.Clients.All.SendAsync("OgrenciBilgisiAl", dto, ct);
+
+                // Ana Kapı geçişlerinde veliye SMS bildirimi (yemekhane hariç)
+                if (cihaz.IstasyonTipi == IstasyonTipi.AnaKapi &&
+                    (string.Equals(sonuc.GecisTipi, "Giriş", StringComparison.OrdinalIgnoreCase) ||
+                     string.Equals(sonuc.GecisTipi, "Çıkış", StringComparison.OrdinalIgnoreCase)))
+                {
+                    await _smsGonderimService.GecisSmsBildir(
+                        ogrenci.OgrenciId, ogrenci.OgrenciAdSoyad, sonuc.GecisTipi, now, ct);
+                }
 
                 return Ok(new
                 {
