@@ -42,8 +42,8 @@ public sealed class SmsGonderimService : ISmsGonderimService
             return;
         }
 
-        // Mesaj oluştur
-        var mesaj = $"Sayın Veli, {ogrenciAdSoyad} {zaman:HH:mm} saatinde okula {gecisTipi.ToLower(new System.Globalization.CultureInfo("tr-TR"))} yapmıştır.";
+        // Mesaj oluştur (şablon merkezi)
+        var mesaj = SmsMesajSablonlari.AnaKapiGecis(ogrenciAdSoyad, zaman, gecisTipi);
 
         // SMS gönder
         var sonuc = await _smsService.Gonder(veliTelefon, mesaj, ct);

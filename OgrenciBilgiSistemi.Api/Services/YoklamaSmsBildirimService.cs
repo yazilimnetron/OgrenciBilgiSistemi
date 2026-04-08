@@ -47,17 +47,14 @@ public sealed class YoklamaSmsBildirimService
 
         var ogrenciBilgileri = await VeliTelefonlariGetir(claimedIdler, ct);
 
-        var periyotMetni = periyot == 1 ? "sabah" : "akşam";
-
         foreach (var (ogrenciId, adSoyad, veliTelefon) in ogrenciBilgileri)
         {
             var durum = durumMap.GetValueOrDefault(ogrenciId, 0);
-            var durumMetni = durum == 1 ? "binmiştir" : "binmemiştir";
-            var mesaj = $"Sayın Veli, {adSoyad} bugün {periyotMetni} servisine {durumMetni}.";
+            var mesaj = SmsMesajSablonlari.ServisYoklamasi(adSoyad, periyot, durum);
 
             var sonuc = await _smsService.Gonder(veliTelefon, mesaj, ct);
             if (sonuc.Basarili)
-                _logger.LogInformation("[SMS OK][ServisYoklama] OgrId:{OgrId}, Periyot:{Periyot}, Durum:{Durum}", ogrenciId, periyotMetni, durumMetni);
+                _logger.LogInformation("[SMS OK][ServisYoklama] OgrId:{OgrId}, Periyot:{Periyot}, Durum:{Durum}", ogrenciId, periyot, durum);
             else
                 _logger.LogWarning("[SMS FAIL][ServisYoklama] OgrId:{OgrId}, Hata:{Hata}", ogrenciId, sonuc.Hata);
         }
@@ -85,7 +82,7 @@ public sealed class YoklamaSmsBildirimService
 
         foreach (var (ogrenciId, adSoyad, veliTelefon) in ogrenciBilgileri)
         {
-            var mesaj = $"Sayın Veli, {adSoyad} bugün {dersNumarasi}. ders saatinde devamsız olarak işaretlenmiştir.";
+            var mesaj = SmsMesajSablonlari.SinifYoklamasiDevamsiz(adSoyad, dersNumarasi);
 
             var sonuc = await _smsService.Gonder(veliTelefon, mesaj, ct);
             if (sonuc.Basarili)

@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using OgrenciBilgiSistemi.Api.Dtos;
 using OgrenciBilgiSistemi.Api.Services;
+using OgrenciBilgiSistemi.Shared.Services;
 
 namespace OgrenciBilgiSistemi.Api.Controllers
 {
@@ -13,17 +14,20 @@ namespace OgrenciBilgiSistemi.Api.Controllers
         private readonly OgrenciService _ogrenciService;
         private readonly ServisService _servisService;
         private readonly IServiceScopeFactory _scopeFactory;
+        private readonly TenantBaglami _tenantBaglami;
         private readonly ILogger<OgrencilerController> _logger;
 
         public OgrencilerController(
             OgrenciService ogrenciService,
             ServisService servisService,
             IServiceScopeFactory scopeFactory,
+            TenantBaglami tenantBaglami,
             ILogger<OgrencilerController> logger)
         {
             _ogrenciService = ogrenciService;
             _servisService = servisService;
             _scopeFactory = scopeFactory;
+            _tenantBaglami = tenantBaglami;
             _logger = logger;
         }
 
@@ -282,11 +286,24 @@ namespace OgrenciBilgiSistemi.Api.Controllers
                 );
 
                 // SMS bildirimini arka planda gönder
+                // Tenant bilgileri istek scope'undan snapshot alınır; arka plan scope'unda
+                // TenantBaglami otomatik doldurulmadığı için manuel set edilir.
+                var tenantSnapshot = (
+                    OkulKodu: _tenantBaglami.OkulKodu,
+                    ConnectionString: _tenantBaglami.ConnectionString,
+                    OkulAdi: _tenantBaglami.OkulAdi
+                );
+
                 _ = Task.Run(async () =>
                 {
                     try
                     {
                         using var scope = _scopeFactory.CreateScope();
+                        var tenant = scope.ServiceProvider.GetRequiredService<TenantBaglami>();
+                        tenant.OkulKodu = tenantSnapshot.OkulKodu;
+                        tenant.ConnectionString = tenantSnapshot.ConnectionString;
+                        tenant.OkulAdi = tenantSnapshot.OkulAdi;
+
                         var smsBildirim = scope.ServiceProvider.GetRequiredService<YoklamaSmsBildirimService>();
                         await smsBildirim.SinifYoklamaBildir(kayitlar, model.DersNumarasi);
                     }

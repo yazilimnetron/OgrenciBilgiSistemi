@@ -112,6 +112,7 @@ builder.Services.AddScoped<ISmsGonderimService, SmsGonderimService>();
 builder.Services.AddHostedService<KartOkumaOlayIsleyiciService>();
 builder.Services.AddHostedService<ZkBaglantiIzleyiciHostedService>();
 builder.Services.AddHostedService<YemekhanePollingService>();
+builder.Services.AddHostedService<BekleyenSmsRetryService>();
 
 // SignalR + Cache
 builder.Services.AddSignalR();

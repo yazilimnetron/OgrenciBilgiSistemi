@@ -112,13 +112,10 @@ public partial class AnaBaslikView : ContentView
     /// </summary>
     private async Task PerformLogoutAsync()
     {
-        // Tüm oturum bilgilerini SecureStorage'dan ve bellekten temizle
+        // Sadece oturum token/bilgilerini temizle.
+        // "Beni Hatırla" kapsamındaki kayıtlı kimlik bilgileri korunur — kullanıcı
+        // tekrar giriş ekranına geldiğinde alanların dolu gelmesi beklenir.
         await KullaniciOturum.OturumTemizleAsync();
-
-        // "Beni Hatırla" kapsamındaki kaydedilmiş kimlik bilgilerini de temizle
-        SecureStorage.Default.Remove("SavedUsername");
-        SecureStorage.Default.Remove("SavedPassword");
-        Preferences.Default.Set("IsRemembered", false);
 
         // Giriş ekranına yönlendir (tüm navigasyon geçmişi temizlenir)
         await Shell.Current.GoToAsync("//GirisView");

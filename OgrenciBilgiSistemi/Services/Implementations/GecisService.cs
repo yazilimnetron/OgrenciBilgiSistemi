@@ -44,6 +44,43 @@ namespace OgrenciBilgiSistemi.Services.Implementations
             {
                 await using var tx = await _db.Database.BeginTransactionAsync(IsolationLevel.Serializable, ct);
 
+                // Yemekhane kuralı: aynı gün içinde sadece tek bir GİRİŞ kaydı tutulur.
+                // Çıkış kaydı oluşturulmaz, tekrarlı okutmalar mevcut girişi döner.
+                if (istasyon == IstasyonTipi.Yemekhane)
+                {
+                    var bugunYemekhaneGirisi = await _db.OgrenciDetaylar
+                        .AsNoTracking()
+                        .Where(x => x.OgrenciId == ogrenciId
+                                    && x.IstasyonTipi == IstasyonTipi.Yemekhane
+                                    && x.OgrenciGTarih.HasValue
+                                    && x.OgrenciGTarih >= dayStart
+                                    && x.OgrenciGTarih < dayEnd)
+                        .OrderBy(x => x.OgrenciGTarih)
+                        .FirstOrDefaultAsync(ct);
+
+                    if (bugunYemekhaneGirisi is not null)
+                    {
+                        // Bugün için zaten giriş var — yeni kayıt eklenmez.
+                        await tx.CommitAsync(ct);
+                        return new GecisKayitSonucu("Giriş", bugunYemekhaneGirisi.OgrenciGTarih!.Value);
+                    }
+
+                    var yemekhaneLog = new OgrenciDetayModel
+                    {
+                        OgrenciId = ogrenciId,
+                        IstasyonTipi = IstasyonTipi.Yemekhane,
+                        CihazId = cihazId,
+                        OgrenciGecisTipi = "GİRİŞ",
+                        OgrenciGTarih = now,
+                        OgrenciCTarih = null
+                    };
+
+                    _db.OgrenciDetaylar.Add(yemekhaneLog);
+                    await _db.SaveChangesAsync(ct);
+                    await tx.CommitAsync(ct);
+                    return new GecisKayitSonucu("Giriş", now);
+                }
+
                 bool nextIsEntry;
                 if (!string.IsNullOrEmpty(gecisTipi))
                 {

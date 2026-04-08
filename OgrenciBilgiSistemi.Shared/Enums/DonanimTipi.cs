@@ -16,11 +16,28 @@ namespace OgrenciBilgiSistemi.Shared.Enums
 
     public enum IstasyonTipi : short
     {
-        Bilinmiyor = 0,
-
         [Display(Name = "AnaKapı")]
         AnaKapi = 10,
 
         Yemekhane = 20,
+    }
+
+    // Öğrenci detay sayfası ve Excel çıktısı için rapor tipi seçimi
+    public enum RaporTipi : byte
+    {
+        [Display(Name = "Tümü")]
+        Tumu = 0,
+
+        [Display(Name = "Ana Kapı Geçişleri")]
+        AnaKapiGecisleri = 1,
+
+        [Display(Name = "Yemekhane Geçişleri")]
+        YemekhaneGecisleri = 2,
+
+        [Display(Name = "Sınıf Yoklaması")]
+        SinifYoklamasi = 3,
+
+        [Display(Name = "Servis Yoklaması")]
+        ServisYoklamasi = 4,
     }
 }

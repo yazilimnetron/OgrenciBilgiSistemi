@@ -12,7 +12,11 @@
     if (ViewData["EndDate"] is DateTime d2) vEnd = d2;
     else if (ViewData["EndDate"] is string s2 && DateTime.TryParse(s2, out var p2)) vEnd = p2;
 
-    var vIst = ViewData["IstasyonTipi"]?.ToString();
+    var vRapor = ViewData["RaporTipi"]?.ToString() ?? "0";
+    var rt = Model.RaporTipi;
+    bool gosterGecis = rt == RaporTipi.Tumu || rt == RaporTipi.AnaKapiGecisleri || rt == RaporTipi.YemekhaneGecisleri;
+    bool gosterSinif = rt == RaporTipi.Tumu || rt == RaporTipi.SinifYoklamasi;
+    bool gosterServis = rt == RaporTipi.Tumu || rt == RaporTipi.ServisYoklamasi;
 }
 
 <div class="viewport-scroller">
@@ -54,10 +58,11 @@
                 </h5>
                 <div class="d-flex gap-2">
                     <a asp-action="DetayExportToExcel"
+                       asp-route-id="@Model.Ogrenci.OgrenciId"
                        asp-route-searchName="@ViewData["SearchName"]"
                        asp-route-startDate="@(vStart?.ToString("yyyy-MM-dd"))"
                        asp-route-endDate="@(vEnd?.ToString("yyyy-MM-dd"))"
-                       asp-route-istasyonTipi="@vIst"
+                       asp-route-raporTipi="@vRapor"
                        class="btn btn-outline-success btn-sm fw-bold">
                         <i class="bi bi-file-earmark-excel"></i> Excel'e Aktar
                     </a>
@@ -79,35 +84,20 @@
                         <input type="date" name="endDate" class="form-control" value="@(vEnd?.ToString("yyyy-MM-dd"))" />
                     </div>
 
-                    <!-- İSTASYON TİPİ FİLTRESİ -->
+                    <!-- RAPOR TİPİ FİLTRESİ -->
                     <div class="col-3">
                         @{
-                            var istasyonItems = Html.GetEnumSelectList<IstasyonTipi>();
-                            var vIstStr = (ViewData["IstasyonTipi"]?.ToString() ?? "").Trim();
-                            var selectAll = string.IsNullOrEmpty(vIstStr);
+                            var raporItems = Html.GetEnumSelectList<RaporTipi>();
                         }
-                        <select name="istasyonTipi" class="form-select">
-                            @if (selectAll)
+                        <select name="raporTipi" class="form-select">
+                            @foreach (var item in raporItems)
                             {
-                                @:
-                                <option value="" selected>İstasyon (Tümü)</option>
-                            }
-                            else
-                            {
-                                @:
-                                <option value="">İstasyon (Tümü)</option>
-                            }
-
-                            @foreach (var item in istasyonItems)
-                            {
-                                if (vIstStr == item.Value)
+                                if (vRapor == item.Value)
                                 {
-                                    @:
                                     <option value="@item.Value" selected>@item.Text</option>
                                 }
                                 else
                                 {
-                                    @:
                                     <option value="@item.Value">@item.Text</option>
                                 }
                             }
@@ -121,7 +111,9 @@
                     </div>
                 </form>
 
-                <!-- Öğrenci Hareketleri Tablosu -->
+@if (gosterGecis)
+{
+<!-- Öğrenci Hareketleri Tablosu -->
                 <div class="table-scroll">
                     <table class="table table-hover table-sm text-center align-middle">
                         <thead class="bg-dark text-white">
@@ -160,6 +152,143 @@
                         </tbody>
                     </table>
                 </div>
+}
+
+@if (gosterSinif)
+{
+                <!-- Sınıf Yoklamaları -->
+                <h6 class="mt-4 mb-2 fw-bold text-primary">
+                    <i class="bi bi-journal-check"></i> Sınıf Yoklamaları
+                </h6>
+                <div class="table-scroll">
+                    <table class="table table-hover table-sm text-center align-middle">
+                        <thead class="bg-dark text-white">
+                            <tr>
+                                <th>#</th>
+                                <th>Tarih</th>
+                                <th>Ders 1</th>
+                                <th>Ders 2</th>
+                                <th>Ders 3</th>
+                                <th>Ders 4</th>
+                                <th>Ders 5</th>
+                                <th>Ders 6</th>
+                                <th>Ders 7</th>
+                                <th>Ders 8</th>
+                                <th>Kaydeden</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white">
+                            @if (Model.SinifYoklamalar == null || !Model.SinifYoklamalar.Any())
+                            {
+                                <tr>
+                                    <td colspan="11" class="p-3">
+                                        <div class="alert alert-warning text-center m-0">
+                                            <i class="bi bi-exclamation-triangle-fill"></i> Sınıf yoklaması kaydı bulunmamaktadır.
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var sy in Model.SinifYoklamalar)
+                                {
+                                    <tr>
+                                        <td>@sy.SinifYoklamaId</td>
+                                        <td>@sy.OlusturulmaTarihi.ToString("dd.MM.yyyy HH:mm")</td>
+                                        @{
+                                            int?[] dersler = new int?[] { sy.Ders1, sy.Ders2, sy.Ders3, sy.Ders4, sy.Ders5, sy.Ders6, sy.Ders7, sy.Ders8 };
+                                        }
+                                        @for (int i = 0; i < 8; i++)
+                                        {
+                                            var d = dersler[i];
+                                            var smsBit = (sy.SmsDurumu & (1 << i)) != 0;
+                                            <td>
+                                                @(d?.ToString() ?? "-")
+                                                @if (smsBit)
+                                                {
+                                                    <span class="badge bg-info ms-1" title="SMS gönderildi">SMS</span>
+                                                }
+                                            </td>
+                                        }
+                                        <td>@(sy.Kullanici?.KullaniciAdi ?? "-")</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+}
+
+@if (gosterServis)
+{
+                <!-- Servis Yoklamaları -->
+                <h6 class="mt-4 mb-2 fw-bold text-primary">
+                    <i class="bi bi-bus-front"></i> Servis Yoklamaları
+                </h6>
+                <div class="table-scroll">
+                    <table class="table table-hover table-sm text-center align-middle">
+                        <thead class="bg-dark text-white">
+                            <tr>
+                                <th>#</th>
+                                <th>Tarih</th>
+                                <th>Periyot</th>
+                                <th>Durum</th>
+                                <th>SMS</th>
+                                <th>Şoför</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white">
+                            @if (Model.ServisYoklamalar == null || !Model.ServisYoklamalar.Any())
+                            {
+                                <tr>
+                                    <td colspan="6" class="p-3">
+                                        <div class="alert alert-warning text-center m-0">
+                                            <i class="bi bi-exclamation-triangle-fill"></i> Servis yoklaması kaydı bulunmamaktadır.
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                            else
+                            {
+                                @foreach (var sv in Model.ServisYoklamalar)
+                                {
+                                    <tr>
+                                        <td>@sv.ServisYoklamaId</td>
+                                        <td>@sv.OlusturulmaTarihi.ToString("dd.MM.yyyy HH:mm")</td>
+                                        <td>@(sv.Periyot == 1 ? "Sabah" : (sv.Periyot == 2 ? "Akşam" : sv.Periyot.ToString()))</td>
+                                        <td>
+                                            @if (sv.DurumId == 1)
+                                            {
+                                                <span class="badge bg-success">Bindi</span>
+                                            }
+                                            else if (sv.DurumId == 2)
+                                            {
+                                                <span class="badge bg-danger">Binmedi</span>
+                                            }
+                                            else
+                                            {
+                                                @sv.DurumId
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (sv.SmsGonderildi)
+                                            {
+                                                <span class="badge bg-info">Evet</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">Hayır</span>
+                                            }
+                                        </td>
+                                        <td>@(sv.Kullanici?.KullaniciAdi ?? "-")</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+}
             </div>
         </div>
 
@@ -182,7 +311,7 @@
                            asp-route-searchName="@ViewData["SearchName"]"
                            asp-route-startDate="@(vStart?.ToString("yyyy-MM-dd"))"
                            asp-route-endDate="@(vEnd?.ToString("yyyy-MM-dd"))"
-                           asp-route-istasyonTipi="@vIst">Önceki</a>
+                           asp-route-raporTipi="@vRapor">Önceki</a>
                     </li>
                 }
 
@@ -194,7 +323,7 @@
                            asp-route-searchName="@ViewData["SearchName"]"
                            asp-route-startDate="@(vStart?.ToString("yyyy-MM-dd"))"
                            asp-route-endDate="@(vEnd?.ToString("yyyy-MM-dd"))"
-                           asp-route-istasyonTipi="@vIst">1</a>
+                           asp-route-raporTipi="@vRapor">1</a>
                     </li>
                     <li class="page-item disabled"><span class="page-link">...</span></li>
                 }
@@ -207,7 +336,7 @@
                            asp-route-searchName="@ViewData["SearchName"]"
                            asp-route-startDate="@(vStart?.ToString("yyyy-MM-dd"))"
                            asp-route-endDate="@(vEnd?.ToString("yyyy-MM-dd"))"
-                           asp-route-istasyonTipi="@vIst">@i</a>
+                           asp-route-raporTipi="@vRapor">@i</a>
                     </li>
                 }
 
@@ -220,7 +349,7 @@
                            asp-route-searchName="@ViewData["SearchName"]"
                            asp-route-startDate="@(vStart?.ToString("yyyy-MM-dd"))"
                            asp-route-endDate="@(vEnd?.ToString("yyyy-MM-dd"))"
-                           asp-route-istasyonTipi="@vIst">@Model.Hareketler.ToplamSayfa</a>
+                           asp-route-raporTipi="@vRapor">@Model.Hareketler.ToplamSayfa</a>
                     </li>
                 }
 
@@ -233,7 +362,7 @@
                            asp-route-searchName="@ViewData["SearchName"]"
                            asp-route-startDate="@(vStart?.ToString("yyyy-MM-dd"))"
                            asp-route-endDate="@(vEnd?.ToString("yyyy-MM-dd"))"
-                           asp-route-istasyonTipi="@vIst">Sonraki</a>
+                           asp-route-raporTipi="@vRapor">Sonraki</a>
                     </li>
                 }
             </ul>

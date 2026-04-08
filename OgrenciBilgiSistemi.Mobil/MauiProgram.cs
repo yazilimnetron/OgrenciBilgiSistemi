@@ -31,6 +31,7 @@ namespace OgrenciBilgiSistemi.Mobil
             builder.Services.AddSingleton<OgrenciService>();
             builder.Services.AddSingleton<ServisService>();
             builder.Services.AddSingleton<VeliService>();
+            builder.Services.AddSingleton<GuncellemeKontrolService>();
 
             // Sayfa kayıtları
             // GirisView ve SinifListeView Shell tarafından DI ile çözümleniyor

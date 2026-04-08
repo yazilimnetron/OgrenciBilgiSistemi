@@ -390,7 +390,7 @@ public sealed class YemekhanePollingService : BackgroundService
             if (string.IsNullOrWhiteSpace(bilgi.VeliTelefon)) continue;
 
             var ts = log.OgrenciGTarih ?? DateTime.Now;
-            var mesaj = $"Sayın Veli, {bilgi.OgrenciAdSoyad} {ts:HH:mm} saatinde yemekhaneye giriş yapmıştır.";
+            var mesaj = SmsMesajSablonlari.YemekhaneGiris(bilgi.OgrenciAdSoyad, ts);
 
             try
             {

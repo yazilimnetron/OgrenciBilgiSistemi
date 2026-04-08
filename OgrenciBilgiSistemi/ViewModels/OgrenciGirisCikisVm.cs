@@ -1,4 +1,5 @@
-﻿using OgrenciBilgiSistemi.Models;
+﻿using System.Collections.Generic;
+using OgrenciBilgiSistemi.Models;
 
 namespace OgrenciBilgiSistemi.ViewModels
 {
@@ -19,5 +20,29 @@ namespace OgrenciBilgiSistemi.ViewModels
     {
         public OgrenciModel Ogrenci { get; set; }
         public SayfalanmisListeModel<OgrenciGirisCikisVm> Hareketler { get; set; }
+        public List<SinifYoklamaModel> SinifYoklamalar { get; set; } = new();
+        public List<ServisYoklamaModel> ServisYoklamalar { get; set; } = new();
+        public RaporTipi RaporTipi { get; set; } = RaporTipi.Tumu;
+    }
+
+    // Global Detay listesi için rapor tipine göre dinamik içerikli wrapper
+    public class OgrenciDetayRaporVm
+    {
+        public RaporTipi RaporTipi { get; set; } = RaporTipi.Tumu;
+        public SayfalanmisListeModel<OgrenciDetayModel>? Gecisler { get; set; }
+        public SayfalanmisListeModel<SinifYoklamaModel>? SinifYoklamalar { get; set; }
+        public SayfalanmisListeModel<ServisYoklamaModel>? ServisYoklamalar { get; set; }
+
+        // Görünen aktif sayfanın paging bilgileri (view'da kolay kullanım için)
+        public int SayfaIndeks =>
+            Gecisler?.SayfaIndeks ?? SinifYoklamalar?.SayfaIndeks ?? ServisYoklamalar?.SayfaIndeks ?? 1;
+        public int ToplamSayfa =>
+            Gecisler?.ToplamSayfa ?? SinifYoklamalar?.ToplamSayfa ?? ServisYoklamalar?.ToplamSayfa ?? 1;
+        public int ToplamSayi =>
+            Gecisler?.ToplamSayi ?? SinifYoklamalar?.ToplamSayi ?? ServisYoklamalar?.ToplamSayi ?? 0;
+        public bool OncekiSayfaVar =>
+            Gecisler?.OncekiSayfaVar ?? SinifYoklamalar?.OncekiSayfaVar ?? ServisYoklamalar?.OncekiSayfaVar ?? false;
+        public bool SonrakiSayfaVar =>
+            Gecisler?.SonrakiSayfaVar ?? SinifYoklamalar?.SonrakiSayfaVar ?? ServisYoklamalar?.SonrakiSayfaVar ?? false;
     }
 }

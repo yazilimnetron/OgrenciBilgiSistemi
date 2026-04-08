@@ -42,6 +42,7 @@
             </Border.GestureRecognizers>
 
             <Label x:Name="InitialLabel"
+                   InputTransparent="True"
                    Text="{Binding UserInitial, Source={x:Reference this}}"
                    TextColor="#1ABC9C"
                    FontSize="16"

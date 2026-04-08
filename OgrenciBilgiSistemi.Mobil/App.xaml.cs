@@ -60,4 +60,22 @@ public partial class App : Application                                          
         MainPage = new AppShell();                                                  // Uygulamanın ana navigasyon yapısı olan AppShell başlatılır.
         #endregion
     }                                                                               // Yapıcı metot sonu.
+
+    protected override void OnStart()
+    {
+        base.OnStart();
+
+        // Uygulama açılınca opsiyonel güncelleme kontrolü (fire-and-forget)
+        _ = Task.Run(async () =>
+        {
+            try
+            {
+                await Task.Delay(2000); // UI önce açılsın
+                var svc = IPlatformApplication.Current?.Services.GetService<GuncellemeKontrolService>();
+                if (svc != null)
+                    await svc.KontrolEt();
+            }
+            catch { /* sessizce yut */ }
+        });
+    }
 }                                                                                   // Sınıf sonu.

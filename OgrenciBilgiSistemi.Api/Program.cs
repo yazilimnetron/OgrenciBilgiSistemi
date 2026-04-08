@@ -105,6 +105,7 @@ builder.Services.AddRateLimiter(options =>
 // SMS
 builder.Services.AddSmsAltyapisi(builder.Configuration);
 builder.Services.AddScoped<YoklamaSmsBildirimService>();
+builder.Services.AddHostedService<BekleyenYoklamaSmsRetryService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
