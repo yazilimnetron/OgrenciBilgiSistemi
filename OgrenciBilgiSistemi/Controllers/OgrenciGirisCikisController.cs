@@ -491,14 +491,14 @@ namespace OgrenciBilgiSistemi.Controllers
                 ct2.Value = sy.OlusturulmaTarihi;
                 ct2.Style.DateFormat.Format = "dd.MM.yyyy HH:mm";
 
-                ws2.Cell(r, 2).Value = sy.Ders1?.ToString() ?? "-";
-                ws2.Cell(r, 3).Value = sy.Ders2?.ToString() ?? "-";
-                ws2.Cell(r, 4).Value = sy.Ders3?.ToString() ?? "-";
-                ws2.Cell(r, 5).Value = sy.Ders4?.ToString() ?? "-";
-                ws2.Cell(r, 6).Value = sy.Ders5?.ToString() ?? "-";
-                ws2.Cell(r, 7).Value = sy.Ders6?.ToString() ?? "-";
-                ws2.Cell(r, 8).Value = sy.Ders7?.ToString() ?? "-";
-                ws2.Cell(r, 9).Value = sy.Ders8?.ToString() ?? "-";
+                ws2.Cell(r, 2).Value = SinifDurumMetni(sy.Ders1);
+                ws2.Cell(r, 3).Value = SinifDurumMetni(sy.Ders2);
+                ws2.Cell(r, 4).Value = SinifDurumMetni(sy.Ders3);
+                ws2.Cell(r, 5).Value = SinifDurumMetni(sy.Ders4);
+                ws2.Cell(r, 6).Value = SinifDurumMetni(sy.Ders5);
+                ws2.Cell(r, 7).Value = SinifDurumMetni(sy.Ders6);
+                ws2.Cell(r, 8).Value = SinifDurumMetni(sy.Ders7);
+                ws2.Cell(r, 9).Value = SinifDurumMetni(sy.Ders8);
                 ws2.Cell(r, 10).Value = sy.Kullanici?.KullaniciAdi ?? "-";
                 r++;
             }
@@ -553,6 +553,19 @@ namespace OgrenciBilgiSistemi.Controllers
         }
 
         // Başlık satırı stili
+        private static string SinifDurumMetni(int? d) => d switch
+        {
+            1 => "Geldi",
+            2 => "Gelmedi",
+            3 => "Geç Geldi",
+            4 => "İzinli",
+            5 => "Raporlu",
+            6 => "Nöbetçi",
+            7 => "Görevli",
+            null => "-",
+            _ => d.ToString()!
+        };
+
         private static void BasligiBicimle(IXLRange headerRange)
         {
             headerRange.Style.Font.Bold = true;
@@ -629,14 +642,14 @@ namespace OgrenciBilgiSistemi.Controllers
                     var ct2 = ws2.Cell(r, 3);
                     ct2.Value = sy.OlusturulmaTarihi;
                     ct2.Style.DateFormat.Format = "dd.MM.yyyy HH:mm";
-                    ws2.Cell(r, 4).Value = sy.Ders1?.ToString() ?? "-";
-                    ws2.Cell(r, 5).Value = sy.Ders2?.ToString() ?? "-";
-                    ws2.Cell(r, 6).Value = sy.Ders3?.ToString() ?? "-";
-                    ws2.Cell(r, 7).Value = sy.Ders4?.ToString() ?? "-";
-                    ws2.Cell(r, 8).Value = sy.Ders5?.ToString() ?? "-";
-                    ws2.Cell(r, 9).Value = sy.Ders6?.ToString() ?? "-";
-                    ws2.Cell(r, 10).Value = sy.Ders7?.ToString() ?? "-";
-                    ws2.Cell(r, 11).Value = sy.Ders8?.ToString() ?? "-";
+                    ws2.Cell(r, 4).Value = SinifDurumMetni(sy.Ders1);
+                    ws2.Cell(r, 5).Value = SinifDurumMetni(sy.Ders2);
+                    ws2.Cell(r, 6).Value = SinifDurumMetni(sy.Ders3);
+                    ws2.Cell(r, 7).Value = SinifDurumMetni(sy.Ders4);
+                    ws2.Cell(r, 8).Value = SinifDurumMetni(sy.Ders5);
+                    ws2.Cell(r, 9).Value = SinifDurumMetni(sy.Ders6);
+                    ws2.Cell(r, 10).Value = SinifDurumMetni(sy.Ders7);
+                    ws2.Cell(r, 11).Value = SinifDurumMetni(sy.Ders8);
                     ws2.Cell(r, 12).Value = sy.Kullanici?.KullaniciAdi ?? "-";
                     r++;
                 }
