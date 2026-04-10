@@ -30,9 +30,10 @@ namespace OgrenciBilgiSistemi.Api.Services
             {
                 await using var conn = new SqlConnection(ConnectionString);
                 const string query = @"
-                    SELECT OgrenciId, OgrenciAdSoyad, OgrenciGorsel
+                    SELECT OgrenciId, OgrenciAdSoyad, OgrenciNo, OgrenciGorsel
                     FROM Ogrenciler
-                    WHERE BirimId = @sinifId AND OgrenciDurum = 1";
+                    WHERE BirimId = @sinifId AND OgrenciDurum = 1
+                    ORDER BY OgrenciNo";
 
                 await using var cmd = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@sinifId", sinifId);
@@ -46,6 +47,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                     {
                         OgrenciId     = (int)reader["OgrenciId"],
                         OgrenciAdSoyad = reader["OgrenciAdSoyad"]?.ToString() ?? string.Empty,
+                        OgrenciNo     = (int)reader["OgrenciNo"],
                         OgrenciGorsel = string.IsNullOrEmpty(rawFileName) ? "user_icon.png" : rawFileName
                     });
                 }

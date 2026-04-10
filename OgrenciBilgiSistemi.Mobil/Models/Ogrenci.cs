@@ -7,6 +7,7 @@ namespace OgrenciBilgiSistemi.Mobil.Models
         public int OgrenciId { get; set; }
         public string OgrenciAdSoyad { get; set; }
         public int OgrenciNo { get; set; }
+        public string OgrenciGorunenAd => $"{OgrenciNo} - {OgrenciAdSoyad}";
         public string? OgrenciGorsel { get; set; }
         public string? OgrenciKartNo { get; set; }
         public OglenCikisDurumu OgrenciCikisDurumu { get; set; }
