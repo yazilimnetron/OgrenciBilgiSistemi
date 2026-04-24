@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:OgrenciBilgiSistemi.Mobil.Views"
+             x:Class="OgrenciBilgiSistemi.Mobil.Views.MusaitlikYonetimView"
+             Title="Müsaitlik Yönetimi"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#F0F2F5">
+
+    <Grid RowDefinitions="125, Auto, *">
+
+        <Border Grid.Row="0" StrokeThickness="0" BackgroundColor="#8E44AD" VerticalOptions="FillAndExpand">
+            <Border.Shadow>
+                <Shadow Brush="#8E44AD" Offset="0,4" Radius="15" Opacity="0.4" />
+            </Border.Shadow>
+            <Grid>
+                <views:AnaBaslikView x:Name="MyHeader" ShowBack="True" ShowProfile="False" />
+                <VerticalStackLayout Spacing="2" VerticalOptions="End" Margin="20,0,20,35">
+                    <Label Text="Müsaitlik Yönetimi" FontSize="18" FontFamily="OpenSansSemibold" TextColor="White" />
+                    <Label Text="Haftalık müsait saatleriniz" FontSize="14" TextColor="White" Opacity="0.8" />
+                </VerticalStackLayout>
+            </Grid>
+        </Border>
+
+        <!-- Yeni müsaitlik ekleme formu -->
+        <Border Grid.Row="1" Margin="15,-28,15,10" StrokeShape="RoundRectangle 20" StrokeThickness="0" BackgroundColor="White">
+            <Border.Shadow>
+                <Shadow Brush="Black" Offset="0,10" Radius="20" Opacity="0.08" />
+            </Border.Shadow>
+            <VerticalStackLayout Padding="15" Spacing="10">
+                <Label Text="Yeni Müsaitlik Ekle" FontSize="13" FontAttributes="Bold" TextColor="#7F8C8D" />
+                <Picker x:Name="GunPicker" Title="Gün seçiniz..." FontSize="14" TextColor="#2C3E50">
+                    <Picker.Items>
+                        <x:String>Pazartesi</x:String>
+                        <x:String>Salı</x:String>
+                        <x:String>Çarşamba</x:String>
+                        <x:String>Perşembe</x:String>
+                        <x:String>Cuma</x:String>
+                    </Picker.Items>
+                </Picker>
+                <Grid ColumnDefinitions="*, Auto, *" ColumnSpacing="10">
+                    <TimePicker Grid.Column="0" x:Name="BaslangicSaati" FontSize="14" TextColor="#2C3E50" />
+                    <Label Grid.Column="1" Text="-" FontSize="18" TextColor="#95A5A6" VerticalOptions="Center" />
+                    <TimePicker Grid.Column="2" x:Name="BitisSaati" FontSize="14" TextColor="#2C3E50" />
+                </Grid>
+                <Button Text="Ekle" BackgroundColor="#8E44AD" TextColor="White" FontFamily="OpenSansSemibold"
+                        FontSize="14" CornerRadius="10" HeightRequest="42" Clicked="OnEkleClicked" />
+            </VerticalStackLayout>
+        </Border>
+
+        <!-- Mevcut müsaitlik listesi -->
+        <CollectionView Grid.Row="2" x:Name="MusaitlikCollection" Margin="15,0" SelectionMode="None">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="8" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border StrokeShape="RoundRectangle 14" StrokeThickness="0" BackgroundColor="White" Padding="0">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.05" />
+                        </Border.Shadow>
+                        <Grid ColumnDefinitions="8, *, Auto" Padding="0,12">
+                            <BoxView Grid.Column="0" BackgroundColor="#8E44AD" WidthRequest="8" HorizontalOptions="Start" />
+                            <VerticalStackLayout Grid.Column="1" Spacing="3" Margin="12,0">
+                                <Label Text="{Binding GunAdi}" FontSize="16" FontFamily="OpenSansSemibold" TextColor="#2C3E50" />
+                                <Label FontSize="13" TextColor="#2980B9">
+                                    <Label.Text>
+                                        <MultiBinding StringFormat="{}{0} - {1}">
+                                            <Binding Path="BaslangicSaati" />
+                                            <Binding Path="BitisSaati" />
+                                        </MultiBinding>
+                                    </Label.Text>
+                                </Label>
+                            </VerticalStackLayout>
+                            <Button Grid.Column="2" Text="Sil" BackgroundColor="#E74C3C" TextColor="White"
+                                    FontSize="12" CornerRadius="8" Padding="12,6" Margin="0,0,12,0"
+                                    VerticalOptions="Center" Clicked="OnSilClicked" CommandParameter="{Binding MusaitlikId}" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+            <CollectionView.EmptyView>
+                <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="10" Padding="20">
+                    <Label Text="Henüz müsaitlik tanımlanmadı." FontSize="16" TextColor="#95A5A6" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+        </CollectionView>
+    </Grid>
+</ContentPage>

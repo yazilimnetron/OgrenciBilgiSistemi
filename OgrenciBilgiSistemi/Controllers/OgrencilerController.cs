@@ -121,8 +121,6 @@ namespace OgrenciBilgiSistemi.Controllers
             bool? buAyYemekhaneAktif,
             CancellationToken ct = default)
         {
-            var ogretmenler = await _kullaniciService.GetPersonellerSelectListAsync(ct);
-
             var birimler = await _birimService.GetSelectListAsync(
                 selectedId: ogrenci?.BirimId,
                 sinifMi: true,
@@ -156,7 +154,6 @@ namespace OgrenciBilgiSistemi.Controllers
             {
                 Ogrenci = ogrenci ?? new OgrenciModel(),
                 BuAyYemekhaneAktif = buAyYemekhaneAktif ?? true,
-                Ogretmenler = ogretmenler,
                 Birimler = birimler,
                 Servisler = servisler,
                 Veliler = veliler,

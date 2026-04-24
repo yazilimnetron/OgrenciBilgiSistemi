@@ -1,4 +1,6 @@
-﻿namespace OgrenciBilgiSistemi.Mobil
+﻿using OgrenciBilgiSistemi.Mobil.Views;
+
+namespace OgrenciBilgiSistemi.Mobil
 {
     public partial class AppShell : Shell
     {
@@ -6,6 +8,11 @@
         {
             InitializeComponent();
 
+            Routing.RegisterRoute(nameof(RandevuListeView), typeof(RandevuListeView));
+            Routing.RegisterRoute(nameof(RandevuDetayView), typeof(RandevuDetayView));
+            Routing.RegisterRoute(nameof(RandevuOlusturView), typeof(RandevuOlusturView));
+            Routing.RegisterRoute(nameof(MusaitlikYonetimView), typeof(MusaitlikYonetimView));
+            Routing.RegisterRoute(nameof(BildirimListeView), typeof(BildirimListeView));
         }
     }
 }

@@ -32,6 +32,10 @@ namespace OgrenciBilgiSistemi.Data
         public DbSet<OgretmenProfilModel> OgretmenProfiller { get; set; }
         public DbSet<ServisYoklamaModel> ServisYoklamalar { get; set; }
 
+        public DbSet<RandevuModel> Randevular { get; set; }
+        public DbSet<OgretmenMusaitlikModel> OgretmenMusaitlikler { get; set; }
+        public DbSet<BildirimModel> Bildirimler { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -353,6 +357,68 @@ namespace OgrenciBilgiSistemi.Data
                 .HasDatabaseName("UX_Kullanicilar_KullaniciAdi");
 
             // =========================
+            // RANDEVU
+            // =========================
+
+            modelBuilder.Entity<RandevuModel>()
+                .HasOne(r => r.Ogretmen)
+                .WithMany()
+                .HasForeignKey(r => r.OgretmenKullaniciId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<RandevuModel>()
+                .HasOne(r => r.Veli)
+                .WithMany()
+                .HasForeignKey(r => r.VeliKullaniciId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<RandevuModel>()
+                .HasOne(r => r.Ogrenci)
+                .WithMany()
+                .HasForeignKey(r => r.OgrenciId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<RandevuModel>()
+                .HasQueryFilter(r => !r.IsDeleted);
+
+            modelBuilder.Entity<RandevuModel>()
+                .HasIndex(r => r.RandevuTarihi)
+                .HasDatabaseName("IX_Randevular_Tarih");
+
+            // =========================
+            // OGRETMEN MUSAITLIK
+            // =========================
+
+            modelBuilder.Entity<OgretmenMusaitlikModel>()
+                .HasOne(m => m.Ogretmen)
+                .WithMany()
+                .HasForeignKey(m => m.OgretmenKullaniciId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<OgretmenMusaitlikModel>()
+                .HasQueryFilter(m => !m.IsDeleted);
+
+            // =========================
+            // BILDIRIM
+            // =========================
+
+            modelBuilder.Entity<BildirimModel>()
+                .HasOne(b => b.Alici)
+                .WithMany()
+                .HasForeignKey(b => b.AliciKullaniciId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<BildirimModel>()
+                .HasOne(b => b.Randevu)
+                .WithMany()
+                .HasForeignKey(b => b.RandevuId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<BildirimModel>()
+                .HasIndex(b => new { b.AliciKullaniciId, b.Okundu })
+                .HasDatabaseName("IX_Bildirimler_Alici_Okundu");
+
+            // =========================
             // PERFORMANS INDEKSLERI
             // =========================
 
@@ -428,7 +494,10 @@ namespace OgrenciBilgiSistemi.Data
                 new MenuOgeModel { Id = 26, Baslik = "Servisler", Controller = null, Action = null, AnaMenuId = null, Sirala = 10 },
                 new MenuOgeModel { Id = 27, Baslik = "Servis İşlemleri", Controller = "Servisler", Action = "Index", AnaMenuId = 26, Sirala = 1 },
                 new MenuOgeModel { Id = 28, Baslik = "Veliler", Controller = null, Action = null, AnaMenuId = null, Sirala = 11 },
-                new MenuOgeModel { Id = 29, Baslik = "Veli İşlemleri", Controller = "Veliler", Action = "Index", AnaMenuId = 28, Sirala = 1 }
+                new MenuOgeModel { Id = 29, Baslik = "Veli İşlemleri", Controller = "Veliler", Action = "Index", AnaMenuId = 28, Sirala = 1 },
+                new MenuOgeModel { Id = 30, Baslik = "Randevular", Controller = null, Action = null, AnaMenuId = null, Sirala = 12 },
+                new MenuOgeModel { Id = 31, Baslik = "Randevu Listesi", Controller = "Randevular", Action = "Index", AnaMenuId = 30, Sirala = 1 },
+                new MenuOgeModel { Id = 32, Baslik = "Öğretmen Müsaitlik", Controller = "OgretmenMusaitlik", Action = "Index", AnaMenuId = 30, Sirala = 2 }
             );
         }
     }

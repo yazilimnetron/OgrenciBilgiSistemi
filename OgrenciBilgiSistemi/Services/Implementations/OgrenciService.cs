@@ -46,6 +46,17 @@ namespace OgrenciBilgiSistemi.Services.Implementations
 
         private static string? NormalizeText(string? s) => string.IsNullOrWhiteSpace(s) ? null : s.Trim();
 
+        private async Task<int?> BirimdenOgretmenBulAsync(int? birimId, CancellationToken ct)
+        {
+            if (birimId is null) return null;
+            return await _db.OgretmenProfiller
+                .AsNoTracking()
+                .Where(op => op.BirimId == birimId && op.OgretmenDurum)
+                .OrderBy(op => op.KullaniciId)
+                .Select(op => (int?)op.KullaniciId)
+                .FirstOrDefaultAsync(ct);
+        }
+
         // ---- IOgrenciService -------------------------------------------------
 
         public async Task<int> EkleAsync(OgrenciModel model, IFormFile? gorsel, bool buAyYemekhaneAktif, CancellationToken ct = default)
@@ -63,6 +74,7 @@ namespace OgrenciBilgiSistemi.Services.Implementations
                     model.OgrenciGorsel = await _files.SaveImageAsync(gorsel, existingPath: null, ct);
                 }
 
+                model.OgretmenId = await BirimdenOgretmenBulAsync(model.BirimId, ct);
                 _db.Ogrenciler.Add(model);
                 await _db.SaveChangesAsync(ct);
 
@@ -89,7 +101,7 @@ namespace OgrenciBilgiSistemi.Services.Implementations
                 ent.OgrenciNo = model.OgrenciNo;
                 ent.OgrenciKartNo = NormalizeKartNo(model.OgrenciKartNo);
                 ent.BirimId = model.BirimId;
-                ent.OgretmenId = model.OgretmenId;
+                ent.OgretmenId = await BirimdenOgretmenBulAsync(model.BirimId, ct);
                 ent.OgrenciDurum = model.OgrenciDurum;
                 ent.OgrenciCikisDurumu = model.OgrenciCikisDurumu;
                 ent.VeliId = model.VeliId;

@@ -23,6 +23,21 @@ namespace OgrenciBilgiSistemi.Api.Services
 
         private string ConnectionString => _tenantBaglami.ConnectionString;
 
+        private async Task<int?> BirimdenOgretmenBulAsync(int? birimId)
+        {
+            if (birimId is null) return null;
+            const string sql = @"
+                SELECT TOP 1 KullaniciId FROM OgretmenProfiller
+                WHERE BirimId = @birimId AND OgretmenDurum = 1
+                ORDER BY KullaniciId";
+            await using var conn = new SqlConnection(ConnectionString);
+            await using var cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@birimId", birimId.Value);
+            await conn.OpenAsync();
+            var result = await cmd.ExecuteScalarAsync();
+            return result is int id ? id : null;
+        }
+
         public async Task<List<OgrenciModel>> SinifaGoreOgrencileriGetirAsync(int sinifId)
         {
             var ogrenciler = new List<OgrenciModel>();
@@ -351,8 +366,9 @@ namespace OgrenciBilgiSistemi.Api.Services
                 cmd.Parameters.AddWithValue("@no",           dto.OgrenciNo);
                 cmd.Parameters.AddWithValue("@kartNo",       (object?)dto.OgrenciKartNo ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@cikisDurumu",  dto.OgrenciCikisDurumu);
+                var ogretmenId = await BirimdenOgretmenBulAsync(dto.BirimId);
                 cmd.Parameters.AddWithValue("@birimId",      (object?)dto.BirimId    ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@ogretmenId",   (object?)dto.OgretmenId ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@ogretmenId",   (object?)ogretmenId ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@veliId",       (object?)dto.VeliId ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@servisId",    (object?)dto.ServisId ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@gorsel",       (object?)dto.OgrenciGorsel ?? DBNull.Value);
@@ -397,8 +413,9 @@ namespace OgrenciBilgiSistemi.Api.Services
                 cmd.Parameters.AddWithValue("@kartNo",       (object?)dto.OgrenciKartNo ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@cikisDurumu",  dto.OgrenciCikisDurumu);
                 cmd.Parameters.AddWithValue("@durum",        dto.OgrenciDurum);
+                var ogretmenId = await BirimdenOgretmenBulAsync(dto.BirimId);
                 cmd.Parameters.AddWithValue("@birimId",      (object?)dto.BirimId    ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@ogretmenId",   (object?)dto.OgretmenId ?? DBNull.Value);
+                cmd.Parameters.AddWithValue("@ogretmenId",   (object?)ogretmenId ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@veliId",       (object?)dto.VeliId ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@servisId",    (object?)dto.ServisId ?? DBNull.Value);
                 cmd.Parameters.AddWithValue("@gorsel",       (object?)dto.OgrenciGorsel ?? DBNull.Value);

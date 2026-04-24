@@ -38,21 +38,59 @@
             </Grid>
         </Border>
 
-        <Border Grid.Row="1"
-                Margin="15,-28,15,10"
-                HeightRequest="55"
-                StrokeShape="RoundRectangle 28"
-                StrokeThickness="0"
-                BackgroundColor="White">
-            <Border.Shadow>
-                <Shadow Brush="Black" Offset="0,10" Radius="20" Opacity="0.08" />
-            </Border.Shadow>
-            <Grid ColumnDefinitions="55, *">
-                <Label Grid.Column="0" Text="🔍" VerticalOptions="Center" HorizontalOptions="Center" FontSize="18" TextColor="#95A5A6" />
-                <Entry Grid.Column="1" x:Name="SearchBar" Placeholder="Hangi sınıfı arıyorsun?" PlaceholderColor="#95A5A6" 
-                       TextColor="#2C3E50" FontSize="15" VerticalOptions="Center" TextChanged="OnSearchBarTextChanged" />
+        <VerticalStackLayout Grid.Row="1" Spacing="8">
+            <Border Margin="15,-28,15,0"
+                    HeightRequest="55"
+                    StrokeShape="RoundRectangle 28"
+                    StrokeThickness="0"
+                    BackgroundColor="White">
+                <Border.Shadow>
+                    <Shadow Brush="Black" Offset="0,10" Radius="20" Opacity="0.08" />
+                </Border.Shadow>
+                <Grid ColumnDefinitions="55, *">
+                    <Label Grid.Column="0" Text="🔍" VerticalOptions="Center" HorizontalOptions="Center" FontSize="18" TextColor="#95A5A6" />
+                    <Entry Grid.Column="1" x:Name="SearchBar" Placeholder="Hangi sınıfı arıyorsun?" PlaceholderColor="#95A5A6"
+                           TextColor="#2C3E50" FontSize="15" VerticalOptions="Center" TextChanged="OnSearchBarTextChanged" />
+                </Grid>
+            </Border>
+
+            <!-- Randevu, Müsaitlik ve Bildirim butonları -->
+            <Grid ColumnDefinitions="*, *, *" Margin="15,0,15,5" ColumnSpacing="8">
+                <Border Grid.Column="0" StrokeShape="RoundRectangle 12" StrokeThickness="0"
+                        BackgroundColor="#2980B9" Padding="8,6" HeightRequest="36">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnRandevularTapped" />
+                    </Border.GestureRecognizers>
+                    <Label Text="Randevular" FontSize="12" TextColor="White" FontFamily="OpenSansSemibold"
+                           HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border>
+                <Border Grid.Column="1" StrokeShape="RoundRectangle 12" StrokeThickness="0"
+                        BackgroundColor="#8E44AD" Padding="8,6" HeightRequest="36">
+                    <Border.GestureRecognizers>
+                        <TapGestureRecognizer Tapped="OnMusaitlikTapped" />
+                    </Border.GestureRecognizers>
+                    <Label Text="Müsaitlik" FontSize="12" TextColor="White" FontFamily="OpenSansSemibold"
+                           HorizontalOptions="Center" VerticalOptions="Center" />
+                </Border>
+                <Grid Grid.Column="2">
+                    <Border StrokeShape="RoundRectangle 12" StrokeThickness="0"
+                            BackgroundColor="#E67E22" Padding="8,6" HeightRequest="36">
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnBildirimlerTapped" />
+                        </Border.GestureRecognizers>
+                        <Label Text="Bildirimler" FontSize="12" TextColor="White" FontFamily="OpenSansSemibold"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                    <Border x:Name="BildirimBadge" StrokeShape="RoundRectangle 8" StrokeThickness="0"
+                            BackgroundColor="#E74C3C" WidthRequest="16" HeightRequest="16"
+                            HorizontalOptions="End" VerticalOptions="Start" Margin="0,-6,-6,0"
+                            IsVisible="False">
+                        <Label x:Name="BildirimSayiLabel" Text="" FontSize="8" TextColor="White"
+                               HorizontalOptions="Center" VerticalOptions="Center" />
+                    </Border>
+                </Grid>
             </Grid>
-        </Border>
+        </VerticalStackLayout>
 
         <CollectionView x:Name="ClassCollection" Grid.Row="2" Margin="15,0" SelectionMode="None">
             <CollectionView.ItemsLayout>

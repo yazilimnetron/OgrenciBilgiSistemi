@@ -6,13 +6,15 @@ namespace OgrenciBilgiSistemi.Mobil.Views
     public partial class VeliAnaSayfaView : ContentPage
     {
         private readonly VeliService _veliService;
+        private readonly BildirimService _bildirimService;
 
-        public VeliAnaSayfaView(VeliService veliService)
+        public VeliAnaSayfaView(VeliService veliService, BildirimService bildirimService)
         {
             try
             {
                 InitializeComponent();
                 _veliService = veliService;
+                _bildirimService = bildirimService;
             }
             catch (Exception ex)
             {
@@ -33,12 +35,33 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                 CocukSayisiLabel.Text = cocuklar.Count > 0
                     ? $"{cocuklar.Count} çocuk kayıtlı"
                     : "Kayıtlı öğrenci bulunamadı";
+
+                // Okunmamış bildirim sayısını güncelle
+                await BildirimBadgeGuncelle();
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"VeliAnaSayfa Yükleme Hatası: {ex.Message}");
                 CocukSayisiLabel.Text = "Veriler yüklenemedi";
             }
+        }
+
+        private async Task BildirimBadgeGuncelle()
+        {
+            try
+            {
+                var sayi = await _bildirimService.OkunmamisSayisiGetir();
+                if (sayi > 0)
+                {
+                    BildirimBadge.IsVisible = true;
+                    BildirimSayiLabel.Text = sayi > 9 ? "9+" : sayi.ToString();
+                }
+                else
+                {
+                    BildirimBadge.IsVisible = false;
+                }
+            }
+            catch { }
         }
 
         private async void OnCocukTapped(object sender, TappedEventArgs e)
@@ -54,6 +77,18 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             {
                 System.Diagnostics.Debug.WriteLine($"Öğrenci Detay Hatası: {ex.Message}");
             }
+        }
+
+        private async void OnRandevularTapped(object sender, TappedEventArgs e)
+        {
+            await Navigation.PushAsync(new RandevuListeView(
+                Application.Current.MainPage.Handler.MauiContext.Services.GetService<RandevuService>()));
+        }
+
+        private async void OnBildirimlerTapped(object sender, TappedEventArgs e)
+        {
+            await Navigation.PushAsync(new BildirimListeView(
+                Application.Current.MainPage.Handler.MauiContext.Services.GetService<BildirimService>()));
         }
     }
 }

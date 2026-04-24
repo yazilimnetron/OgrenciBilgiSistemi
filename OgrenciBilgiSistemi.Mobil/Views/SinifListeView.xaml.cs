@@ -6,6 +6,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
 #endregion
 
 namespace OgrenciBilgiSistemi.Mobil.Views
@@ -61,6 +62,9 @@ namespace OgrenciBilgiSistemi.Mobil.Views
 
                 // Verileri yükle (Task sonucunu beklemeden başlatıyoruz)
                 _ = LoadClassesAsync();
+
+                // Okunmamış bildirim sayısını güncelle
+                _ = BildirimBadgeGuncelle();
             }
             catch (Exception ex)
             {
@@ -160,6 +164,48 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                 await DisplayAlert("Hata", "Öğrenci listesi açılırken bir sorun oluştu.", "Tamam");
                 System.Diagnostics.Debug.WriteLine($"Navigasyon Hatası: {ex.Message}");
             }
+        }
+        #endregion
+
+        #region Randevu ve Bildirim Navigasyon
+        private async Task BildirimBadgeGuncelle()
+        {
+            try
+            {
+                var bildirimService = Application.Current.MainPage.Handler.MauiContext.Services.GetService<BildirimService>();
+                var sayi = await bildirimService.OkunmamisSayisiGetir();
+                MainThread.BeginInvokeOnMainThread(() =>
+                {
+                    if (sayi > 0)
+                    {
+                        BildirimBadge.IsVisible = true;
+                        BildirimSayiLabel.Text = sayi > 9 ? "9+" : sayi.ToString();
+                    }
+                    else
+                    {
+                        BildirimBadge.IsVisible = false;
+                    }
+                });
+            }
+            catch { }
+        }
+
+        private async void OnRandevularTapped(object sender, TappedEventArgs e)
+        {
+            var randevuService = Application.Current.MainPage.Handler.MauiContext.Services.GetService<RandevuService>();
+            await Navigation.PushAsync(new RandevuListeView(randevuService));
+        }
+
+        private async void OnMusaitlikTapped(object sender, TappedEventArgs e)
+        {
+            var musaitlikService = Application.Current.MainPage.Handler.MauiContext.Services.GetService<MusaitlikService>();
+            await Navigation.PushAsync(new MusaitlikYonetimView(musaitlikService));
+        }
+
+        private async void OnBildirimlerTapped(object sender, TappedEventArgs e)
+        {
+            var bildirimService = Application.Current.MainPage.Handler.MauiContext.Services.GetService<BildirimService>();
+            await Navigation.PushAsync(new BildirimListeView(bildirimService));
         }
         #endregion
     }

@@ -90,10 +90,6 @@ namespace OgrenciBilgiSistemi.Models
 
         [NotMapped]
         [ValidateNever]
-        public List<SelectListItem> Ogretmenler { get; set; } = new();
-
-        [NotMapped]
-        [ValidateNever]
         public List<SelectListItem> Birimler { get; set; } = new();
     }
 }

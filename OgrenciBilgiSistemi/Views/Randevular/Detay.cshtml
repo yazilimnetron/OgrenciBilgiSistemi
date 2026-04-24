@@ -1,0 +1,87 @@
+@model OgrenciBilgiSistemi.Models.RandevuModel
+@using OgrenciBilgiSistemi.Shared.Enums
+
+@{
+    ViewData["Title"] = "Randevu Detay";
+}
+
+<div class="viewport-scroller">
+    <div class="fixed-canvas">
+        <div class="container py-4">
+            <div class="row justify-content-center">
+                <div class="col-8">
+                    <div class="card rounded-3 border">
+                        <div class="card-header bg-primary text-white text-center">
+                            <h4 class="fw-bold mb-0">Randevu Detayı</h4>
+                        </div>
+                        <div class="card-body p-4">
+                            <dl class="row mb-0">
+                                <dt class="col-4">Tarih</dt>
+                                <dd class="col-8">@Model.RandevuTarihi.ToString("dd.MM.yyyy HH:mm")</dd>
+
+                                <dt class="col-4">Süre</dt>
+                                <dd class="col-8">@Model.SureDakika dakika</dd>
+
+                                <dt class="col-4">Öğretmen</dt>
+                                <dd class="col-8">@Model.Ogretmen?.KullaniciAdi</dd>
+
+                                <dt class="col-4">Veli</dt>
+                                <dd class="col-8">@Model.Veli?.KullaniciAdi</dd>
+
+                                <dt class="col-4">Öğrenci</dt>
+                                <dd class="col-8">@(Model.Ogrenci?.OgrenciAdSoyad ?? "-")</dd>
+
+                                <dt class="col-4">Durum</dt>
+                                <dd class="col-8">
+                                    @switch (Model.Durum)
+                                    {
+                                        case RandevuDurumu.Beklemede:
+                                            <span class="badge bg-warning text-dark">Beklemede</span>
+                                            break;
+                                        case RandevuDurumu.Onaylandi:
+                                            <span class="badge bg-success">Onaylandı</span>
+                                            break;
+                                        case RandevuDurumu.Reddedildi:
+                                            <span class="badge bg-danger">Reddedildi</span>
+                                            break;
+                                        case RandevuDurumu.IptalEdildi:
+                                            <span class="badge bg-secondary">İptal Edildi</span>
+                                            break;
+                                        case RandevuDurumu.Tamamlandi:
+                                            <span class="badge bg-info">Tamamlandı</span>
+                                            break;
+                                    }
+                                </dd>
+
+                                <dt class="col-4">Oluşturan</dt>
+                                <dd class="col-8">@(Model.OgretmenTarafindanOlusturuldu ? "Öğretmen" : "Veli")</dd>
+
+                                <dt class="col-4">Not</dt>
+                                <dd class="col-8">@(Model.Not ?? "-")</dd>
+
+                                <dt class="col-4">Oluşturulma</dt>
+                                <dd class="col-8">@Model.OlusturulmaTarihi.ToString("dd.MM.yyyy HH:mm")</dd>
+                            </dl>
+
+                            <div class="d-flex justify-content-between mt-4">
+                                <a asp-action="Index" class="btn btn-outline-secondary">
+                                    <i class="bi bi-arrow-left"></i> Geri Dön
+                                </a>
+                                @if (Model.Durum == RandevuDurumu.Beklemede || Model.Durum == RandevuDurumu.Onaylandi)
+                                {
+                                    <form method="post" asp-action="IptalEt" asp-route-id="@Model.RandevuId">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn btn-danger"
+                                                onclick="return confirm('Bu randevuyu iptal etmek istediğinize emin misiniz?')">
+                                            <i class="bi bi-x-circle"></i> İptal Et
+                                        </button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

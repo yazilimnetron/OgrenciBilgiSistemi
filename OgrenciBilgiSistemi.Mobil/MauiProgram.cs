@@ -33,6 +33,9 @@ namespace OgrenciBilgiSistemi.Mobil
             builder.Services.AddSingleton<VeliService>();
             builder.Services.AddSingleton<GuncellemeKontrolService>();
             builder.Services.AddSingleton<OkulKayitServisi>();
+            builder.Services.AddSingleton<RandevuService>();
+            builder.Services.AddSingleton<MusaitlikService>();
+            builder.Services.AddSingleton<BildirimService>();
 
             // Sayfa kayıtları
             // GirisView ve SinifListeView Shell tarafından DI ile çözümleniyor
@@ -40,6 +43,11 @@ namespace OgrenciBilgiSistemi.Mobil
             builder.Services.AddTransient<SinifListeView>();
             builder.Services.AddTransient<ServisEkraniView>();
             builder.Services.AddTransient<VeliAnaSayfaView>();
+            builder.Services.AddTransient<RandevuListeView>();
+            builder.Services.AddTransient<RandevuDetayView>();
+            builder.Services.AddTransient<RandevuOlusturView>();
+            builder.Services.AddTransient<MusaitlikYonetimView>();
+            builder.Services.AddTransient<BildirimListeView>();
 
 #if DEBUG
             builder.Logging.AddDebug();

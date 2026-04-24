@@ -1,0 +1,82 @@
+@model List<OgrenciBilgiSistemi.Models.OgretmenMusaitlikModel>
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@{
+    ViewData["Title"] = "Öğretmen Müsaitlik";
+    var ogretmenId = ViewData["OgretmenId"] as int?;
+    var ogretmenler = ViewData["Ogretmenler"] as List<SelectListItem> ?? new();
+}
+
+<div class="viewport-scroller">
+    <div class="fixed-canvas">
+        <div class="card border rounded-4 p-4 mt-4">
+
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="text-primary fw-bold mb-0">@ViewData["Title"]</h3>
+                <a class="btn btn-success fw-semibold"
+                   asp-action="Ekle" asp-route-ogretmenId="@ogretmenId">
+                    <i class="bi bi-plus-lg"></i> Müsaitlik Ekle
+                </a>
+            </div>
+
+            @if (TempData["Hata"] is string hata)
+            {
+                <div class="alert alert-danger">@hata</div>
+            }
+
+            <!-- Öğretmen seçimi -->
+            <form method="get" asp-action="Index"
+                  class="d-flex align-items-end gap-3 bg-body-tertiary border rounded-3 p-3 mb-3">
+                <div>
+                    <label class="form-label small fw-semibold">Öğretmen</label>
+                    <select name="ogretmenId" class="form-select" onchange="this.form.submit()">
+                        <option value="">-- Öğretmen Seçiniz --</option>
+                        @foreach (var o in ogretmenler)
+                        {
+                            <option value="@o.Value" selected="@(ogretmenId?.ToString() == o.Value)">@o.Text</option>
+                        }
+                    </select>
+                </div>
+            </form>
+
+            @if (ogretmenId.HasValue)
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Gün</th>
+                                <th>Başlangıç</th>
+                                <th>Bitiş</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model.Count == 0)
+                            {
+                                <tr><td colspan="4" class="text-center text-muted">Müsaitlik tanımlanmamış.</td></tr>
+                            }
+                            @foreach (var m in Model)
+                            {
+                                <tr>
+                                    <td>@m.Gun</td>
+                                    <td>@m.BaslangicSaati.ToString(@"hh\:mm")</td>
+                                    <td>@m.BitisSaati.ToString(@"hh\:mm")</td>
+                                    <td>
+                                        <form method="post" asp-action="Sil" asp-route-id="@m.MusaitlikId" asp-route-ogretmenId="@ogretmenId" class="d-inline">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-outline-danger"
+                                                    onclick="return confirm('Silmek istediğinize emin misiniz?')">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

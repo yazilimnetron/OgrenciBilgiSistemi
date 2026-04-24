@@ -91,7 +91,7 @@ builder.Services.AddScoped<IGecisService, GecisService>();
 builder.Services.AddSingleton<IZKTecoService, ZKTecoService>();
 builder.Services.AddScoped<IKartOkuService, KartOkuService>();
 builder.Services.AddScoped<IYemekhaneService, YemekhaneService>();
-builder.Services.AddSingleton<ICihazService, CihazService>();
+builder.Services.AddScoped<ICihazService, CihazService>();
 builder.Services.AddScoped<IOgrenciService, OgrenciService>();
 builder.Services.AddScoped<IVeliProfilService, VeliProfilService>();
 builder.Services.AddScoped<IServisProfilService, ServisProfilService>();
@@ -101,6 +101,9 @@ builder.Services.AddScoped<IBirimService, BirimService>();
 builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IZiyaretciService, ZiyaretciService>();
 builder.Services.AddScoped<IKitapService, KitapService>();
+builder.Services.AddScoped<IRandevuService, RandevuService>();
+builder.Services.AddScoped<IOgretmenMusaitlikService, OgretmenMusaitlikService>();
+builder.Services.AddScoped<IBildirimService, BildirimService>();
 builder.Services.AddScoped<IKitapDetayService, KitapDetayService>();
 builder.Services.AddScoped<IKullaniciService, KullaniciService>();
 

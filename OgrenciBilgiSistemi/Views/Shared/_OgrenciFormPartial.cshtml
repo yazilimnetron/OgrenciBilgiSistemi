@@ -17,7 +17,6 @@
     var formId = "ogrenciForm";
     var submitBtnId = "submitBtn";
 
-    var ogretmenler = Model.Ogretmenler ?? new List<SelectListItem>();
     var birimler = Model.Birimler ?? Enumerable.Empty<SelectListItem>();
     var servisler = Model.Servisler ?? new List<SelectListItem>();
     var veliler = Model.Veliler ?? new List<SelectListItem>();
@@ -90,14 +89,6 @@
                                             <span asp-validation-for="Ogrenci.OgrenciKartNo" class="text-danger"></span>
                                         </div>
 
-                                        <!-- Öğretmen -->
-                                        <div class="mb-3">
-                                            <label asp-for="Ogrenci.OgretmenId" class="form-label fw-semibold">Öğretmen</label>
-                                            <select asp-for="Ogrenci.OgretmenId" class="form-select" asp-items="ogretmenler">
-                                                <option value="">-- Seçiniz --</option>
-                                            </select>
-                                            <span asp-validation-for="Ogrenci.OgretmenId" class="text-danger"></span>
-                                        </div>
                                     </div>
 
                                     <!-- Sağ Sütun -->

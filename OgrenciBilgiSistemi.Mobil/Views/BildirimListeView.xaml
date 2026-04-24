@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:views="clr-namespace:OgrenciBilgiSistemi.Mobil.Views"
+             x:Class="OgrenciBilgiSistemi.Mobil.Views.BildirimListeView"
+             Title="Bildirimler"
+             Shell.NavBarIsVisible="False"
+             BackgroundColor="#F0F2F5">
+
+    <Grid RowDefinitions="125, Auto, *">
+
+        <Border Grid.Row="0" StrokeThickness="0" BackgroundColor="#E67E22" VerticalOptions="FillAndExpand">
+            <Border.Shadow>
+                <Shadow Brush="#E67E22" Offset="0,4" Radius="15" Opacity="0.4" />
+            </Border.Shadow>
+            <Grid>
+                <views:AnaBaslikView x:Name="MyHeader" ShowBack="True" ShowProfile="False" />
+                <VerticalStackLayout Spacing="2" VerticalOptions="End" Margin="20,0,20,35">
+                    <Label Text="Bildirimler" FontSize="18" FontFamily="OpenSansSemibold" TextColor="White" />
+                    <Label x:Name="AltBaslikLabel" Text="" FontSize="14" TextColor="White" Opacity="0.8" />
+                </VerticalStackLayout>
+            </Grid>
+        </Border>
+
+        <!-- Tümünü okundu işaretle -->
+        <Border Grid.Row="1" Margin="15,-28,15,10" HeightRequest="48" StrokeShape="RoundRectangle 24"
+                StrokeThickness="0" BackgroundColor="White">
+            <Border.Shadow>
+                <Shadow Brush="Black" Offset="0,10" Radius="20" Opacity="0.08" />
+            </Border.Shadow>
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnTumunuOkunduClicked" />
+            </Border.GestureRecognizers>
+            <HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
+                <Label Text="Tümünü Okundu İşaretle" FontSize="14" FontFamily="OpenSansSemibold" TextColor="#E67E22" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+        </Border>
+
+        <CollectionView Grid.Row="2" x:Name="BildirimCollection" Margin="15,0" SelectionMode="None"
+                        RemainingItemsThreshold="3" RemainingItemsThresholdReached="OnDahaFazlaYukle">
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="8" />
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Border StrokeShape="RoundRectangle 14" StrokeThickness="0" Padding="0"
+                            BackgroundColor="{Binding ArkaplanRenk}">
+                        <Border.Shadow>
+                            <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.05" />
+                        </Border.Shadow>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnBildirimTapped" CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <Grid ColumnDefinitions="8, *, Auto" Padding="0,14">
+                            <BoxView Grid.Column="0" BackgroundColor="{Binding SolCizgiRenk}" WidthRequest="8" HorizontalOptions="Start" />
+                            <VerticalStackLayout Grid.Column="1" Spacing="4" Margin="12,0">
+                                <Label Text="{Binding Bildirim.Mesaj}" FontSize="14" TextColor="#2C3E50"
+                                       LineBreakMode="WordWrap" MaxLines="3" />
+                                <Label Text="{Binding Bildirim.TarihMetni}" FontSize="11" TextColor="#95A5A6" />
+                            </VerticalStackLayout>
+                            <BoxView Grid.Column="2" WidthRequest="10" HeightRequest="10" CornerRadius="5"
+                                     BackgroundColor="#E67E22" VerticalOptions="Center" Margin="0,0,15,0"
+                                     IsVisible="{Binding OkunmadiMi}" />
+                        </Grid>
+                    </Border>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+            <CollectionView.EmptyView>
+                <VerticalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="10" Padding="20">
+                    <Label Text="Henüz bildiriminiz bulunmuyor." FontSize="16" TextColor="#95A5A6" HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+        </CollectionView>
+    </Grid>
+</ContentPage>

@@ -174,6 +174,102 @@ namespace OgrenciBilgiSistemi.Mobil.Services
         }
 
         /// <summary>
+        /// POST isteği gönderir (HttpContent ile). 401 alınırsa token yeniler ve tekrar dener.
+        /// </summary>
+        protected async Task<HttpResponseMessage> PostAsync(string url, HttpContent content)
+        {
+            YetkiBasliginiYenile();
+            var response = await _httpClient.PostAsync(url, content);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                var yenilendi = await TokenYenilemeAsync();
+                if (yenilendi)
+                {
+                    YetkiBasliginiYenile();
+                    response = await _httpClient.PostAsync(url, content);
+                }
+                else
+                {
+                    await KullaniciOturum.OturumTemizleAsync();
+                    OturumSuresiDoldu?.Invoke();
+                }
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"[API HATASI] {response.StatusCode}: {errorContent}");
+            }
+
+            return response;
+        }
+
+        /// <summary>
+        /// PUT isteği gönderir. 401 alınırsa token yeniler ve tekrar dener.
+        /// </summary>
+        protected async Task<HttpResponseMessage> PutAsync(string url, HttpContent content)
+        {
+            YetkiBasliginiYenile();
+            var response = await _httpClient.PutAsync(url, content);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                var yenilendi = await TokenYenilemeAsync();
+                if (yenilendi)
+                {
+                    YetkiBasliginiYenile();
+                    response = await _httpClient.PutAsync(url, content);
+                }
+                else
+                {
+                    await KullaniciOturum.OturumTemizleAsync();
+                    OturumSuresiDoldu?.Invoke();
+                }
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"[API HATASI] {response.StatusCode}: {errorContent}");
+            }
+
+            return response;
+        }
+
+        /// <summary>
+        /// DELETE isteği gönderir. 401 alınırsa token yeniler ve tekrar dener.
+        /// </summary>
+        protected async Task<HttpResponseMessage> DeleteAsync(string url)
+        {
+            YetkiBasliginiYenile();
+            var response = await _httpClient.DeleteAsync(url);
+
+            if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
+            {
+                var yenilendi = await TokenYenilemeAsync();
+                if (yenilendi)
+                {
+                    YetkiBasliginiYenile();
+                    response = await _httpClient.DeleteAsync(url);
+                }
+                else
+                {
+                    await KullaniciOturum.OturumTemizleAsync();
+                    OturumSuresiDoldu?.Invoke();
+                }
+            }
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                System.Diagnostics.Debug.WriteLine($"[API HATASI] {response.StatusCode}: {errorContent}");
+            }
+
+            return response;
+        }
+
+        /// <summary>
         /// Refresh token kullanarak yeni access token alır.
         /// Eş zamanlı birden fazla refresh isteğini önler.
         /// </summary>
