@@ -76,79 +76,54 @@ namespace OgrenciBilgiSistemi.Api.Services
 
         public async Task<List<RandevuSlotModel>> RandevuSlotlariGetir(int ogretmenId, DateTime baslangicTarih, DateTime bitisTarih)
         {
-            var takvimler = new List<OgretmenRandevuTakvimModel>();
-            const string takvimQuery = @"
-                SELECT OgretmenRandevuId, OgretmenKullaniciId, Tarih, BaslangicSaati, BitisSaati
-                FROM OgretmenRandevular
-                WHERE OgretmenKullaniciId = @ogretmenId AND IsDeleted = 0
-                  AND Tarih BETWEEN @baslangic AND @bitis
-                ORDER BY Tarih, BaslangicSaati";
-
-            await using var conn = new SqlConnection(ConnectionString);
-            await using var cmd = new SqlCommand(takvimQuery, conn);
-            cmd.Parameters.AddWithValue("@ogretmenId", ogretmenId);
-            cmd.Parameters.AddWithValue("@baslangic", baslangicTarih.Date);
-            cmd.Parameters.AddWithValue("@bitis", bitisTarih.Date);
-            await conn.OpenAsync();
-
-            await using var reader = await cmd.ExecuteReaderAsync();
-            while (await reader.ReadAsync())
+            try
             {
-                takvimler.Add(new OgretmenRandevuTakvimModel
+                const string query = @"
+                    SELECT t.Tarih, t.BaslangicSaati, t.BitisSaati, t.OgretmenKullaniciId
+                    FROM OgretmenRandevular t
+                    WHERE t.OgretmenKullaniciId = @ogretmenId AND t.IsDeleted = 0
+                      AND t.Tarih BETWEEN @baslangic AND @bitis
+                      AND NOT EXISTS (
+                          SELECT 1 FROM Randevular r
+                          WHERE r.OgretmenKullaniciId = t.OgretmenKullaniciId
+                            AND r.IsDeleted = 0 AND r.Durum IN (0, 1)
+                            AND CAST(r.RandevuTarihi AS DATE) = t.Tarih
+                            AND CAST(r.RandevuTarihi AS TIME) = t.BaslangicSaati
+                      )
+                    ORDER BY t.Tarih, t.BaslangicSaati";
+
+                await using var conn = new SqlConnection(ConnectionString);
+                await using var cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@ogretmenId", ogretmenId);
+                cmd.Parameters.AddWithValue("@baslangic", baslangicTarih.Date);
+                cmd.Parameters.AddWithValue("@bitis", bitisTarih.Date);
+                await conn.OpenAsync();
+
+                var sonuc = new List<RandevuSlotModel>();
+                await using var reader = await cmd.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
                 {
-                    OgretmenRandevuId = reader.GetInt32(reader.GetOrdinal("OgretmenRandevuId")),
-                    OgretmenKullaniciId = reader.GetInt32(reader.GetOrdinal("OgretmenKullaniciId")),
-                    Tarih = reader.GetDateTime(reader.GetOrdinal("Tarih")),
-                    BaslangicSaati = reader.GetTimeSpan(reader.GetOrdinal("BaslangicSaati")).ToString(@"hh\:mm"),
-                    BitisSaati = reader.GetTimeSpan(reader.GetOrdinal("BitisSaati")).ToString(@"hh\:mm")
-                });
-            }
-            await reader.CloseAsync();
+                    var tarih = reader.GetDateTime(reader.GetOrdinal("Tarih"));
+                    var baslangic = reader.GetTimeSpan(reader.GetOrdinal("BaslangicSaati"));
 
-            var doluSlotlar = new HashSet<DateTime>();
-            const string randevuQuery = @"
-                SELECT RandevuTarihi, SureDakika FROM Randevular
-                WHERE OgretmenKullaniciId = @ogretmenId AND IsDeleted = 0
-                  AND Durum IN (0, 1)
-                  AND RandevuTarihi BETWEEN @baslangic AND @bitis";
-
-            await using var cmd2 = new SqlCommand(randevuQuery, conn);
-            cmd2.Parameters.AddWithValue("@ogretmenId", ogretmenId);
-            cmd2.Parameters.AddWithValue("@baslangic", baslangicTarih);
-            cmd2.Parameters.AddWithValue("@bitis", bitisTarih);
-
-            await using var reader2 = await cmd2.ExecuteReaderAsync();
-            while (await reader2.ReadAsync())
-            {
-                var tarih = reader2.GetDateTime(0);
-                var sure = reader2.GetInt32(1);
-                for (int i = 0; i < sure; i += 30)
-                    doluSlotlar.Add(tarih.AddMinutes(i));
-            }
-
-            var sonuc = new List<RandevuSlotModel>();
-            foreach (var t in takvimler)
-            {
-                var baslangic = TimeSpan.Parse(t.BaslangicSaati);
-                var bitis = TimeSpan.Parse(t.BitisSaati);
-
-                for (var saat = baslangic; saat + TimeSpan.FromMinutes(30) <= bitis; saat += TimeSpan.FromMinutes(30))
-                {
-                    var slotTarih = t.Tarih.Date + saat;
-                    if (slotTarih <= DateTime.Now) continue;
-                    if (doluSlotlar.Contains(slotTarih)) continue;
+                    if (tarih.Date + baslangic <= DateTime.Now) continue;
 
                     sonuc.Add(new RandevuSlotModel
                     {
-                        Tarih = slotTarih,
-                        BaslangicSaati = saat.ToString(@"hh\:mm"),
-                        BitisSaati = (saat + TimeSpan.FromMinutes(30)).ToString(@"hh\:mm"),
-                        OgretmenKullaniciId = ogretmenId
+                        Tarih = tarih.Date + baslangic,
+                        BaslangicSaati = baslangic.ToString(@"hh\:mm"),
+                        BitisSaati = reader.GetTimeSpan(reader.GetOrdinal("BitisSaati")).ToString(@"hh\:mm"),
+                        OgretmenKullaniciId = reader.GetInt32(reader.GetOrdinal("OgretmenKullaniciId"))
                     });
                 }
-            }
 
-            return sonuc.OrderBy(s => s.Tarih).ToList();
+                return sonuc;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SLOT HATASI]: {ex.Message}");
+                return new();
+            }
         }
     }
 }

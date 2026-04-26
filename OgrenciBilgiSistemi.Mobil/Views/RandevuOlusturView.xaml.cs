@@ -29,7 +29,6 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             _ogrenciService = Application.Current.MainPage.Handler.MauiContext.Services.GetService<OgrenciService>();
             _ogretmenListeService = Application.Current.MainPage.Handler.MauiContext.Services.GetService<OgretmenListeService>();
 
-            SurePicker.SelectedIndex = 1; // 30 dakika varsayılan
             TarihSecici.MinimumDate = DateTime.Today;
         }
 
@@ -177,18 +176,18 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             {
                 int? ogrenciId = null;
                 DateTime randevuTarihi;
-                int sureDakika = SureSecimindenDakika();
+                int sureDakika;
 
                 if (KullaniciOturum.VeliMi)
                 {
                     if (_karsiTarafId == null)
                     {
-                        await DisplayAlert("Uyarı", "Lütfen bir öğrenci seçin.", "Tamam");
+                        await DisplayAlert("Uyarı", "Lütfen bir öğretmen seçin.", "Tamam");
                         return;
                     }
                     if (_secilenSlot == null)
                     {
-                        await DisplayAlert("Uyarı", "Lütfen müsait bir saat seçin.", "Tamam");
+                        await DisplayAlert("Uyarı", "Lütfen bir randevu saati seçin.", "Tamam");
                         return;
                     }
 
@@ -198,6 +197,8 @@ namespace OgrenciBilgiSistemi.Mobil.Views
 
                     randevuTarihi = _secilenSlot.Tarih.Date +
                         TimeSpan.Parse(_secilenSlot.BaslangicSaati);
+                    sureDakika = (int)(TimeSpan.Parse(_secilenSlot.BitisSaati) -
+                        TimeSpan.Parse(_secilenSlot.BaslangicSaati)).TotalMinutes;
                 }
                 else
                 {
@@ -212,6 +213,7 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                     _karsiTarafId = secilenOgrenci.VeliId;
                     ogrenciId = secilenOgrenci.OgrenciId;
                     randevuTarihi = TarihSecici.Date + SaatSecici.Time;
+                    sureDakika = 30;
                 }
 
                 string not = string.IsNullOrWhiteSpace(NotEditor.Text) ? null : NotEditor.Text.Trim();
@@ -240,16 +242,5 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             }
         }
 
-        private int SureSecimindenDakika()
-        {
-            return SurePicker.SelectedIndex switch
-            {
-                0 => 15,
-                1 => 30,
-                2 => 45,
-                3 => 60,
-                _ => 30
-            };
-        }
     }
 }

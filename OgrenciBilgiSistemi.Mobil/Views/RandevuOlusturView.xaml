@@ -90,21 +90,6 @@
                     </VerticalStackLayout>
                 </Border>
 
-                <!-- Süre seçimi -->
-                <Border StrokeShape="RoundRectangle 16" StrokeThickness="0" BackgroundColor="White" Padding="20">
-                    <VerticalStackLayout Spacing="10">
-                        <Label Text="Görüşme Süresi" FontSize="13" FontAttributes="Bold" TextColor="#7F8C8D" />
-                        <Picker x:Name="SurePicker" FontSize="14" TextColor="#2C3E50">
-                            <Picker.Items>
-                                <x:String>15 dakika</x:String>
-                                <x:String>30 dakika</x:String>
-                                <x:String>45 dakika</x:String>
-                                <x:String>60 dakika</x:String>
-                            </Picker.Items>
-                        </Picker>
-                    </VerticalStackLayout>
-                </Border>
-
                 <!-- Not -->
                 <Border StrokeShape="RoundRectangle 16" StrokeThickness="0" BackgroundColor="White" Padding="20">
                     <VerticalStackLayout Spacing="10">
