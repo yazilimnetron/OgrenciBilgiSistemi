@@ -196,10 +196,10 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             await Navigation.PushAsync(new RandevuListeView(randevuService));
         }
 
-        private async void OnMusaitlikTapped(object sender, TappedEventArgs e)
+        private async void OnRandevuTakvimTapped(object sender, TappedEventArgs e)
         {
-            var musaitlikService = Application.Current.MainPage.Handler.MauiContext.Services.GetService<MusaitlikService>();
-            await Navigation.PushAsync(new MusaitlikYonetimView(musaitlikService));
+            var ogretmenRandevuService = Application.Current.MainPage.Handler.MauiContext.Services.GetService<OgretmenRandevuService>();
+            await Navigation.PushAsync(new OgretmenRandevuYonetimView(ogretmenRandevuService));
         }
 
         private async void OnBildirimlerTapped(object sender, TappedEventArgs e)

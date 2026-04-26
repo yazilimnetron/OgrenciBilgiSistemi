@@ -5,16 +5,16 @@ using OgrenciBilgiSistemi.Api.Services;
 
 namespace OgrenciBilgiSistemi.Api.Controllers
 {
-    [Route("api/musaitlik")]
+    [Route("api/ogretmen-randevu")]
     [ApiController]
     [Authorize]
-    public class MusaitlikController : ControllerBase
+    public class OgretmenRandevuController : ControllerBase
     {
-        private readonly MusaitlikService _musaitlikService;
+        private readonly OgretmenRandevuService _ogretmenRandevuService;
 
-        public MusaitlikController(MusaitlikService musaitlikService)
+        public OgretmenRandevuController(OgretmenRandevuService ogretmenRandevuService)
         {
-            _musaitlikService = musaitlikService;
+            _ogretmenRandevuService = ogretmenRandevuService;
         }
 
         private int KullaniciId => int.Parse(User.FindFirst("kullaniciId")!.Value);
@@ -24,12 +24,12 @@ namespace OgrenciBilgiSistemi.Api.Controllers
         public async Task<IActionResult> Benim()
         {
             if (Rol != "Ogretmen") return Forbid();
-            var liste = await _musaitlikService.OgretmeninMusaitlikleriniGetir(KullaniciId);
+            var liste = await _ogretmenRandevuService.OgretmeninRandevuTakviminiGetir(KullaniciId);
             return Ok(liste);
         }
 
         [HttpPost]
-        public async Task<IActionResult> Ekle([FromBody] MusaitlikEkleDto dto)
+        public async Task<IActionResult> Ekle([FromBody] OgretmenRandevuEkleDto dto)
         {
             if (Rol != "Ogretmen") return Forbid();
             if (!ModelState.IsValid) return BadRequest(ModelState);
@@ -41,26 +41,29 @@ namespace OgrenciBilgiSistemi.Api.Controllers
             if (bitis <= baslangic)
                 return BadRequest("Bitiş saati başlangıçtan büyük olmalıdır.");
 
-            var id = await _musaitlikService.Ekle(KullaniciId, dto.Gun, baslangic, bitis);
-            return Ok(new { musaitlikId = id });
+            if (dto.Tarih.Date < DateTime.Today)
+                return BadRequest("Geçmiş tarih seçilemez.");
+
+            var id = await _ogretmenRandevuService.Ekle(KullaniciId, dto.Tarih, baslangic, bitis);
+            return Ok(new { ogretmenRandevuId = id });
         }
 
         [HttpDelete("{id}")]
         public async Task<IActionResult> Sil(int id)
         {
             if (Rol != "Ogretmen") return Forbid();
-            var basarili = await _musaitlikService.Sil(id, KullaniciId);
+            var basarili = await _ogretmenRandevuService.Sil(id, KullaniciId);
             if (!basarili) return NotFound();
-            return Ok(new { mesaj = "Müsaitlik silindi." });
+            return Ok(new { mesaj = "Randevu takvimi silindi." });
         }
 
         [HttpGet("ogretmen/{ogretmenId}/slotlar")]
-        public async Task<IActionResult> MusaitSlotlar(int ogretmenId, [FromQuery] DateTime? baslangic, [FromQuery] DateTime? bitis)
+        public async Task<IActionResult> RandevuSlotlar(int ogretmenId, [FromQuery] DateTime? baslangic, [FromQuery] DateTime? bitis)
         {
             var baslangicTarih = baslangic ?? DateTime.Today;
             var bitisTarih = bitis ?? DateTime.Today.AddDays(14);
 
-            var slotlar = await _musaitlikService.MusaitSlotlariGetir(ogretmenId, baslangicTarih, bitisTarih);
+            var slotlar = await _ogretmenRandevuService.RandevuSlotlariGetir(ogretmenId, baslangicTarih, bitisTarih);
             return Ok(slotlar);
         }
     }

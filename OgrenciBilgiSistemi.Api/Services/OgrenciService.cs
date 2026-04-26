@@ -301,7 +301,13 @@ namespace OgrenciBilgiSistemi.Api.Services
                     LEFT JOIN Birimler          u   ON s.BirimId        = u.BirimId
                     LEFT JOIN Kullanicilar      vk  ON s.VeliId         = vk.KullaniciId
                     LEFT JOIN VeliProfiller      p   ON s.VeliId         = p.KullaniciId
-                    LEFT JOIN Kullanicilar      t   ON s.OgretmenId     = t.KullaniciId
+                    OUTER APPLY (
+                        SELECT TOP 1 op.KullaniciId
+                        FROM OgretmenProfiller op
+                        WHERE op.BirimId = s.BirimId AND op.OgretmenDurum = 1
+                        ORDER BY op.KullaniciId
+                    ) sinifOgretmen
+                    LEFT JOIN Kullanicilar      t   ON sinifOgretmen.KullaniciId = t.KullaniciId
                     LEFT JOIN ServisProfiller    srv ON s.ServisId       = srv.KullaniciId
                     WHERE s.OgrenciId = @ogrenciId AND s.OgrenciDurum = 1";
 

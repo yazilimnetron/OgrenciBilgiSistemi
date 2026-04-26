@@ -33,7 +33,7 @@ namespace OgrenciBilgiSistemi.Data
         public DbSet<ServisYoklamaModel> ServisYoklamalar { get; set; }
 
         public DbSet<RandevuModel> Randevular { get; set; }
-        public DbSet<OgretmenMusaitlikModel> OgretmenMusaitlikler { get; set; }
+        public DbSet<OgretmenRandevuModel> OgretmenRandevular { get; set; }
         public DbSet<BildirimModel> Bildirimler { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -386,16 +386,16 @@ namespace OgrenciBilgiSistemi.Data
                 .HasDatabaseName("IX_Randevular_Tarih");
 
             // =========================
-            // OGRETMEN MUSAITLIK
+            // OGRETMEN RANDEVU TAKVIM
             // =========================
 
-            modelBuilder.Entity<OgretmenMusaitlikModel>()
+            modelBuilder.Entity<OgretmenRandevuModel>()
                 .HasOne(m => m.Ogretmen)
                 .WithMany()
                 .HasForeignKey(m => m.OgretmenKullaniciId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            modelBuilder.Entity<OgretmenMusaitlikModel>()
+            modelBuilder.Entity<OgretmenRandevuModel>()
                 .HasQueryFilter(m => !m.IsDeleted);
 
             // =========================
@@ -500,7 +500,7 @@ namespace OgrenciBilgiSistemi.Data
                 new MenuOgeModel { Id = 29, Baslik = "Veli İşlemleri", Controller = "Veliler", Action = "Index", AnaMenuId = 28, Sirala = 1 },
                 new MenuOgeModel { Id = 30, Baslik = "Randevular", Controller = null, Action = null, AnaMenuId = null, Sirala = 12 },
                 new MenuOgeModel { Id = 31, Baslik = "Randevu Listesi", Controller = "Randevular", Action = "Index", AnaMenuId = 30, Sirala = 1 },
-                new MenuOgeModel { Id = 32, Baslik = "Öğretmen Müsaitlik", Controller = "OgretmenMusaitlik", Action = "Index", AnaMenuId = 30, Sirala = 2 }
+                new MenuOgeModel { Id = 32, Baslik = "Öğretmen Randevu Takvimi", Controller = "OgretmenRandevu", Action = "Index", AnaMenuId = 30, Sirala = 2 }
             );
         }
     }

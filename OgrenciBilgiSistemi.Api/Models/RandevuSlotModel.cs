@@ -1,6 +1,6 @@
 namespace OgrenciBilgiSistemi.Api.Models
 {
-    public class MusaitSlotModel
+    public class RandevuSlotModel
     {
         public DateTime Tarih { get; set; }
         public string BaslangicSaati { get; set; } = string.Empty;

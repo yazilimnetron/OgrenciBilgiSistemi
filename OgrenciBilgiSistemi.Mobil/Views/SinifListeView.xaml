@@ -67,9 +67,9 @@
                 <Border Grid.Column="1" StrokeShape="RoundRectangle 12" StrokeThickness="0"
                         BackgroundColor="#8E44AD" Padding="8,6" HeightRequest="36">
                     <Border.GestureRecognizers>
-                        <TapGestureRecognizer Tapped="OnMusaitlikTapped" />
+                        <TapGestureRecognizer Tapped="OnRandevuTakvimTapped" />
                     </Border.GestureRecognizers>
-                    <Label Text="Müsaitlik" FontSize="12" TextColor="White" FontFamily="OpenSansSemibold"
+                    <Label Text="Randevu Takvimi" FontSize="12" TextColor="White" FontFamily="OpenSansSemibold"
                            HorizontalOptions="Center" VerticalOptions="Center" />
                 </Border>
                 <Grid Grid.Column="2">

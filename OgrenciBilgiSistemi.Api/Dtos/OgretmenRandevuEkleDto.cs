@@ -2,10 +2,10 @@ using System.ComponentModel.DataAnnotations;
 
 namespace OgrenciBilgiSistemi.Api.Dtos
 {
-    public class MusaitlikEkleDto
+    public class OgretmenRandevuEkleDto
     {
         [Required]
-        public int Gun { get; set; }
+        public DateTime Tarih { get; set; }
 
         [Required]
         public string BaslangicSaati { get; set; } = string.Empty;

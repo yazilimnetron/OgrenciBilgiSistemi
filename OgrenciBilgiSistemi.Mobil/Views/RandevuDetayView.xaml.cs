@@ -69,7 +69,8 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             if (!string.IsNullOrEmpty(_randevu.OgrenciAdSoyad))
             {
                 OgrenciLabel.Text = _randevu.OgrenciAdSoyad;
-                OgrenciSatir.IsVisible = true;
+                OgrenciSatirLabel.IsVisible = true;
+                OgrenciLabel.IsVisible = true;
             }
 
             if (!string.IsNullOrEmpty(_randevu.Not))

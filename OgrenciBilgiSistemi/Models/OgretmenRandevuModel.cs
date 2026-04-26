@@ -1,23 +1,23 @@
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using OgrenciBilgiSistemi.Shared.Enums;
 
 namespace OgrenciBilgiSistemi.Models
 {
-    public class OgretmenMusaitlikModel
+    public class OgretmenRandevuModel
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int MusaitlikId { get; set; }
+        public int OgretmenRandevuId { get; set; }
 
         [Required]
         [Display(Name = "Öğretmen")]
         public int OgretmenKullaniciId { get; set; }
 
         [Required]
-        [Display(Name = "Gün")]
-        public GunEnum Gun { get; set; }
+        [Display(Name = "Tarih")]
+        [DataType(DataType.Date)]
+        public DateTime Tarih { get; set; }
 
         [Required]
         [Display(Name = "Başlangıç Saati")]

@@ -34,7 +34,7 @@ namespace OgrenciBilgiSistemi.Mobil
             builder.Services.AddSingleton<GuncellemeKontrolService>();
             builder.Services.AddSingleton<OkulKayitServisi>();
             builder.Services.AddSingleton<RandevuService>();
-            builder.Services.AddSingleton<MusaitlikService>();
+            builder.Services.AddSingleton<OgretmenRandevuService>();
             builder.Services.AddSingleton<BildirimService>();
             builder.Services.AddSingleton<OgretmenListeService>();
 
@@ -47,7 +47,7 @@ namespace OgrenciBilgiSistemi.Mobil
             builder.Services.AddTransient<RandevuListeView>();
             builder.Services.AddTransient<RandevuDetayView>();
             builder.Services.AddTransient<RandevuOlusturView>();
-            builder.Services.AddTransient<MusaitlikYonetimView>();
+            builder.Services.AddTransient<OgretmenRandevuYonetimView>();
             builder.Services.AddTransient<BildirimListeView>();
 
 #if DEBUG

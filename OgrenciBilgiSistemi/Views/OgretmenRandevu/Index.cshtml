@@ -1,8 +1,8 @@
-@model List<OgrenciBilgiSistemi.Models.OgretmenMusaitlikModel>
+@model List<OgrenciBilgiSistemi.Models.OgretmenRandevuModel>
 @using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
-    ViewData["Title"] = "Öğretmen Müsaitlik";
+    ViewData["Title"] = "Öğretmen Randevu Takvimi";
     var ogretmenId = ViewData["OgretmenId"] as int?;
     var ogretmenler = ViewData["Ogretmenler"] as List<SelectListItem> ?? new();
 }
@@ -15,7 +15,7 @@
                 <h3 class="text-primary fw-bold mb-0">@ViewData["Title"]</h3>
                 <a class="btn btn-success fw-semibold"
                    asp-action="Ekle" asp-route-ogretmenId="@ogretmenId">
-                    <i class="bi bi-plus-lg"></i> Müsaitlik Ekle
+                    <i class="bi bi-plus-lg"></i> Randevu Saati Ekle
                 </a>
             </div>
 
@@ -45,7 +45,7 @@
                     <table class="table table-hover align-middle">
                         <thead class="table-light">
                             <tr>
-                                <th>Gün</th>
+                                <th>Tarih</th>
                                 <th>Başlangıç</th>
                                 <th>Bitiş</th>
                                 <th></th>
@@ -54,16 +54,16 @@
                         <tbody>
                             @if (Model.Count == 0)
                             {
-                                <tr><td colspan="4" class="text-center text-muted">Müsaitlik tanımlanmamış.</td></tr>
+                                <tr><td colspan="4" class="text-center text-muted">Randevu saati tanımlanmamış.</td></tr>
                             }
                             @foreach (var m in Model)
                             {
                                 <tr>
-                                    <td>@m.Gun</td>
+                                    <td>@m.Tarih.ToString("dd.MM.yyyy")</td>
                                     <td>@m.BaslangicSaati.ToString(@"hh\:mm")</td>
                                     <td>@m.BitisSaati.ToString(@"hh\:mm")</td>
                                     <td>
-                                        <form method="post" asp-action="Sil" asp-route-id="@m.MusaitlikId" asp-route-ogretmenId="@ogretmenId" class="d-inline">
+                                        <form method="post" asp-action="Sil" asp-route-id="@m.OgretmenRandevuId" asp-route-ogretmenId="@ogretmenId" class="d-inline">
                                             @Html.AntiForgeryToken()
                                             <button type="submit" class="btn btn-sm btn-outline-danger"
                                                     onclick="return confirm('Silmek istediğinize emin misiniz?')">

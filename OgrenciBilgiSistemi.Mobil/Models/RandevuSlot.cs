@@ -1,6 +1,6 @@
 namespace OgrenciBilgiSistemi.Mobil.Models
 {
-    public class MusaitSlot
+    public class RandevuSlot
     {
         public DateTime Tarih { get; set; }
         public string BaslangicSaati { get; set; } = string.Empty;

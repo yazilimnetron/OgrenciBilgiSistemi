@@ -6,7 +6,7 @@ namespace OgrenciBilgiSistemi.Mobil.Views
     public partial class RandevuOlusturView : ContentPage
     {
         private readonly RandevuService _randevuService;
-        private readonly MusaitlikService _musaitlikService;
+        private readonly OgretmenRandevuService _ogretmenRandevuService;
         private readonly VeliService _veliService;
         private readonly OgrenciService _ogrenciService;
         private readonly OgretmenListeService _ogretmenListeService;
@@ -14,8 +14,8 @@ namespace OgrenciBilgiSistemi.Mobil.Views
         private List<Ogrenci> _cocuklar = new();
         private List<Ogrenci> _sinifOgrencileri = new();
         private List<OgretmenBilgi> _ogretmenler = new();
-        private List<MusaitSlot> _musaitSlotlar = new();
-        private MusaitSlot _secilenSlot;
+        private List<RandevuSlot> _randevuSlotlar = new();
+        private RandevuSlot _secilenSlot;
         private int? _karsiTarafId;
         private int? _sinifOgretmenId;
 
@@ -24,7 +24,7 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             InitializeComponent();
 
             _randevuService = Application.Current.MainPage.Handler.MauiContext.Services.GetService<RandevuService>();
-            _musaitlikService = Application.Current.MainPage.Handler.MauiContext.Services.GetService<MusaitlikService>();
+            _ogretmenRandevuService = Application.Current.MainPage.Handler.MauiContext.Services.GetService<OgretmenRandevuService>();
             _veliService = Application.Current.MainPage.Handler.MauiContext.Services.GetService<VeliService>();
             _ogrenciService = Application.Current.MainPage.Handler.MauiContext.Services.GetService<OgrenciService>();
             _ogretmenListeService = Application.Current.MainPage.Handler.MauiContext.Services.GetService<OgretmenListeService>();
@@ -135,13 +135,13 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                 OgretmenBilgiLabel.IsVisible = false;
             }
 
-            _musaitSlotlar = await _musaitlikService.MusaitSlotlariGetir(secilen.KullaniciId);
-            SlotCollection.ItemsSource = _musaitSlotlar;
+            _randevuSlotlar = await _ogretmenRandevuService.RandevuSlotlariGetir(secilen.KullaniciId);
+            SlotCollection.ItemsSource = _randevuSlotlar;
         }
 
         private void OnSlotSecildi(object sender, SelectionChangedEventArgs e)
         {
-            _secilenSlot = e.CurrentSelection.FirstOrDefault() as MusaitSlot;
+            _secilenSlot = e.CurrentSelection.FirstOrDefault() as RandevuSlot;
         }
 
         private async void OnOlusturClicked(object sender, EventArgs e)

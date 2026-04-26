@@ -90,7 +90,7 @@ builder.Services.AddScoped<BirimService>();
 builder.Services.AddScoped<GecisKayitService>();
 builder.Services.AddScoped<ServisService>();
 builder.Services.AddScoped<RandevuService>();
-builder.Services.AddScoped<MusaitlikService>();
+builder.Services.AddScoped<OgretmenRandevuService>();
 builder.Services.AddScoped<BildirimService>();
 builder.Services.AddScoped<OgretmenListeService>();
 

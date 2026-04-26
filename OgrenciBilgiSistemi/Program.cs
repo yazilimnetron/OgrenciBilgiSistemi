@@ -102,7 +102,7 @@ builder.Services.AddScoped<IMenuService, MenuService>();
 builder.Services.AddScoped<IZiyaretciService, ZiyaretciService>();
 builder.Services.AddScoped<IKitapService, KitapService>();
 builder.Services.AddScoped<IRandevuService, RandevuService>();
-builder.Services.AddScoped<IOgretmenMusaitlikService, OgretmenMusaitlikService>();
+builder.Services.AddScoped<IOgretmenRandevuService, OgretmenRandevuService>();
 builder.Services.AddScoped<IBildirimService, BildirimService>();
 builder.Services.AddScoped<IKitapDetayService, KitapDetayService>();
 builder.Services.AddScoped<IKullaniciService, KullaniciService>();

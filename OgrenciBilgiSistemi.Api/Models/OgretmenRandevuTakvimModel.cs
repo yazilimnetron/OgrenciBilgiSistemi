@@ -1,11 +1,10 @@
 namespace OgrenciBilgiSistemi.Api.Models
 {
-    public class MusaitlikModel
+    public class OgretmenRandevuTakvimModel
     {
-        public int MusaitlikId { get; set; }
+        public int OgretmenRandevuId { get; set; }
         public int OgretmenKullaniciId { get; set; }
-        public int Gun { get; set; }
-        public string GunAdi { get; set; } = string.Empty;
+        public DateTime Tarih { get; set; }
         public string BaslangicSaati { get; set; } = string.Empty;
         public string BitisSaati { get; set; } = string.Empty;
     }

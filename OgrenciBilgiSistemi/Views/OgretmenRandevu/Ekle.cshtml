@@ -1,9 +1,8 @@
-@model OgrenciBilgiSistemi.Models.OgretmenMusaitlikModel
-@using OgrenciBilgiSistemi.Shared.Enums
+@model OgrenciBilgiSistemi.Models.OgretmenRandevuModel
 @using Microsoft.AspNetCore.Mvc.Rendering
 
 @{
-    ViewData["Title"] = "Müsaitlik Ekle";
+    ViewData["Title"] = "Randevu Saati Ekle";
     var ogretmenler = ViewData["Ogretmenler"] as List<SelectListItem> ?? new();
 }
 
@@ -30,10 +29,9 @@
                                 </div>
 
                                 <div class="mb-3">
-                                    <label asp-for="Gun" class="form-label fw-semibold">Gün</label>
-                                    <select asp-for="Gun" class="form-select" asp-items="Html.GetEnumSelectList<GunEnum>()">
-                                    </select>
-                                    <span asp-validation-for="Gun" class="text-danger"></span>
+                                    <label asp-for="Tarih" class="form-label fw-semibold">Tarih</label>
+                                    <input asp-for="Tarih" type="date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")" value="@DateTime.Today.ToString("yyyy-MM-dd")" />
+                                    <span asp-validation-for="Tarih" class="text-danger"></span>
                                 </div>
 
                                 <div class="mb-3">

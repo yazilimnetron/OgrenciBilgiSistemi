@@ -1,12 +1,13 @@
 namespace OgrenciBilgiSistemi.Mobil.Models
 {
-    public class Musaitlik
+    public class OgretmenRandevu
     {
-        public int MusaitlikId { get; set; }
+        public int OgretmenRandevuId { get; set; }
         public int OgretmenKullaniciId { get; set; }
-        public int Gun { get; set; }
-        public string GunAdi { get; set; } = string.Empty;
+        public DateTime Tarih { get; set; }
         public string BaslangicSaati { get; set; } = string.Empty;
         public string BitisSaati { get; set; } = string.Empty;
+
+        public string TarihMetni => Tarih.ToString("dd.MM.yyyy");
     }
 }

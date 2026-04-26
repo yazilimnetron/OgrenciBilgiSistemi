@@ -10,18 +10,18 @@ using OgrenciBilgiSistemi.Shared.Enums;
 namespace OgrenciBilgiSistemi.Controllers
 {
     [Authorize(Policy = "AdminOnly")]
-    public class OgretmenMusaitlikController : Controller
+    public class OgretmenRandevuController : Controller
     {
-        private readonly IOgretmenMusaitlikService _musaitlikService;
+        private readonly IOgretmenRandevuService _ogretmenRandevuService;
         private readonly AppDbContext _db;
-        private readonly ILogger<OgretmenMusaitlikController> _logger;
+        private readonly ILogger<OgretmenRandevuController> _logger;
 
-        public OgretmenMusaitlikController(
-            IOgretmenMusaitlikService musaitlikService,
+        public OgretmenRandevuController(
+            IOgretmenRandevuService ogretmenRandevuService,
             AppDbContext db,
-            ILogger<OgretmenMusaitlikController> logger)
+            ILogger<OgretmenRandevuController> logger)
         {
-            _musaitlikService = musaitlikService;
+            _ogretmenRandevuService = ogretmenRandevuService;
             _db = db;
             _logger = logger;
         }
@@ -34,18 +34,18 @@ namespace OgrenciBilgiSistemi.Controllers
 
             if (ogretmenId.HasValue)
             {
-                var liste = await _musaitlikService.OgretmeneGoreListele(ogretmenId.Value, ct);
+                var liste = await _ogretmenRandevuService.OgretmeneGoreListele(ogretmenId.Value, ct);
                 return View(liste);
             }
 
-            return View(new List<OgretmenMusaitlikModel>());
+            return View(new List<OgretmenRandevuModel>());
         }
 
         [HttpGet]
         public async Task<IActionResult> Ekle(int? ogretmenId, CancellationToken ct = default)
         {
             ViewData["Ogretmenler"] = await OgretmenListesi(ct);
-            var model = new OgretmenMusaitlikModel();
+            var model = new OgretmenRandevuModel();
             if (ogretmenId.HasValue)
                 model.OgretmenKullaniciId = ogretmenId.Value;
             return View(model);
@@ -53,7 +53,7 @@ namespace OgrenciBilgiSistemi.Controllers
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Ekle(OgretmenMusaitlikModel model, CancellationToken ct = default)
+        public async Task<IActionResult> Ekle(OgretmenRandevuModel model, CancellationToken ct = default)
         {
             if (!ModelState.IsValid)
             {
@@ -63,13 +63,13 @@ namespace OgrenciBilgiSistemi.Controllers
 
             try
             {
-                await _musaitlikService.Ekle(model, ct);
+                await _ogretmenRandevuService.Ekle(model, ct);
                 return RedirectToAction(nameof(Index), new { ogretmenId = model.OgretmenKullaniciId });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Müsaitlik eklenemedi.");
-                ModelState.AddModelError("", "Müsaitlik eklenirken bir hata oluştu.");
+                _logger.LogError(ex, "Randevu takvimi eklenemedi.");
+                ModelState.AddModelError("", "Randevu takvimi eklenirken bir hata oluştu.");
                 ViewData["Ogretmenler"] = await OgretmenListesi(ct);
                 return View(model);
             }
@@ -81,12 +81,12 @@ namespace OgrenciBilgiSistemi.Controllers
         {
             try
             {
-                await _musaitlikService.Sil(id, ct);
+                await _ogretmenRandevuService.Sil(id, ct);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Müsaitlik silinemedi. Id={Id}", id);
-                TempData["Hata"] = "Müsaitlik silinirken bir hata oluştu.";
+                _logger.LogError(ex, "Randevu takvimi silinemedi. Id={Id}", id);
+                TempData["Hata"] = "Randevu takvimi silinirken bir hata oluştu.";
             }
 
             return RedirectToAction(nameof(Index), new { ogretmenId });

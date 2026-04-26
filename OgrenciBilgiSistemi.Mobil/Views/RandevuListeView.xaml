@@ -45,16 +45,21 @@
                 </CollectionView.ItemsLayout>
                 <CollectionView.ItemTemplate>
                     <DataTemplate>
-                        <Border StrokeShape="RoundRectangle 16" StrokeThickness="0" BackgroundColor="White" Padding="0">
+                        <Border StrokeShape="RoundRectangle 16" StrokeThickness="0" BackgroundColor="White" Padding="16">
                             <Border.Shadow>
                                 <Shadow Brush="Black" Offset="0,2" Radius="8" Opacity="0.06" />
                             </Border.Shadow>
                             <Border.GestureRecognizers>
                                 <TapGestureRecognizer Tapped="OnRandevuTapped" CommandParameter="{Binding .}" />
                             </Border.GestureRecognizers>
-                            <Grid ColumnDefinitions="8, *, Auto" Padding="0,15">
-                                <BoxView Grid.Column="0" BackgroundColor="{Binding DurumRenk}" WidthRequest="8" HorizontalOptions="Start" />
-                                <VerticalStackLayout Grid.Column="1" Spacing="4" Margin="12,0">
+                            <Grid ColumnDefinitions="4, *, Auto" ColumnSpacing="14">
+                                <BoxView Grid.Column="0" BackgroundColor="{Binding DurumRenk}" WidthRequest="4"
+                                         VerticalOptions="Fill" HorizontalOptions="Center">
+                                    <BoxView.Clip>
+                                        <RoundRectangleGeometry CornerRadius="2" Rect="0,0,4,80" />
+                                    </BoxView.Clip>
+                                </BoxView>
+                                <VerticalStackLayout Grid.Column="1" Spacing="5" VerticalOptions="Center">
                                     <Label Text="{Binding KarsiTarafAdi}" FontSize="16" FontFamily="OpenSansSemibold" TextColor="#2C3E50" />
                                     <Label Text="{Binding OgrenciAdSoyad}" FontSize="12" TextColor="#7F8C8D" IsVisible="{Binding OgrenciGosterilsinMi}" />
                                     <HorizontalStackLayout Spacing="8">
@@ -63,7 +68,7 @@
                                     </HorizontalStackLayout>
                                 </VerticalStackLayout>
                                 <Border Grid.Column="2" StrokeShape="RoundRectangle 12" StrokeThickness="0"
-                                        BackgroundColor="{Binding DurumArkaplanRenk}" Padding="10,5" Margin="0,0,12,0"
+                                        BackgroundColor="{Binding DurumArkaplanRenk}" Padding="10,5"
                                         VerticalOptions="Center">
                                     <Label Text="{Binding DurumAdi}" FontSize="11" TextColor="{Binding DurumRenk}" FontFamily="OpenSansSemibold" />
                                 </Border>
