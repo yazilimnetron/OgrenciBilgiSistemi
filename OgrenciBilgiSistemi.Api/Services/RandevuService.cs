@@ -29,7 +29,7 @@ namespace OgrenciBilgiSistemi.Api.Services
             var liste = new List<RandevuModel>();
             const string query = @"
                 SELECT r.RandevuId, r.OgretmenKullaniciId, r.VeliKullaniciId, r.OgrenciId,
-                       r.RandevuTarihi, r.SureDakika, r.Durum, r.Not, r.OgretmenTarafindanOlusturuldu,
+                       r.RandevuTarihi, r.SureDakika, r.Durum, r.[Not], r.OgretmenTarafindanOlusturuldu,
                        r.OlusturulmaTarihi,
                        og.KullaniciAdi AS OgretmenAd,
                        v.KullaniciAdi AS VeliAd,
@@ -81,7 +81,7 @@ namespace OgrenciBilgiSistemi.Api.Services
         {
             const string query = @"
                 SELECT r.RandevuId, r.OgretmenKullaniciId, r.VeliKullaniciId, r.OgrenciId,
-                       r.RandevuTarihi, r.SureDakika, r.Durum, r.Not, r.OgretmenTarafindanOlusturuldu,
+                       r.RandevuTarihi, r.SureDakika, r.Durum, r.[Not], r.OgretmenTarafindanOlusturuldu,
                        r.OlusturulmaTarihi,
                        og.KullaniciAdi AS OgretmenAd,
                        v.KullaniciAdi AS VeliAd,
