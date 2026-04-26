@@ -15,9 +15,9 @@
             </Border.Shadow>
             <Grid>
                 <views:AnaBaslikView x:Name="MyHeader" ShowBack="True" ShowProfile="False" />
-                <VerticalStackLayout Spacing="2" VerticalOptions="End" Margin="20,0,20,35">
-                    <Label Text="Yeni Randevu" FontSize="18" FontFamily="OpenSansSemibold" TextColor="White" />
-                    <Label x:Name="AltBaslikLabel" Text="" FontSize="14" TextColor="White" Opacity="0.8" />
+                <VerticalStackLayout Spacing="2" VerticalOptions="End" HorizontalOptions="Center" Margin="20,0,20,15">
+                    <Label Text="Yeni Randevu" FontSize="18" FontFamily="OpenSansSemibold" TextColor="White" HorizontalTextAlignment="Center" />
+                    <Label x:Name="AltBaslikLabel" Text="" FontSize="14" TextColor="White" Opacity="0.8" HorizontalTextAlignment="Center" />
                 </VerticalStackLayout>
             </Grid>
         </Border>
@@ -59,7 +59,7 @@
                 <Border x:Name="SlotSecimBorder" StrokeShape="RoundRectangle 16" StrokeThickness="0"
                         BackgroundColor="White" Padding="20" IsVisible="False">
                     <VerticalStackLayout Spacing="10">
-                        <Label Text="Müsait Saat Seçin" FontSize="13" FontAttributes="Bold" TextColor="#7F8C8D" />
+                        <Label Text="Randevu Saati Seçin" FontSize="13" FontAttributes="Bold" TextColor="#7F8C8D" />
                         <CollectionView x:Name="SlotCollection" SelectionMode="Single" HeightRequest="200"
                                         SelectionChanged="OnSlotSecildi">
                             <CollectionView.ItemsLayout>
@@ -74,7 +74,7 @@
                                 </DataTemplate>
                             </CollectionView.ItemTemplate>
                             <CollectionView.EmptyView>
-                                <Label Text="Müsait saat bulunamadı." FontSize="13" TextColor="#95A5A6" HorizontalOptions="Center" Margin="0,20" />
+                                <Label Text="Randevu saati bulunamadı." FontSize="13" TextColor="#95A5A6" HorizontalOptions="Center" Margin="0,20" />
                             </CollectionView.EmptyView>
                         </CollectionView>
                     </VerticalStackLayout>

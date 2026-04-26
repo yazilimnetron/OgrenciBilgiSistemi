@@ -82,9 +82,16 @@ namespace OgrenciBilgiSistemi.Api.Services
                 await using var conn = new SqlConnection(ConnectionString);
                 const string query = @"
                     SELECT O.OgrenciId, O.OgrenciAdSoyad, O.OgrenciGorsel, O.OgrenciNo,
-                           O.BirimId, O.ServisId, B.BirimAd AS SinifAdi
+                           O.BirimId, O.ServisId, O.VeliId, B.BirimAd AS SinifAdi,
+                           sinifOgretmen.KullaniciId AS OgretmenId
                     FROM Ogrenciler O
                     LEFT JOIN Birimler B ON O.BirimId = B.BirimId
+                    OUTER APPLY (
+                        SELECT TOP 1 op.KullaniciId
+                        FROM OgretmenProfiller op
+                        WHERE op.BirimId = O.BirimId AND op.OgretmenDurum = 1
+                        ORDER BY op.KullaniciId
+                    ) sinifOgretmen
                     WHERE O.VeliId = @veliId AND O.OgrenciDurum = 1";
 
                 await using var cmd = new SqlCommand(query, conn);
@@ -102,6 +109,8 @@ namespace OgrenciBilgiSistemi.Api.Services
                         OgrenciNo      = (int)reader["OgrenciNo"],
                         OgrenciGorsel  = string.IsNullOrEmpty(rawFileName) ? "user_icon.png" : rawFileName,
                         BirimId        = reader["BirimId"] as int?,
+                        OgretmenId     = reader["OgretmenId"] as int?,
+                        VeliId         = reader["VeliId"] as int?,
                         ServisId       = reader["ServisId"] as int?,
                         SinifAdi       = reader["SinifAdi"]?.ToString()
                     });

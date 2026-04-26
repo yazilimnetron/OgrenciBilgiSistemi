@@ -97,22 +97,40 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             var index = OgrenciPicker.SelectedIndex;
             if (index < 0 || index >= _cocuklar.Count) return;
 
-            var ogrenci = _cocuklar[index];
-            _sinifOgretmenId = ogrenci.OgretmenId;
-
-            _ogretmenler = await _ogretmenListeService.AktifOgretmenleriGetir();
-            OgretmenPicker.ItemsSource = _ogretmenler.Select(o => o.KullaniciAdi).ToList();
-            OgretmenPickerBorder.IsVisible = true;
-
-            if (_sinifOgretmenId.HasValue && _sinifOgretmenId.Value > 0)
+            try
             {
-                var sinifOgretmenIndex = _ogretmenler.FindIndex(o => o.KullaniciId == _sinifOgretmenId.Value);
-                if (sinifOgretmenIndex >= 0)
+                var ogrenci = _cocuklar[index];
+                _sinifOgretmenId = ogrenci.OgretmenId;
+
+                var tumOgretmenler = await _ogretmenListeService.AktifOgretmenleriGetir();
+
+                if (_sinifOgretmenId.HasValue && _sinifOgretmenId.Value > 0)
                 {
-                    OgretmenPicker.SelectedIndex = sinifOgretmenIndex;
+                    var sinifOgretmeni = tumOgretmenler.FirstOrDefault(o => o.KullaniciId == _sinifOgretmenId.Value);
+                    var digerler = tumOgretmenler.Where(o => o.KullaniciId != _sinifOgretmenId.Value).ToList();
+                    _ogretmenler = sinifOgretmeni != null
+                        ? new List<OgretmenBilgi> { sinifOgretmeni }.Concat(digerler).ToList()
+                        : tumOgretmenler;
+                }
+                else
+                {
+                    _ogretmenler = tumOgretmenler;
+                }
+
+                OgretmenPicker.ItemsSource = _ogretmenler.Select(o => o.KullaniciAdi).ToList();
+                OgretmenPickerBorder.IsVisible = true;
+
+                if (_sinifOgretmenId.HasValue && _sinifOgretmenId.Value > 0 &&
+                    _ogretmenler.Count > 0 && _ogretmenler[0].KullaniciId == _sinifOgretmenId.Value)
+                {
+                    OgretmenPicker.SelectedIndex = 0;
                     OgretmenBilgiLabel.Text = "Sınıf öğretmeni seçili";
                     OgretmenBilgiLabel.IsVisible = true;
                 }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[OGRETMEN LISTE HATASI]: {ex.Message}");
             }
         }
 
@@ -121,22 +139,29 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             var index = OgretmenPicker.SelectedIndex;
             if (index < 0 || index >= _ogretmenler.Count) return;
 
-            var secilen = _ogretmenler[index];
-            _karsiTarafId = secilen.KullaniciId;
-            _secilenSlot = null;
-
-            if (secilen.KullaniciId == _sinifOgretmenId)
+            try
             {
-                OgretmenBilgiLabel.Text = "Sınıf öğretmeni seçili";
-                OgretmenBilgiLabel.IsVisible = true;
-            }
-            else
-            {
-                OgretmenBilgiLabel.IsVisible = false;
-            }
+                var secilen = _ogretmenler[index];
+                _karsiTarafId = secilen.KullaniciId;
+                _secilenSlot = null;
 
-            _randevuSlotlar = await _ogretmenRandevuService.RandevuSlotlariGetir(secilen.KullaniciId);
-            SlotCollection.ItemsSource = _randevuSlotlar;
+                if (secilen.KullaniciId == _sinifOgretmenId)
+                {
+                    OgretmenBilgiLabel.Text = "Sınıf öğretmeni seçili";
+                    OgretmenBilgiLabel.IsVisible = true;
+                }
+                else
+                {
+                    OgretmenBilgiLabel.IsVisible = false;
+                }
+
+                _randevuSlotlar = await _ogretmenRandevuService.RandevuSlotlariGetir(secilen.KullaniciId);
+                SlotCollection.ItemsSource = _randevuSlotlar;
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SLOT YUKLEME HATASI]: {ex.Message}");
+            }
         }
 
         private void OnSlotSecildi(object sender, SelectionChangedEventArgs e)

@@ -15,8 +15,8 @@
             </Border.Shadow>
             <Grid>
                 <views:AnaBaslikView x:Name="MyHeader" ShowBack="True" ShowProfile="False" />
-                <VerticalStackLayout Spacing="2" VerticalOptions="End" Margin="20,0,20,35">
-                    <Label Text="Randevu Detayı" FontSize="18" FontFamily="OpenSansSemibold" TextColor="White" />
+                <VerticalStackLayout Spacing="2" VerticalOptions="End" HorizontalOptions="Center" Margin="20,0,20,15">
+                    <Label Text="Randevu Detayı" FontSize="18" FontFamily="OpenSansSemibold" TextColor="White" HorizontalTextAlignment="Center" />
                 </VerticalStackLayout>
             </Grid>
         </Border>

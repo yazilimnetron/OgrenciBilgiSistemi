@@ -15,15 +15,15 @@
             </Border.Shadow>
             <Grid>
                 <views:AnaBaslikView x:Name="MyHeader" ShowBack="True" ShowProfile="False" />
-                <VerticalStackLayout Spacing="2" VerticalOptions="End" Margin="20,0,20,35">
-                    <Label Text="Bildirimler" FontSize="18" FontFamily="OpenSansSemibold" TextColor="White" />
-                    <Label x:Name="AltBaslikLabel" Text="" FontSize="14" TextColor="White" Opacity="0.8" />
+                <VerticalStackLayout Spacing="2" VerticalOptions="End" HorizontalOptions="Center" Margin="20,0,20,15">
+                    <Label Text="Bildirimler" FontSize="18" FontFamily="OpenSansSemibold" TextColor="White" HorizontalTextAlignment="Center" />
+                    <Label x:Name="AltBaslikLabel" Text="" FontSize="14" TextColor="White" Opacity="0.8" HorizontalTextAlignment="Center" />
                 </VerticalStackLayout>
             </Grid>
         </Border>
 
         <!-- Tümünü okundu işaretle -->
-        <Border Grid.Row="1" Margin="15,-28,15,10" HeightRequest="48" StrokeShape="RoundRectangle 24"
+        <Border Grid.Row="1" Margin="15,-15,15,10" HeightRequest="48" StrokeShape="RoundRectangle 24"
                 StrokeThickness="0" BackgroundColor="White">
             <Border.Shadow>
                 <Shadow Brush="Black" Offset="0,10" Radius="20" Opacity="0.08" />
