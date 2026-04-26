@@ -8,20 +8,16 @@ namespace OgrenciBilgiSistemi.Mobil.Services
     {
         public async Task<List<Randevu>> RandevulariGetir(int sayfaNo = 1)
         {
-            try
+            var response = await GetAsync($"{BaseUrl}randevular/benim?sayfaNo={sayfaNo}");
+            var body = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
             {
-                var response = await GetAsync($"{BaseUrl}randevular/benim?sayfaNo={sayfaNo}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var json = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<List<Randevu>>(json, _jsonOptions) ?? new();
-                }
+                System.Diagnostics.Debug.WriteLine($"[RANDEVU HATASI]: {(int)response.StatusCode} {response.StatusCode} — {body}");
+                throw new Exception($"Sunucu yanıtı: {(int)response.StatusCode} — {body}");
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[RANDEVU HATASI]: {ex.Message}");
-            }
-            return new();
+
+            return JsonSerializer.Deserialize<List<Randevu>>(body, _jsonOptions) ?? new();
         }
 
         public async Task<Randevu?> RandevuGetir(int randevuId)

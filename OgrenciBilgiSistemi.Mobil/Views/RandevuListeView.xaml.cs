@@ -46,6 +46,7 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[RANDEVU LISTE HATASI]: {ex.Message}");
+                await DisplayAlert("Hata", $"Randevular yüklenemedi.\n{ex.Message}", "Tamam");
             }
             finally
             {

@@ -30,8 +30,15 @@ namespace OgrenciBilgiSistemi.Api.Controllers
             if (rol != "Ogretmen" && rol != "Veli")
                 return Forbid();
 
-            var liste = await _randevuService.KullanicininRandevulariniGetir(KullaniciId, rol, sayfaNo);
-            return Ok(liste);
+            try
+            {
+                var liste = await _randevuService.KullanicininRandevulariniGetir(KullaniciId, rol, sayfaNo);
+                return Ok(liste);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { error = $"Randevu listesi alınamadı: {ex.Message}" });
+            }
         }
 
         [HttpGet("{id}")]

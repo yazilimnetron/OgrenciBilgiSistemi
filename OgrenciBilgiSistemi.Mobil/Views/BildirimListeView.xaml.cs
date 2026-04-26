@@ -53,6 +53,7 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[BILDIRIM LISTE HATASI]: {ex.Message}");
+                await DisplayAlert("Hata", $"Bildirimler yüklenemedi.\n{ex.Message}", "Tamam");
             }
         }
 

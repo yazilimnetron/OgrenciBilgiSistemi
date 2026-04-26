@@ -7,20 +7,16 @@ namespace OgrenciBilgiSistemi.Mobil.Services
     {
         public async Task<List<Bildirim>> BildirimleriGetir(int sayfaNo = 1)
         {
-            try
+            var response = await GetAsync($"{BaseUrl}bildirimler?sayfaNo={sayfaNo}");
+            var body = await response.Content.ReadAsStringAsync();
+
+            if (!response.IsSuccessStatusCode)
             {
-                var response = await GetAsync($"{BaseUrl}bildirimler?sayfaNo={sayfaNo}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var json = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<List<Bildirim>>(json, _jsonOptions) ?? new();
-                }
+                System.Diagnostics.Debug.WriteLine($"[BILDIRIM HATASI]: {(int)response.StatusCode} {response.StatusCode} — {body}");
+                throw new Exception($"Sunucu yanıtı: {(int)response.StatusCode} — {body}");
             }
-            catch (Exception ex)
-            {
-                System.Diagnostics.Debug.WriteLine($"[BILDIRIM HATASI]: {ex.Message}");
-            }
-            return new();
+
+            return JsonSerializer.Deserialize<List<Bildirim>>(body, _jsonOptions) ?? new();
         }
 
         public async Task<int> OkunmamisSayisiGetir()
