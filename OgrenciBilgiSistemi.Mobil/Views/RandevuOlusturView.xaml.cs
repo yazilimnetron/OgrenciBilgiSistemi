@@ -79,11 +79,22 @@ namespace OgrenciBilgiSistemi.Mobil.Views
         {
             try
             {
+                var tumOgrenciler = await _ogrenciService.TumOgrencileriGetirAsync();
+
                 if (KullaniciOturum.BirimId.HasValue)
                 {
-                    _sinifOgrencileri = await _ogrenciService.SinifaGoreOgrencileriGetirAsync(KullaniciOturum.BirimId.Value);
-                    VeliOgrenciPicker.ItemsSource = _sinifOgrencileri.Select(o => o.OgrenciAdSoyad).ToList();
+                    var kendiSinifi = tumOgrenciler.Where(o => o.BirimId == KullaniciOturum.BirimId.Value).ToList();
+                    var digerleri = tumOgrenciler.Where(o => o.BirimId != KullaniciOturum.BirimId.Value).ToList();
+                    _sinifOgrencileri = kendiSinifi.Concat(digerleri).ToList();
                 }
+                else
+                {
+                    _sinifOgrencileri = tumOgrenciler;
+                }
+
+                VeliOgrenciPicker.ItemsSource = _sinifOgrencileri
+                    .Select(o => string.IsNullOrEmpty(o.SinifAdi) ? o.OgrenciAdSoyad : $"{o.OgrenciAdSoyad} ({o.SinifAdi})")
+                    .ToList();
             }
             catch (Exception ex)
             {

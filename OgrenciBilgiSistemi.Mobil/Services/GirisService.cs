@@ -49,7 +49,7 @@ namespace OgrenciBilgiSistemi.Mobil.Services
                         await KullaniciOturum.OturumAyarlaAsync(
                             kullaniciId: kullanici.KullaniciId,
                             adSoyad: gorunenAd,
-                            birimId: null,
+                            birimId: kullanici.BirimId,
                             rol: kullanici.Rol,
                             servisId: servisId,
                             veliId: veliId,

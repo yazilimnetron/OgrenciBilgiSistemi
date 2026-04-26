@@ -31,11 +31,13 @@ namespace OgrenciBilgiSistemi.Api.Services
                     K.Rol,
                     K.Sifre,
                     K.KullaniciAdi AS AdSoyad,
+                    OP.BirimId,
                     CASE WHEN V.KullaniciId IS NOT NULL THEN 1 ELSE 0 END AS VeliProfilVar,
                     CASE WHEN SP.KullaniciId IS NOT NULL THEN 1 ELSE 0 END AS ServisProfilVar
                 FROM Kullanicilar K
                 LEFT JOIN VeliProfiller V ON V.KullaniciId = K.KullaniciId
                 LEFT JOIN ServisProfiller SP ON SP.KullaniciId = K.KullaniciId
+                LEFT JOIN OgretmenProfiller OP ON OP.KullaniciId = K.KullaniciId
                 WHERE K.KullaniciAdi = @kullaniciAdi
                   AND K.KullaniciDurum = 1";
 
@@ -61,6 +63,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                         KullaniciDurum = Convert.ToBoolean(reader["KullaniciDurum"]),
                         Rol            = reader["Rol"] != DBNull.Value ? (KullaniciRolu)Convert.ToInt32(reader["Rol"]) : KullaniciRolu.Ogretmen,
                         AdSoyad        = reader["AdSoyad"]?.ToString(),
+                        BirimId        = reader["BirimId"] != DBNull.Value ? (int?)Convert.ToInt32(reader["BirimId"]) : null,
                         VeliProfilVar  = Convert.ToBoolean(reader["VeliProfilVar"]),
                         ServisProfilVar = Convert.ToBoolean(reader["ServisProfilVar"])
                     };
@@ -96,11 +99,13 @@ namespace OgrenciBilgiSistemi.Api.Services
                     K.KullaniciDurum,
                     K.Rol,
                     K.KullaniciAdi AS AdSoyad,
+                    OP.BirimId,
                     CASE WHEN V.KullaniciId IS NOT NULL THEN 1 ELSE 0 END AS VeliProfilVar,
                     CASE WHEN SP.KullaniciId IS NOT NULL THEN 1 ELSE 0 END AS ServisProfilVar
                 FROM Kullanicilar K
                 LEFT JOIN VeliProfiller V ON V.KullaniciId = K.KullaniciId
                 LEFT JOIN ServisProfiller SP ON SP.KullaniciId = K.KullaniciId
+                LEFT JOIN OgretmenProfiller OP ON OP.KullaniciId = K.KullaniciId
                 WHERE K.KullaniciId = @kullaniciId
                   AND K.KullaniciDurum = 1";
 
@@ -122,6 +127,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                         KullaniciDurum = Convert.ToBoolean(reader["KullaniciDurum"]),
                         Rol            = reader["Rol"] != DBNull.Value ? (KullaniciRolu)Convert.ToInt32(reader["Rol"]) : KullaniciRolu.Ogretmen,
                         AdSoyad        = reader["AdSoyad"]?.ToString(),
+                        BirimId        = reader["BirimId"] != DBNull.Value ? (int?)Convert.ToInt32(reader["BirimId"]) : null,
                         VeliProfilVar  = Convert.ToBoolean(reader["VeliProfilVar"]),
                         ServisProfilVar = Convert.ToBoolean(reader["ServisProfilVar"])
                     };

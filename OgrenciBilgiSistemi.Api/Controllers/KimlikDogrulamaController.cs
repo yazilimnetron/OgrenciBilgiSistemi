@@ -110,6 +110,7 @@ namespace OgrenciBilgiSistemi.Api.Controllers
                     kullanici.AdSoyad,
                     kullanici.KullaniciDurum,
                     kullanici.Rol,
+                    kullanici.BirimId,
                     kullanici.VeliProfilVar,
                     kullanici.ServisProfilVar
                 }

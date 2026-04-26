@@ -77,6 +77,24 @@ namespace OgrenciBilgiSistemi.Api.Controllers
 
         #region Öğrenci Bilgi Metotları
 
+        [HttpGet("tumu")]
+        public async Task<IActionResult> TumOgrencileriGetir()
+        {
+            var rol = User.FindFirst("rol")?.Value;
+            if (rol != "Ogretmen")
+                return Forbid();
+
+            try
+            {
+                var ogrenciler = await _ogrenciService.TumAktifOgrencileriGetirAsync();
+                return Ok(ogrenciler);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { error = "Öğrenci listesi alınırken bir hata oluştu." });
+            }
+        }
+
         // 1. Sınıf ID'sine göre öğrenci listesini getirir — yalnızca öğretmen
         [HttpGet("class/{sinifId}")]
         public async Task<IActionResult> SinifaGoreGetir(int sinifId)

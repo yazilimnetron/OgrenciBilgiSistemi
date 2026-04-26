@@ -65,21 +65,25 @@ namespace OgrenciBilgiSistemi.Mobil.Views
 
         private async void OnBildirimTapped(object sender, TappedEventArgs e)
         {
-            if (e.Parameter is BildirimGorunumModel gorunum && !gorunum.Bildirim.Okundu)
+            if (e.Parameter is not BildirimGorunumModel gorunum) return;
+
+            if (!gorunum.Bildirim.Okundu)
             {
                 await _bildirimService.OkunduIsaretle(gorunum.Bildirim.BildirimId);
                 gorunum.Bildirim.Okundu = true;
-
-                // Eğer randevu bildirimi ise randevu detayına git
-                if (gorunum.Bildirim.RandevuId.HasValue)
-                {
-                    await Shell.Current.GoToAsync($"{nameof(RandevuDetayView)}?randevuId={gorunum.Bildirim.RandevuId.Value}");
-                    return;
-                }
-
-                // Listeyi güncelle
                 BildirimCollection.ItemsSource = null;
                 BildirimCollection.ItemsSource = _bildirimler;
+
+                var okunmamis = _bildirimler.Count(b => b.OkunmadiMi);
+                AltBaslikLabel.Text = okunmamis > 0 ? $"{okunmamis} okunmamış bildirim" : "Tüm bildirimler okundu";
+            }
+
+            if (gorunum.Bildirim.RandevuId.HasValue)
+            {
+                var randevuService = Application.Current.MainPage.Handler.MauiContext.Services.GetService<RandevuService>();
+                var detayView = new RandevuDetayView(randevuService);
+                detayView.RandevuId = gorunum.Bildirim.RandevuId.Value;
+                await Navigation.PushAsync(detayView);
             }
         }
 

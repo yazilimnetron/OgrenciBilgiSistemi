@@ -74,6 +74,46 @@ namespace OgrenciBilgiSistemi.Api.Services
             return ogrenciler;
         }
 
+        public async Task<List<OgrenciModel>> TumAktifOgrencileriGetirAsync()
+        {
+            var ogrenciler = new List<OgrenciModel>();
+            try
+            {
+                await using var conn = new SqlConnection(ConnectionString);
+                const string query = @"
+                    SELECT O.OgrenciId, O.OgrenciAdSoyad, O.OgrenciNo, O.OgrenciGorsel,
+                           O.BirimId, O.VeliId, B.BirimAd AS SinifAdi
+                    FROM Ogrenciler O
+                    LEFT JOIN Birimler B ON O.BirimId = B.BirimId
+                    WHERE O.OgrenciDurum = 1 AND O.VeliId IS NOT NULL
+                    ORDER BY O.BirimId, O.OgrenciNo";
+
+                await using var cmd = new SqlCommand(query, conn);
+                await conn.OpenAsync();
+
+                await using var reader = await cmd.ExecuteReaderAsync();
+                while (await reader.ReadAsync())
+                {
+                    string rawFileName = reader["OgrenciGorsel"]?.ToString() ?? string.Empty;
+                    ogrenciler.Add(new OgrenciModel
+                    {
+                        OgrenciId      = (int)reader["OgrenciId"],
+                        OgrenciAdSoyad = reader["OgrenciAdSoyad"]?.ToString() ?? string.Empty,
+                        OgrenciNo      = (int)reader["OgrenciNo"],
+                        OgrenciGorsel  = string.IsNullOrEmpty(rawFileName) ? "user_icon.png" : rawFileName,
+                        BirimId        = reader["BirimId"] as int?,
+                        VeliId         = reader["VeliId"] as int?,
+                        SinifAdi       = reader["SinifAdi"]?.ToString()
+                    });
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new InvalidOperationException("Öğrenci listesi alınamadı.", ex);
+            }
+            return ogrenciler;
+        }
+
         public async Task<List<OgrenciModel>> VeliyeGoreOgrencileriGetirAsync(int veliId)
         {
             var ogrenciler = new List<OgrenciModel>();

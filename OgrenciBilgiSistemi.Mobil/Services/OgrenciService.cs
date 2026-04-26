@@ -47,6 +47,22 @@ namespace OgrenciBilgiSistemi.Mobil.Services
             }
         }
 
+        public async Task<List<Ogrenci>> TumOgrencileriGetirAsync()
+        {
+            try
+            {
+                var response = await GetAsync($"{BaseUrl}ogrenciler/tumu");
+                if (!response.IsSuccessStatusCode)
+                    return new List<Ogrenci>();
+
+                return await response.Content.ReadFromJsonAsync<List<Ogrenci>>(_jsonOptions) ?? new List<Ogrenci>();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Öğrenci listesi çekilirken hata oluştu: {ex.Message}");
+            }
+        }
+
         /// <summary>
         /// Öğrencinin veli, servis ve sınıf gibi tüm detaylı bilgilerini getirir.
         /// </summary>
