@@ -27,6 +27,8 @@ namespace OgrenciBilgiSistemi.Models
 
         public DateTime OlusturulmaTarihi { get; set; } = DateTime.Now;
 
+        public bool IsDeleted { get; set; } = false;
+
         // Navigation
         [ForeignKey(nameof(AliciKullaniciId))]
         [ValidateNever]

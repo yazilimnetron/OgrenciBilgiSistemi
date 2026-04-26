@@ -17,8 +17,8 @@ namespace OgrenciBilgiSistemi.Api.Services
         public async Task Olustur(int aliciKullaniciId, int tur, string mesaj, int? randevuId)
         {
             const string query = @"
-                INSERT INTO Bildirimler (AliciKullaniciId, Tur, Mesaj, RandevuId, Okundu, OlusturulmaTarihi)
-                VALUES (@aliciId, @tur, @mesaj, @randevuId, 0, GETDATE())";
+                INSERT INTO Bildirimler (AliciKullaniciId, Tur, Mesaj, RandevuId, Okundu, OlusturulmaTarihi, IsDeleted)
+                VALUES (@aliciId, @tur, @mesaj, @randevuId, 0, GETDATE(), 0)";
 
             await using var conn = new SqlConnection(ConnectionString);
             await using var cmd = new SqlCommand(query, conn);
@@ -36,7 +36,7 @@ namespace OgrenciBilgiSistemi.Api.Services
             const string query = @"
                 SELECT BildirimId, Tur, Mesaj, RandevuId, Okundu, OlusturulmaTarihi
                 FROM Bildirimler
-                WHERE AliciKullaniciId = @kullaniciId
+                WHERE AliciKullaniciId = @kullaniciId AND IsDeleted = 0
                 ORDER BY OlusturulmaTarihi DESC
                 OFFSET @offset ROWS FETCH NEXT @boyut ROWS ONLY";
 
@@ -65,7 +65,7 @@ namespace OgrenciBilgiSistemi.Api.Services
 
         public async Task<int> OkunmamisSayisi(int kullaniciId)
         {
-            const string query = "SELECT COUNT(*) FROM Bildirimler WHERE AliciKullaniciId = @id AND Okundu = 0";
+            const string query = "SELECT COUNT(*) FROM Bildirimler WHERE AliciKullaniciId = @id AND Okundu = 0 AND IsDeleted = 0";
 
             await using var conn = new SqlConnection(ConnectionString);
             await using var cmd = new SqlCommand(query, conn);
@@ -76,7 +76,7 @@ namespace OgrenciBilgiSistemi.Api.Services
 
         public async Task<bool> OkunduIsaretle(int bildirimId, int kullaniciId)
         {
-            const string query = "UPDATE Bildirimler SET Okundu = 1 WHERE BildirimId = @id AND AliciKullaniciId = @kullaniciId";
+            const string query = "UPDATE Bildirimler SET Okundu = 1 WHERE BildirimId = @id AND AliciKullaniciId = @kullaniciId AND IsDeleted = 0";
 
             await using var conn = new SqlConnection(ConnectionString);
             await using var cmd = new SqlCommand(query, conn);
@@ -88,7 +88,7 @@ namespace OgrenciBilgiSistemi.Api.Services
 
         public async Task<bool> TumunuOkunduIsaretle(int kullaniciId)
         {
-            const string query = "UPDATE Bildirimler SET Okundu = 1 WHERE AliciKullaniciId = @id AND Okundu = 0";
+            const string query = "UPDATE Bildirimler SET Okundu = 1 WHERE AliciKullaniciId = @id AND Okundu = 0 AND IsDeleted = 0";
 
             await using var conn = new SqlConnection(ConnectionString);
             await using var cmd = new SqlCommand(query, conn);

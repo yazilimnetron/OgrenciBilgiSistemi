@@ -24,7 +24,7 @@ namespace OgrenciBilgiSistemi.Api.Services
             _tenantBaglami = tenantBaglami;
         }
 
-        public async Task<List<RandevuModel>> KullanicininRandevulariniGetir(int kullaniciId, string rol)
+        public async Task<List<RandevuModel>> KullanicininRandevulariniGetir(int kullaniciId, string rol, int sayfaNo = 1, int sayfaBoyutu = 20)
         {
             var liste = new List<RandevuModel>();
             const string query = @"
@@ -41,12 +41,15 @@ namespace OgrenciBilgiSistemi.Api.Services
                 WHERE r.IsDeleted = 0
                   AND ((@rol = 'Ogretmen' AND r.OgretmenKullaniciId = @kullaniciId)
                     OR (@rol = 'Veli'      AND r.VeliKullaniciId = @kullaniciId))
-                ORDER BY r.RandevuTarihi DESC";
+                ORDER BY r.RandevuTarihi DESC
+                OFFSET @offset ROWS FETCH NEXT @boyut ROWS ONLY";
 
             await using var conn = new SqlConnection(ConnectionString);
             await using var cmd = new SqlCommand(query, conn);
             cmd.Parameters.AddWithValue("@kullaniciId", kullaniciId);
             cmd.Parameters.AddWithValue("@rol", rol);
+            cmd.Parameters.AddWithValue("@offset", (sayfaNo - 1) * sayfaBoyutu);
+            cmd.Parameters.AddWithValue("@boyut", sayfaBoyutu);
             await conn.OpenAsync();
 
             await using var reader = await cmd.ExecuteReaderAsync();
@@ -119,14 +122,38 @@ namespace OgrenciBilgiSistemi.Api.Services
 
         public async Task<int> OgretmenRandevuOlustur(int ogretmenId, int veliId, int? ogrenciId, DateTime tarih, int sureDakika, string? not)
         {
+            if (await CakismaVarMi(ogretmenId, tarih, sureDakika))
+                throw new InvalidOperationException("Bu zaman aralığında zaten bir randevunuz bulunmaktadır.");
+
             return await RandevuEkle(ogretmenId, veliId, ogrenciId, tarih, sureDakika, not,
                 ogretmenTarafindanOlusturuldu: true, durum: (int)RandevuDurumu.Onaylandi);
         }
 
         public async Task<int> VeliRandevuOlustur(int veliId, int ogretmenId, int? ogrenciId, DateTime tarih, int sureDakika, string? not)
         {
+            if (await CakismaVarMi(ogretmenId, tarih, sureDakika))
+                throw new InvalidOperationException("Öğretmenin bu zaman aralığında zaten bir randevusu bulunmaktadır.");
+
             return await RandevuEkle(ogretmenId, veliId, ogrenciId, tarih, sureDakika, not,
                 ogretmenTarafindanOlusturuldu: false, durum: (int)RandevuDurumu.Beklemede);
+        }
+
+        private async Task<bool> CakismaVarMi(int ogretmenId, DateTime tarih, int sureDakika)
+        {
+            const string query = @"
+                SELECT COUNT(*) FROM Randevular
+                WHERE OgretmenKullaniciId = @ogretmenId AND IsDeleted = 0
+                  AND Durum IN (0, 1)
+                  AND @tarih < DATEADD(MINUTE, SureDakika, RandevuTarihi)
+                  AND DATEADD(MINUTE, @sure, @tarih) > RandevuTarihi";
+
+            await using var conn = new SqlConnection(ConnectionString);
+            await using var cmd = new SqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@ogretmenId", ogretmenId);
+            cmd.Parameters.AddWithValue("@tarih", tarih);
+            cmd.Parameters.AddWithValue("@sure", sureDakika);
+            await conn.OpenAsync();
+            return (int)(await cmd.ExecuteScalarAsync())! > 0;
         }
 
         public async Task<bool> DurumGuncelle(int randevuId, int ogretmenId, RandevuDurumu yeniDurum)

@@ -6,6 +6,10 @@ namespace OgrenciBilgiSistemi.Mobil.Views
     public partial class RandevuListeView : ContentPage
     {
         private readonly RandevuService _randevuService;
+        private readonly List<RandevuGorunumModel> _tumRandevular = new();
+        private int _mevcutSayfa = 1;
+        private bool _dahaFazlaVar = true;
+        private bool _yukleniyor;
 
         public RandevuListeView(RandevuService randevuService)
         {
@@ -16,27 +20,51 @@ namespace OgrenciBilgiSistemi.Mobil.Views
         protected override async void OnAppearing()
         {
             base.OnAppearing();
+            _mevcutSayfa = 1;
+            _dahaFazlaVar = true;
+            _tumRandevular.Clear();
             await RandevulariYukle();
         }
 
         private async Task RandevulariYukle()
         {
+            if (_yukleniyor || !_dahaFazlaVar) return;
+            _yukleniyor = true;
+
             try
             {
-                var randevular = await _randevuService.RandevulariGetir();
-                var gorunumListesi = randevular.Select(r => new RandevuGorunumModel(r)).ToList();
-                RandevuCollection.ItemsSource = gorunumListesi;
+                var randevular = await _randevuService.RandevulariGetir(_mevcutSayfa);
+                if (randevular.Count < 20)
+                    _dahaFazlaVar = false;
+
+                var yeniGorunumler = randevular.Select(r => new RandevuGorunumModel(r));
+                _tumRandevular.AddRange(yeniGorunumler);
+                RandevuCollection.ItemsSource = null;
+                RandevuCollection.ItemsSource = _tumRandevular;
+                _mevcutSayfa++;
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[RANDEVU LISTE HATASI]: {ex.Message}");
             }
+            finally
+            {
+                _yukleniyor = false;
+            }
         }
 
         private async void OnRefreshing(object sender, EventArgs e)
         {
+            _mevcutSayfa = 1;
+            _dahaFazlaVar = true;
+            _tumRandevular.Clear();
             await RandevulariYukle();
             RandevuRefresh.IsRefreshing = false;
+        }
+
+        private async void OnRemainingItemsThresholdReached(object sender, EventArgs e)
+        {
+            await RandevulariYukle();
         }
 
         private async void OnRandevuTapped(object sender, TappedEventArgs e)

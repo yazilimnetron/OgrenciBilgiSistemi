@@ -415,6 +415,9 @@ namespace OgrenciBilgiSistemi.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<BildirimModel>()
+                .HasQueryFilter(b => !b.IsDeleted);
+
+            modelBuilder.Entity<BildirimModel>()
                 .HasIndex(b => new { b.AliciKullaniciId, b.Okundu })
                 .HasDatabaseName("IX_Bildirimler_Alici_Okundu");
 

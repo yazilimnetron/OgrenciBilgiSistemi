@@ -9,12 +9,15 @@ namespace OgrenciBilgiSistemi.Mobil.Views
         private readonly MusaitlikService _musaitlikService;
         private readonly VeliService _veliService;
         private readonly OgrenciService _ogrenciService;
+        private readonly OgretmenListeService _ogretmenListeService;
 
         private List<Ogrenci> _cocuklar = new();
         private List<Ogrenci> _sinifOgrencileri = new();
+        private List<OgretmenBilgi> _ogretmenler = new();
         private List<MusaitSlot> _musaitSlotlar = new();
         private MusaitSlot _secilenSlot;
         private int? _karsiTarafId;
+        private int? _sinifOgretmenId;
 
         public RandevuOlusturView()
         {
@@ -24,6 +27,7 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             _musaitlikService = Application.Current.MainPage.Handler.MauiContext.Services.GetService<MusaitlikService>();
             _veliService = Application.Current.MainPage.Handler.MauiContext.Services.GetService<VeliService>();
             _ogrenciService = Application.Current.MainPage.Handler.MauiContext.Services.GetService<OgrenciService>();
+            _ogretmenListeService = Application.Current.MainPage.Handler.MauiContext.Services.GetService<OgretmenListeService>();
 
             SurePicker.SelectedIndex = 1; // 30 dakika varsayılan
             TarihSecici.MinimumDate = DateTime.Today;
@@ -54,7 +58,17 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             try
             {
                 _cocuklar = await _veliService.CocuklarimiGetir();
-                OgrenciPicker.ItemsSource = _cocuklar.Select(c => c.OgrenciAdSoyad).ToList();
+
+                if (_cocuklar.Count == 1)
+                {
+                    OgrenciPicker.ItemsSource = _cocuklar.Select(c => c.OgrenciAdSoyad).ToList();
+                    OgrenciPicker.SelectedIndex = 0;
+                    OgrenciPicker.IsEnabled = false;
+                }
+                else
+                {
+                    OgrenciPicker.ItemsSource = _cocuklar.Select(c => c.OgrenciAdSoyad).ToList();
+                }
             }
             catch (Exception ex)
             {
@@ -84,16 +98,45 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             if (index < 0 || index >= _cocuklar.Count) return;
 
             var ogrenci = _cocuklar[index];
-            if (ogrenci.OgretmenId.HasValue && ogrenci.OgretmenId.Value > 0)
-            {
-                _karsiTarafId = ogrenci.OgretmenId.Value;
-                OgretmenBilgiLabel.Text = "Öğretmen seçildi";
-                OgretmenBilgiLabel.IsVisible = true;
+            _sinifOgretmenId = ogrenci.OgretmenId;
 
-                // Müsait slotları yükle
-                _musaitSlotlar = await _musaitlikService.MusaitSlotlariGetir(ogrenci.OgretmenId.Value);
-                SlotCollection.ItemsSource = _musaitSlotlar;
+            _ogretmenler = await _ogretmenListeService.AktifOgretmenleriGetir();
+            OgretmenPicker.ItemsSource = _ogretmenler.Select(o => o.KullaniciAdi).ToList();
+            OgretmenPickerBorder.IsVisible = true;
+
+            if (_sinifOgretmenId.HasValue && _sinifOgretmenId.Value > 0)
+            {
+                var sinifOgretmenIndex = _ogretmenler.FindIndex(o => o.KullaniciId == _sinifOgretmenId.Value);
+                if (sinifOgretmenIndex >= 0)
+                {
+                    OgretmenPicker.SelectedIndex = sinifOgretmenIndex;
+                    OgretmenBilgiLabel.Text = "Sınıf öğretmeni seçili";
+                    OgretmenBilgiLabel.IsVisible = true;
+                }
             }
+        }
+
+        private async void OnOgretmenSecildi(object sender, EventArgs e)
+        {
+            var index = OgretmenPicker.SelectedIndex;
+            if (index < 0 || index >= _ogretmenler.Count) return;
+
+            var secilen = _ogretmenler[index];
+            _karsiTarafId = secilen.KullaniciId;
+            _secilenSlot = null;
+
+            if (secilen.KullaniciId == _sinifOgretmenId)
+            {
+                OgretmenBilgiLabel.Text = "Sınıf öğretmeni seçili";
+                OgretmenBilgiLabel.IsVisible = true;
+            }
+            else
+            {
+                OgretmenBilgiLabel.IsVisible = false;
+            }
+
+            _musaitSlotlar = await _musaitlikService.MusaitSlotlariGetir(secilen.KullaniciId);
+            SlotCollection.ItemsSource = _musaitSlotlar;
         }
 
         private void OnSlotSecildi(object sender, SelectionChangedEventArgs e)

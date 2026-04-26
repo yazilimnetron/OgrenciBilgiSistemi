@@ -116,6 +116,7 @@ builder.Services.AddHostedService<KartOkumaOlayIsleyiciService>();
 builder.Services.AddHostedService<ZkBaglantiIzleyiciHostedService>();
 builder.Services.AddHostedService<YemekhanePollingService>();
 builder.Services.AddHostedService<BekleyenSmsRetryService>();
+builder.Services.AddHostedService<RandevuArkaPlanService>();
 
 // SignalR + Cache
 builder.Services.AddSignalR();

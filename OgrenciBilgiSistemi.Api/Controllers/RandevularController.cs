@@ -24,13 +24,13 @@ namespace OgrenciBilgiSistemi.Api.Controllers
         private string Rol => User.FindFirst("rol")!.Value;
 
         [HttpGet("benim")]
-        public async Task<IActionResult> Benim()
+        public async Task<IActionResult> Benim([FromQuery] int sayfaNo = 1)
         {
             var rol = Rol;
             if (rol != "Ogretmen" && rol != "Veli")
                 return Forbid();
 
-            var liste = await _randevuService.KullanicininRandevulariniGetir(KullaniciId, rol);
+            var liste = await _randevuService.KullanicininRandevulariniGetir(KullaniciId, rol, sayfaNo);
             return Ok(liste);
         }
 
@@ -57,23 +57,30 @@ namespace OgrenciBilgiSistemi.Api.Controllers
             int randevuId;
             int bildirimAliciId;
 
-            if (rol == "Ogretmen")
+            try
             {
-                randevuId = await _randevuService.OgretmenRandevuOlustur(
-                    kullaniciId, dto.KarsiTarafKullaniciId, dto.OgrenciId,
-                    dto.RandevuTarihi, dto.SureDakika, dto.Not);
-                bildirimAliciId = dto.KarsiTarafKullaniciId;
+                if (rol == "Ogretmen")
+                {
+                    randevuId = await _randevuService.OgretmenRandevuOlustur(
+                        kullaniciId, dto.KarsiTarafKullaniciId, dto.OgrenciId,
+                        dto.RandevuTarihi, dto.SureDakika, dto.Not);
+                    bildirimAliciId = dto.KarsiTarafKullaniciId;
+                }
+                else if (rol == "Veli")
+                {
+                    randevuId = await _randevuService.VeliRandevuOlustur(
+                        kullaniciId, dto.KarsiTarafKullaniciId, dto.OgrenciId,
+                        dto.RandevuTarihi, dto.SureDakika, dto.Not);
+                    bildirimAliciId = dto.KarsiTarafKullaniciId;
+                }
+                else
+                {
+                    return Forbid();
+                }
             }
-            else if (rol == "Veli")
+            catch (InvalidOperationException ex)
             {
-                randevuId = await _randevuService.VeliRandevuOlustur(
-                    kullaniciId, dto.KarsiTarafKullaniciId, dto.OgrenciId,
-                    dto.RandevuTarihi, dto.SureDakika, dto.Not);
-                bildirimAliciId = dto.KarsiTarafKullaniciId;
-            }
-            else
-            {
-                return Forbid();
+                return Conflict(new { mesaj = ex.Message });
             }
 
             var tarihStr = dto.RandevuTarihi.ToString("dd.MM.yyyy HH:mm");

@@ -25,14 +25,24 @@
         <ScrollView Grid.Row="1">
             <VerticalStackLayout Padding="20,20,20,40" Spacing="15">
 
-                <!-- Öğretmen seçimi (Veli için) -->
+                <!-- Öğrenci seçimi (Veli için) -->
                 <Border x:Name="OgretmenSecimBorder" StrokeShape="RoundRectangle 16" StrokeThickness="0"
                         BackgroundColor="White" Padding="20" IsVisible="False">
                     <VerticalStackLayout Spacing="10">
                         <Label Text="Öğrenci Seçin" FontSize="13" FontAttributes="Bold" TextColor="#7F8C8D" />
                         <Picker x:Name="OgrenciPicker" Title="Öğrenci seçiniz..." FontSize="14" TextColor="#2C3E50"
                                 SelectedIndexChanged="OnOgrenciSecildi" />
-                        <Label x:Name="OgretmenBilgiLabel" Text="" FontSize="13" TextColor="#2980B9" IsVisible="False" />
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Öğretmen seçimi (Veli için — öğrenci seçildikten sonra görünür) -->
+                <Border x:Name="OgretmenPickerBorder" StrokeShape="RoundRectangle 16" StrokeThickness="0"
+                        BackgroundColor="White" Padding="20" IsVisible="False">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Öğretmen Seçin" FontSize="13" FontAttributes="Bold" TextColor="#7F8C8D" />
+                        <Picker x:Name="OgretmenPicker" Title="Öğretmen seçiniz..." FontSize="14" TextColor="#2C3E50"
+                                SelectedIndexChanged="OnOgretmenSecildi" />
+                        <Label x:Name="OgretmenBilgiLabel" Text="Sınıf öğretmeni seçili" FontSize="12" TextColor="#27AE60" IsVisible="False" />
                     </VerticalStackLayout>
                 </Border>
 

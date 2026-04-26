@@ -37,7 +37,9 @@
         </Grid>
 
         <RefreshView Grid.Row="2" x:Name="RandevuRefresh" Refreshing="OnRefreshing">
-            <CollectionView x:Name="RandevuCollection" Margin="15,0" SelectionMode="None">
+            <CollectionView x:Name="RandevuCollection" Margin="15,0" SelectionMode="None"
+                              RemainingItemsThreshold="5"
+                              RemainingItemsThresholdReached="OnRemainingItemsThresholdReached">
                 <CollectionView.ItemsLayout>
                     <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
                 </CollectionView.ItemsLayout>

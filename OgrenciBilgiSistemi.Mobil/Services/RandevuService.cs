@@ -6,11 +6,11 @@ namespace OgrenciBilgiSistemi.Mobil.Services
 {
     public class RandevuService : TemelApiService
     {
-        public async Task<List<Randevu>> RandevulariGetir()
+        public async Task<List<Randevu>> RandevulariGetir(int sayfaNo = 1)
         {
             try
             {
-                var response = await GetAsync($"{BaseUrl}randevular/benim");
+                var response = await GetAsync($"{BaseUrl}randevular/benim?sayfaNo={sayfaNo}");
                 if (response.IsSuccessStatusCode)
                 {
                     var json = await response.Content.ReadAsStringAsync();
