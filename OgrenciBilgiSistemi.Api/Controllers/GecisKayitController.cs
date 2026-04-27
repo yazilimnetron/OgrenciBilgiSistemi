@@ -63,11 +63,16 @@ namespace OgrenciBilgiSistemi.Api.Controllers
         // GET: api/gecis-kayit/{ogrenciId}
         // Rol bazlı: Veli sadece kendi çocuğunun, Servis kendi servis öğrencisinin kayıtlarını görür
         [HttpGet("{ogrenciId}")]
-        public async Task<IActionResult> OgrenciyeGoreGetir(int ogrenciId)
+        public async Task<IActionResult> OgrenciyeGoreGetir(
+            int ogrenciId,
+            [FromQuery] DateTime? baslangic,
+            [FromQuery] DateTime? bitis)
         {
+            if (baslangic.HasValue && bitis.HasValue && baslangic > bitis)
+                return BadRequest(new { error = "Başlangıç tarihi bitiş tarihinden sonra olamaz." });
+
             try
             {
-                // Öğrenciyi getirip rol bazlı erişim kontrolü yap
                 var ogrenci = await _ogrenciService.OgrenciGetirAsync(ogrenciId);
                 if (ogrenci is null)
                     return NotFound(new { message = $"{ogrenciId} numaralı öğrenci bulunamadı." });
@@ -84,7 +89,7 @@ namespace OgrenciBilgiSistemi.Api.Controllers
                         return Forbid();
                 }
 
-                var kayitlar = await _gecisKayitService.GetByOgrenciIdAsync(ogrenciId);
+                var kayitlar = await _gecisKayitService.GetByOgrenciIdAsync(ogrenciId, baslangic, bitis);
                 return Ok(kayitlar);
             }
             catch (Exception)

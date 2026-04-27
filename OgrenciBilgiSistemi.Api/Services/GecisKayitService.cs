@@ -95,11 +95,15 @@ namespace OgrenciBilgiSistemi.Api.Services
         /// <summary>
         /// Tek bir öğrenciye ait tüm giriş/çıkış kayıtlarını yeniden eskiye döner.
         /// </summary>
-        public async Task<List<GecisKayitModel>> GetByOgrenciIdAsync(int ogrenciId)
+        public async Task<List<GecisKayitModel>> GetByOgrenciIdAsync(int ogrenciId, DateTime? baslangic = null, DateTime? bitis = null)
         {
             var kayitlar = new List<GecisKayitModel>();
 
-            const string query = @"
+            var kosullar = new List<string> { "od.OgrenciId = @ogrenciId", "o.OgrenciDurum = 1" };
+            if (baslangic.HasValue) kosullar.Add("COALESCE(od.OgrenciGTarih, od.OgrenciCTarih) >= @baslangic");
+            if (bitis.HasValue)    kosullar.Add("COALESCE(od.OgrenciGTarih, od.OgrenciCTarih) <= @bitis");
+
+            string query = $@"
                 SELECT
                     od.OgrenciDetayId, od.OgrenciId, o.OgrenciAdSoyad, o.OgrenciKartNo,
                     b.BirimAd, od.OgrenciGTarih, od.OgrenciCTarih,
@@ -108,7 +112,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                 INNER JOIN Ogrenciler  o ON od.OgrenciId = o.OgrenciId
                 LEFT  JOIN Birimler    b ON o.BirimId    = b.BirimId
                 LEFT  JOIN Cihazlar    c ON od.CihazId   = c.CihazId
-                WHERE od.OgrenciId = @ogrenciId AND o.OgrenciDurum = 1
+                WHERE {string.Join(" AND ", kosullar)}
                 ORDER BY COALESCE(od.OgrenciGTarih, od.OgrenciCTarih) DESC";
 
             try
@@ -116,6 +120,8 @@ namespace OgrenciBilgiSistemi.Api.Services
                 await using var conn = new SqlConnection(ConnectionString);
                 await using var cmd  = new SqlCommand(query, conn);
                 cmd.Parameters.AddWithValue("@ogrenciId", ogrenciId);
+                if (baslangic.HasValue) cmd.Parameters.AddWithValue("@baslangic", baslangic.Value.Date);
+                if (bitis.HasValue)    cmd.Parameters.AddWithValue("@bitis",     bitis.Value.Date.AddDays(1).AddTicks(-1));
 
                 await conn.OpenAsync();
                 await using var reader = await cmd.ExecuteReaderAsync();

@@ -159,6 +159,23 @@ namespace OgrenciBilgiSistemi.Mobil.Services
             }
         }
 
+        public async Task<List<Models.GecisKayit>> HaftalikGecisKayitGetirAsync(int ogrenciId, DateTime baslangic, DateTime bitis)
+        {
+            try
+            {
+                string url = $"{BaseUrl}gecis-kayit/{ogrenciId}?baslangic={baslangic:yyyy-MM-dd}&bitis={bitis:yyyy-MM-dd}";
+                var response = await GetAsync(url);
+                if (!response.IsSuccessStatusCode)
+                    return new List<Models.GecisKayit>();
+
+                return await response.Content.ReadFromJsonAsync<List<Models.GecisKayit>>(_jsonOptions) ?? new List<Models.GecisKayit>();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Haftalık giriş/çıkış kayıtları yüklenemedi: {ex.Message}");
+            }
+        }
+
         #endregion
 
     }

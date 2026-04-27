@@ -1,12 +1,12 @@
 using OgrenciBilgiSistemi.Mobil.Services;
 using OgrenciBilgiSistemi.Mobil.ViewModels;
 using OgrenciBilgiSistemi.Mobil.Models;
+using OgrenciBilgiSistemi.Shared.Enums;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Maui.Controls;
-// Border ve Shape bileşenleri için gerekli:
 using Microsoft.Maui.Controls.Shapes;
 
 namespace OgrenciBilgiSistemi.Mobil.Views
@@ -43,6 +43,8 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             await LoadStudentDetails();
         }
 
+        private static readonly string[] GunAdlari = { "Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar" };
+
         private void SetCurrentWeek(DateTime referenceDate)
         {
             int diff = (7 + (referenceDate.DayOfWeek - DayOfWeek.Monday)) % 7;
@@ -52,6 +54,7 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             LblWeekRange.Text = $"{currentWeekStart:dd.MM.yyyy} - {currentWeekEnd:dd.MM.yyyy}";
 
             _ = LoadWeeklyAttendanceMatrix();
+            _ = LoadHaftalikGecisKayitlari();
         }
 
         private void OnPreviousWeekClicked(object sender, EventArgs e) => SetCurrentWeek(currentWeekStart.AddDays(-7));
@@ -168,6 +171,124 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                 LblAttendanceRate.Text = "%0";
             }
             LblAbsenteeismCount.Text = $"{absent} Ders";
+        }
+
+        private async Task LoadHaftalikGecisKayitlari()
+        {
+            _haftaCts?.Token.ThrowIfCancellationRequested();
+            var ct = _haftaCts?.Token ?? CancellationToken.None;
+
+            try
+            {
+                ct.ThrowIfCancellationRequested();
+                var kayitlar = await _ogrenciService.HaftalikGecisKayitGetirAsync(_studentId, currentWeekStart, currentWeekStart.AddDays(6));
+
+                var anaKapiKayitlari = kayitlar
+                    .Where(k => k.IstasyonTipi == IstasyonTipi.AnaKapi)
+                    .GroupBy(k => (k.GirisTarihi ?? k.CikisTarihi)?.Date)
+                    .Where(g => g.Key.HasValue)
+                    .OrderBy(g => g.Key)
+                    .ToList();
+
+                var yemekhaneKayitlari = kayitlar
+                    .Where(k => k.IstasyonTipi == IstasyonTipi.Yemekhane)
+                    .GroupBy(k => k.GirisTarihi?.Date)
+                    .Where(g => g.Key.HasValue)
+                    .OrderBy(g => g.Key)
+                    .ToList();
+
+                ct.ThrowIfCancellationRequested();
+
+                LayoutGirisCikis.Children.Clear();
+                if (anaKapiKayitlari.Count == 0)
+                {
+                    LayoutGirisCikis.Children.Add(new Label
+                    {
+                        Text = "Bu hafta giriş/çıkış kaydı bulunmuyor.",
+                        FontSize = 12, TextColor = Color.FromArgb("#BDC3C7"), HorizontalOptions = LayoutOptions.Center
+                    });
+                }
+                else
+                {
+                    foreach (var gun in anaKapiKayitlari)
+                    {
+                        int gunIndex = ((int)gun.Key.Value.DayOfWeek + 6) % 7;
+                        string gunAdi = gunIndex < GunAdlari.Length ? GunAdlari[gunIndex] : "";
+
+                        LayoutGirisCikis.Children.Add(new Label
+                        {
+                            Text = $"{gunAdi}, {gun.Key.Value:dd.MM.yyyy}",
+                            FontSize = 12, FontAttributes = FontAttributes.Bold, TextColor = Color.FromArgb("#2C3E50")
+                        });
+
+                        foreach (var kayit in gun.OrderBy(k => k.GirisTarihi ?? k.CikisTarihi))
+                        {
+                            var satir = new HorizontalStackLayout { Spacing = 10, Margin = new Thickness(10, 2, 0, 0) };
+
+                            if (kayit.GirisTarihi.HasValue)
+                            {
+                                satir.Children.Add(new Label
+                                {
+                                    Text = $"Giriş: {kayit.GirisTarihi.Value:HH:mm}",
+                                    FontSize = 13, TextColor = Color.FromArgb("#1ABC9C"), FontAttributes = FontAttributes.Bold
+                                });
+                            }
+                            if (kayit.CikisTarihi.HasValue)
+                            {
+                                satir.Children.Add(new Label
+                                {
+                                    Text = $"Çıkış: {kayit.CikisTarihi.Value:HH:mm}",
+                                    FontSize = 13, TextColor = Color.FromArgb("#E74C3C"), FontAttributes = FontAttributes.Bold
+                                });
+                            }
+
+                            LayoutGirisCikis.Children.Add(satir);
+                        }
+                    }
+                }
+
+                LayoutYemekhane.Children.Clear();
+                if (yemekhaneKayitlari.Count == 0)
+                {
+                    LayoutYemekhane.Children.Add(new Label
+                    {
+                        Text = "Bu hafta yemekhane kaydı bulunmuyor.",
+                        FontSize = 12, TextColor = Color.FromArgb("#BDC3C7"), HorizontalOptions = LayoutOptions.Center
+                    });
+                }
+                else
+                {
+                    foreach (var gun in yemekhaneKayitlari)
+                    {
+                        int gunIndex = ((int)gun.Key.Value.DayOfWeek + 6) % 7;
+                        string gunAdi = gunIndex < GunAdlari.Length ? GunAdlari[gunIndex] : "";
+
+                        var satir = new HorizontalStackLayout { Spacing = 10 };
+                        satir.Children.Add(new Label
+                        {
+                            Text = $"{gunAdi}, {gun.Key.Value:dd.MM.yyyy}",
+                            FontSize = 12, FontAttributes = FontAttributes.Bold, TextColor = Color.FromArgb("#2C3E50")
+                        });
+
+                        var ilkKayit = gun.First();
+                        if (ilkKayit.GirisTarihi.HasValue)
+                        {
+                            satir.Children.Add(new Label
+                            {
+                                Text = $"— {ilkKayit.GirisTarihi.Value:HH:mm}",
+                                FontSize = 13, TextColor = Color.FromArgb("#E67E22"), FontAttributes = FontAttributes.Bold
+                            });
+                        }
+
+                        LayoutYemekhane.Children.Add(satir);
+                    }
+                }
+            }
+            catch (OperationCanceledException) { }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[HATA] Geçiş kayıtları: {ex.Message}");
+            }
         }
 
         private void OnPhoneTapped(object sender, EventArgs e)
