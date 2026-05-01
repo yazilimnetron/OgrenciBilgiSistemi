@@ -258,17 +258,17 @@ namespace OgrenciBilgiSistemi.Mobil.Views
 
                 string not = string.IsNullOrWhiteSpace(NotEditor.Text) ? null : NotEditor.Text.Trim();
 
-                var sonuc = await _randevuService.RandevuOlustur(
+                var (basarili, hata) = await _randevuService.RandevuOlustur(
                     _karsiTarafId.Value, ogrenciId, randevuTarihi, sureDakika, not);
 
-                if (sonuc)
+                if (basarili)
                 {
                     await DisplayAlert("Başarılı", "Randevu oluşturuldu.", "Tamam");
                     await Navigation.PopAsync();
                 }
                 else
                 {
-                    await DisplayAlert("Hata", "Randevu oluşturulurken bir sorun oluştu.", "Tamam");
+                    await DisplayAlert("Hata", hata ?? "Randevu oluşturulurken bir sorun oluştu.", "Tamam");
                 }
             }
             catch (Exception ex)

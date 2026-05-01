@@ -38,7 +38,7 @@ namespace OgrenciBilgiSistemi.Mobil.Services
             return null;
         }
 
-        public async Task<bool> RandevuOlustur(int karsiTarafId, int? ogrenciId, DateTime tarih, int sureDakika, string? not)
+        public async Task<(bool Basarili, string? HataMesaji)> RandevuOlustur(int karsiTarafId, int? ogrenciId, DateTime tarih, int sureDakika, string? not)
         {
             try
             {
@@ -52,12 +52,27 @@ namespace OgrenciBilgiSistemi.Mobil.Services
                 };
                 var content = new StringContent(JsonSerializer.Serialize(body, _jsonOptions), Encoding.UTF8, "application/json");
                 var response = await PostAsync($"{BaseUrl}randevular", content);
-                return response.IsSuccessStatusCode;
+
+                if (response.IsSuccessStatusCode)
+                    return (true, null);
+
+                // 409 Conflict (slot çakışması) — server { mesaj: "..." } döndürüyor
+                var responseBody = await response.Content.ReadAsStringAsync();
+                string? mesaj = null;
+                try
+                {
+                    using var doc = JsonDocument.Parse(responseBody);
+                    if (doc.RootElement.TryGetProperty("mesaj", out var m))
+                        mesaj = m.GetString();
+                }
+                catch { /* body JSON değilse mesajı boş bırak */ }
+
+                return (false, mesaj);
             }
             catch (Exception ex)
             {
                 System.Diagnostics.Debug.WriteLine($"[RANDEVU HATASI]: {ex.Message}");
-                return false;
+                return (false, null);
             }
         }
 
