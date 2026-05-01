@@ -121,26 +121,18 @@ namespace OgrenciBilgiSistemi.Mobil.Views
         private void ListeyiUygula(bool secimTemizle = true)
         {
             var kaynak = BenimSinifimCheckBox.IsChecked ? _kendiSinifGrubu : _digerSiniflarGruplari;
-            var arama = (OgrenciAramaBar?.Text ?? "").Trim();
+            var sinifArama = (SinifAramaEntry?.Text ?? "").Trim();
 
             List<OgrenciGrubu> hedef;
-            if (string.IsNullOrEmpty(arama))
+            if (string.IsNullOrEmpty(sinifArama))
             {
                 hedef = kaynak;
             }
             else
             {
                 hedef = kaynak
-                    .Select(g => new
-                    {
-                        Grup = g,
-                        Eslesen = g.Where(o =>
-                            (o.OgrenciAdSoyad ?? "").Contains(arama, StringComparison.CurrentCultureIgnoreCase) ||
-                            (o.SinifAdi ?? "").Contains(arama, StringComparison.CurrentCultureIgnoreCase))
-                          .ToList()
-                    })
-                    .Where(x => x.Eslesen.Count > 0)
-                    .Select(x => new OgrenciGrubu(x.Grup.BaslikAdi, x.Grup.KendiSinifi, x.Eslesen))
+                    .Where(g => g.Any(o =>
+                        (o.SinifAdi ?? "").Contains(sinifArama, StringComparison.CurrentCultureIgnoreCase)))
                     .ToList();
             }
 
@@ -160,7 +152,7 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             ListeyiUygula();
         }
 
-        private void OnOgrenciAramaDegisti(object? sender, TextChangedEventArgs e)
+        private void OnSinifAramaDegisti(object? sender, TextChangedEventArgs e)
         {
             ListeyiUygula(secimTemizle: false);
         }
