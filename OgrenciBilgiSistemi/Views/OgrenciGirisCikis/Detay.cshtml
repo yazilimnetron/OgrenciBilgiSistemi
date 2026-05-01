@@ -2,6 +2,7 @@
 @using System.Globalization
 @using System.Linq
 @using OgrenciBilgiSistemi.Models
+@using OgrenciBilgiSistemi.Shared.Constants
 
 @{
     ViewData["Title"] = "Öğrenci Giriş-Çıkış Detayı";
@@ -39,17 +40,7 @@
         _ => d.ToString()!
     };
 
-    string SinifDurumBadge(int? d) => d switch
-    {
-        1 => "bg-success",
-        2 => "bg-danger",
-        3 => "bg-warning text-dark",
-        4 => "bg-primary",
-        5 => "bg-purple",
-        6 => "bg-dark",
-        7 => "bg-secondary",
-        _ => "bg-light text-dark"
-    };
+    string SinifDurumBadge(int? d) => YoklamaRenkleri.CssSinifGetir(d);
 }
 
 <div class="viewport-scroller">

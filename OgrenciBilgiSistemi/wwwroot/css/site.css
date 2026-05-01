@@ -122,21 +122,21 @@ html, body {
         font-size: .95rem;
     }
 
-/* ---- Ýçerik ---- */
+/* ---- ï¿½ï¿½erik ---- */
 .content {
-    margin-left: 180px; /* sidebar ile tam hizalý */
+    margin-left: 180px; /* sidebar ile tam hizalï¿½ */
     padding: 20px;
     background-color: #fff;
     border-radius: 8px;
     color: #000;
 }
 
-/* ---- Yardýmcýlar ---- */
+/* ---- Yardï¿½mcï¿½lar ---- */
 .btn-group-gap {
     gap: .25rem;
 }
 
-/* ---- Viewport / Canvas yapýsý ---- */
+/* ---- Viewport / Canvas yapï¿½sï¿½ ---- */
 .viewport-scroller {
     width: 100%;
     overflow-x: visible;
@@ -151,7 +151,7 @@ html, body {
     box-sizing: border-box;
 }
 
-/* ---- Scroll Yardýmcýlarý ---- */
+/* ---- Scroll Yardï¿½mcï¿½larï¿½ ---- */
 .no-wrap-scroll {
     overflow-x: auto;
     white-space: nowrap;
@@ -178,19 +178,7 @@ html, body {
     height: 340px;
 }
 
-/* ---- Chart: belirgin çerçeve + yazý rengi ---- */
-/*#dashboardLine {
-    border: 2px solid rgba(0, 0, 0, 0.15);*/ /* belirgin dýþ çerçeve */
-    /*box-shadow: none;*/ /* gölgeyi korumak istersen bu satýrý kaldýr */
-/*}
-
-    #dashboardLine + small,
-    #dashboardLine + p,
-    #dashboardLine + div {
-        display: block;
-        text-align: center;
-        font-weight: 500;
-        color: #444;*/ /* yazýlar daha koyu */
-        /*margin-top: 6px;
-        letter-spacing: .2px;
-    }*/
+/* Yoklama "Raporlu" durumu iÃ§in Bootstrap'ta olmayan mor renk */
+.bg-purple {
+    background-color: #6F42C1 !important;
+}

@@ -145,8 +145,8 @@ namespace OgrenciBilgiSistemi.Mobil.Services
         {
             try
             {
-                // API Ucu: GET api/ogrenciler/{id}/weekly-attendance?baslangic=...&bitis=...
-                string url = $"{BaseUrl}ogrenciler/{ogrenciId}/weekly-attendance?baslangic={baslangic:yyyy-MM-dd}&bitis={bitis:yyyy-MM-dd}";
+                // API Ucu: GET api/ogrenciler/{id}/haftalik-yoklama?baslangic=...&bitis=...
+                string url = $"{BaseUrl}ogrenciler/{ogrenciId}/haftalik-yoklama?baslangic={baslangic:yyyy-MM-dd}&bitis={bitis:yyyy-MM-dd}";
                 var response = await GetAsync(url);
                 if (!response.IsSuccessStatusCode)
                     return new List<SinifYoklama>();

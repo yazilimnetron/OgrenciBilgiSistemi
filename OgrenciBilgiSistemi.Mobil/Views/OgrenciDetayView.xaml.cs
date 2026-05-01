@@ -1,7 +1,9 @@
 using OgrenciBilgiSistemi.Mobil.Services;
 using OgrenciBilgiSistemi.Mobil.ViewModels;
 using OgrenciBilgiSistemi.Mobil.Models;
+using OgrenciBilgiSistemi.Shared.Constants;
 using OgrenciBilgiSistemi.Shared.Enums;
+using OgrenciBilgiSistemi.Shared.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,16 +20,8 @@ namespace OgrenciBilgiSistemi.Mobil.Views
         private DateTime currentWeekStart;
         private CancellationTokenSource _haftaCts;
 
-        private readonly Dictionary<int, Color> StatusColors = new()
-        {
-            { 1, Color.FromArgb("#1ABC9C") }, // Geldi
-            { 2, Color.FromArgb("#E74C3C") }, // Gelmedi
-            { 3, Color.FromArgb("#F1C40F") }, // Geç Geldi
-            { 4, Color.FromArgb("#3498DB") }, // İzinli
-            { 5, Color.FromArgb("#9B59B6") }, // Raporlu
-            { 6, Color.FromArgb("#34495E") }, // Nöbetçi
-            { 7, Color.FromArgb("#95A5A6") }  // Görevli
-        };
+        // Geçerli yoklama durum aralığı (1-7); Shared/YoklamaDurumu enum ile aynı.
+        private static bool GecerliDurum(int statusId) => statusId is >= 1 and <= 7;
 
         public OgrenciDetayView(int studentId, OgrenciService? ogrenciService = null)
         {
@@ -47,9 +41,7 @@ namespace OgrenciBilgiSistemi.Mobil.Views
 
         private void SetCurrentWeek(DateTime referenceDate)
         {
-            int diff = (7 + (referenceDate.DayOfWeek - DayOfWeek.Monday)) % 7;
-            currentWeekStart = referenceDate.AddDays(-diff).Date;
-
+            currentWeekStart = HaftaHesaplayici.PazartesiBul(referenceDate);
             DateTime currentWeekEnd = currentWeekStart.AddDays(6);
             LblWeekRange.Text = $"{currentWeekStart:dd.MM.yyyy} - {currentWeekEnd:dd.MM.yyyy}";
 
@@ -130,14 +122,13 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                             statusId = dayRecord.DersGetir(lessonIndex) ?? 0;
                         }
 
-                        if (statusId > 0 && StatusColors.ContainsKey(statusId))
+                        if (GecerliDurum(statusId))
                         {
                             recordedLessonsCount++;
 
-                            // Hata veren ToolTipProperties kaldırıldı, Border yapısı sadeleştirildi
                             var box = new Border
                             {
-                                BackgroundColor = StatusColors[statusId],
+                                BackgroundColor = Color.FromArgb(YoklamaRenkleri.HexGetir(statusId)),
                                 StrokeShape = new RoundRectangle { CornerRadius = 4 },
                                 Margin = new Thickness(1),
                                 HeightRequest = 25,
@@ -145,7 +136,7 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                             };
 
                             GridAttendanceMatrix.Add(box, dayIndex + 1, lessonIndex);
-                            if (statusId == 2) totalAbsent++;
+                            if (statusId == (int)YoklamaDurumu.Gelmedi) totalAbsent++;
                         }
                     }
                 }
@@ -230,7 +221,7 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                                 satir.Children.Add(new Label
                                 {
                                     Text = $"Giriş: {kayit.GirisTarihi.Value:HH:mm}",
-                                    FontSize = 13, TextColor = Color.FromArgb("#1ABC9C"), FontAttributes = FontAttributes.Bold
+                                    FontSize = 13, TextColor = Color.FromArgb(YoklamaRenkleri.GirisHex), FontAttributes = FontAttributes.Bold
                                 });
                             }
                             if (kayit.CikisTarihi.HasValue)
@@ -238,7 +229,7 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                                 satir.Children.Add(new Label
                                 {
                                     Text = $"Çıkış: {kayit.CikisTarihi.Value:HH:mm}",
-                                    FontSize = 13, TextColor = Color.FromArgb("#E74C3C"), FontAttributes = FontAttributes.Bold
+                                    FontSize = 13, TextColor = Color.FromArgb(YoklamaRenkleri.CikisHex), FontAttributes = FontAttributes.Bold
                                 });
                             }
 

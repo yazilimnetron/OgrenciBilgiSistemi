@@ -1,5 +1,5 @@
 using Microsoft.Data.SqlClient;
-using OgrenciBilgiSistemi.Api.Models;
+using OgrenciBilgiSistemi.Shared.Dtos;
 using OgrenciBilgiSistemi.Shared.Services;
 
 namespace OgrenciBilgiSistemi.Api.Services
@@ -19,7 +19,7 @@ namespace OgrenciBilgiSistemi.Api.Services
         /// OgrenciDetaylar tablosundan filtrelenmiş giriş/çıkış kayıtlarını getirir.
         /// Tüm parametreler isteğe bağlıdır.
         /// </summary>
-        public async Task<List<GecisKayitModel>> GetListAsync(
+        public async Task<List<GecisKayitDto>> GetListAsync(
             DateTime? baslangic,
             DateTime? bitis,
             string?   arama,
@@ -29,7 +29,7 @@ namespace OgrenciBilgiSistemi.Api.Services
             int       pageNumber = 1,
             int       pageSize = 100)
         {
-            var kayitlar = new List<GecisKayitModel>();
+            var kayitlar = new List<GecisKayitDto>();
 
             pageNumber = Math.Max(1, pageNumber);
             pageSize = Math.Clamp(pageSize, 1, 500);
@@ -95,9 +95,9 @@ namespace OgrenciBilgiSistemi.Api.Services
         /// <summary>
         /// Tek bir öğrenciye ait tüm giriş/çıkış kayıtlarını yeniden eskiye döner.
         /// </summary>
-        public async Task<List<GecisKayitModel>> GetByOgrenciIdAsync(int ogrenciId, DateTime? baslangic = null, DateTime? bitis = null)
+        public async Task<List<GecisKayitDto>> GetByOgrenciIdAsync(int ogrenciId, DateTime? baslangic = null, DateTime? bitis = null)
         {
-            var kayitlar = new List<GecisKayitModel>();
+            var kayitlar = new List<GecisKayitDto>();
 
             var kosullar = new List<string> { "od.OgrenciId = @ogrenciId", "o.OgrenciDurum = 1" };
             if (baslangic.HasValue) kosullar.Add("COALESCE(od.OgrenciGTarih, od.OgrenciCTarih) >= @baslangic");
@@ -137,7 +137,7 @@ namespace OgrenciBilgiSistemi.Api.Services
             return kayitlar;
         }
 
-        private static GecisKayitModel MapRow(SqlDataReader reader) => new()
+        private static GecisKayitDto MapRow(SqlDataReader reader) => new()
         {
             OgrenciDetayId  = (int)reader["OgrenciDetayId"],
             OgrenciId       = (int)reader["OgrenciId"],

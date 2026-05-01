@@ -1,6 +1,7 @@
 using Microsoft.Data.SqlClient;
 using OgrenciBilgiSistemi.Api.Dtos;
 using OgrenciBilgiSistemi.Api.Models;
+using OgrenciBilgiSistemi.Shared.Dtos;
 using OgrenciBilgiSistemi.Shared.Services;
 
 namespace OgrenciBilgiSistemi.Api.Services
@@ -284,9 +285,9 @@ namespace OgrenciBilgiSistemi.Api.Services
             }
         }
 
-        public async Task<List<SinifYoklamaModel>> HaftalikYoklamaGetirAsync(int ogrenciId, DateTime baslangic, DateTime bitis)
+        public async Task<List<SinifYoklamaDto>> HaftalikYoklamaGetirAsync(int ogrenciId, DateTime baslangic, DateTime bitis)
         {
-            var sonuc = new List<SinifYoklamaModel>();
+            var sonuc = new List<SinifYoklamaDto>();
             try
             {
                 await using var conn = new SqlConnection(ConnectionString);
@@ -308,7 +309,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                 await using var reader = await cmd.ExecuteReaderAsync();
                 while (await reader.ReadAsync())
                 {
-                    sonuc.Add(new SinifYoklamaModel
+                    sonuc.Add(new SinifYoklamaDto
                     {
                         SinifYoklamaId = (int)reader["SinifYoklamaId"],
                         OgrenciId = (int)reader["OgrenciId"],

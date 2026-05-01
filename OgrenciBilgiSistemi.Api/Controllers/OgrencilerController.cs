@@ -233,7 +233,9 @@ namespace OgrenciBilgiSistemi.Api.Controllers
         #region Yoklama Metotları
 
         // 7. Öğrencinin haftalık yoklama geçmişini getirir
+        // Eski mobil sürümlerle (1.1.36 ve öncesi) uyumlu kalmak için iki route alias bırakıldı.
         [HttpGet("{id}/weekly-attendance")]
+        [HttpGet("{id}/haftalik-yoklama")]
         public async Task<IActionResult> HaftalikYoklamaGetir(int id, [FromQuery] DateTime baslangic, [FromQuery] DateTime bitis)
         {
             try
