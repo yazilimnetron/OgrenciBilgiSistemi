@@ -24,7 +24,7 @@ namespace OgrenciBilgiSistemi.Api.Services
             _tenantBaglami = tenantBaglami;
         }
 
-        public async Task<List<RandevuModel>> KullanicininRandevulariniGetir(int kullaniciId, string rol, int sayfaNo = 1, int sayfaBoyutu = 20)
+        public async Task<List<RandevuModel>> KullanicininRandevulariniGetir(int kullaniciId, string rol, int sayfaNo = 1, int sayfaBoyutu = 5)
         {
             var liste = new List<RandevuModel>();
             const string query = @"

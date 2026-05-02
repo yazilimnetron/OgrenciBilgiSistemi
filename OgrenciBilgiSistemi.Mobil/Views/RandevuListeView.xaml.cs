@@ -34,7 +34,7 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             try
             {
                 var randevular = await _randevuService.RandevulariGetir(_mevcutSayfa);
-                if (randevular.Count < 20)
+                if (randevular.Count < 5)
                     _dahaFazlaVar = false;
 
                 var yeniGorunumler = randevular.Select(r => new RandevuGorunumModel(r));
