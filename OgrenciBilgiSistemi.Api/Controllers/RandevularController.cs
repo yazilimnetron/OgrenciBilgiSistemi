@@ -102,16 +102,21 @@ namespace OgrenciBilgiSistemi.Api.Controllers
         [HttpPut("{id}/onayla")]
         public async Task<IActionResult> Onayla(int id)
         {
-            if (Rol != "Ogretmen") return Forbid();
+            var rol = Rol;
+            if (rol != "Ogretmen" && rol != "Veli") return Forbid();
 
-            var basarili = await _randevuService.DurumGuncelle(id, KullaniciId, RandevuDurumu.Onaylandi);
+            var kullaniciId = KullaniciId;
+            var basarili = await _randevuService.DurumGuncelle(id, kullaniciId, rol, RandevuDurumu.Onaylandi);
             if (!basarili) return NotFound();
 
             var randevu = await _randevuService.RandevuGetir(id);
             if (randevu is not null)
             {
                 var tarihStr = randevu.RandevuTarihi.ToString("dd.MM.yyyy HH:mm");
-                await _bildirimService.Olustur(randevu.VeliKullaniciId,
+                var aliciId = randevu.OgretmenKullaniciId == kullaniciId
+                    ? randevu.VeliKullaniciId
+                    : randevu.OgretmenKullaniciId;
+                await _bildirimService.Olustur(aliciId,
                     (int)BildirimTuru.RandevuOnaylandi,
                     $"{tarihStr} tarihli randevunuz onaylandı.",
                     id);
@@ -123,22 +128,56 @@ namespace OgrenciBilgiSistemi.Api.Controllers
         [HttpPut("{id}/reddet")]
         public async Task<IActionResult> Reddet(int id)
         {
-            if (Rol != "Ogretmen") return Forbid();
+            var rol = Rol;
+            if (rol != "Ogretmen" && rol != "Veli") return Forbid();
 
-            var basarili = await _randevuService.DurumGuncelle(id, KullaniciId, RandevuDurumu.Reddedildi);
+            var kullaniciId = KullaniciId;
+            var basarili = await _randevuService.DurumGuncelle(id, kullaniciId, rol, RandevuDurumu.Reddedildi);
             if (!basarili) return NotFound();
 
             var randevu = await _randevuService.RandevuGetir(id);
             if (randevu is not null)
             {
                 var tarihStr = randevu.RandevuTarihi.ToString("dd.MM.yyyy HH:mm");
-                await _bildirimService.Olustur(randevu.VeliKullaniciId,
+                var aliciId = randevu.OgretmenKullaniciId == kullaniciId
+                    ? randevu.VeliKullaniciId
+                    : randevu.OgretmenKullaniciId;
+                await _bildirimService.Olustur(aliciId,
                     (int)BildirimTuru.RandevuReddedildi,
                     $"{tarihStr} tarihli randevunuz reddedildi.",
                     id);
             }
 
             return Ok(new { mesaj = "Randevu reddedildi." });
+        }
+
+        [HttpGet("cakisma-kontrolu")]
+        public async Task<IActionResult> CakismaKontrolu(
+            [FromQuery] DateTime tarih,
+            [FromQuery] int sureDakika,
+            [FromQuery] int? karsiTarafKullaniciId)
+        {
+            var rol = Rol;
+            var kullaniciId = KullaniciId;
+            int ogretmenId, veliId;
+
+            if (rol == "Ogretmen")
+            {
+                ogretmenId = kullaniciId;
+                veliId = karsiTarafKullaniciId ?? 0;
+            }
+            else if (rol == "Veli")
+            {
+                veliId = kullaniciId;
+                ogretmenId = karsiTarafKullaniciId ?? 0;
+            }
+            else
+            {
+                return Forbid();
+            }
+
+            var mesaj = await _randevuService.CakismaMesajiAl(ogretmenId, veliId, tarih, sureDakika);
+            return Ok(new { cakismaVar = mesaj is not null, mesaj });
         }
 
         [HttpPut("{id}/iptal")]

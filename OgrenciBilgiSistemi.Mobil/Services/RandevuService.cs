@@ -76,6 +76,32 @@ namespace OgrenciBilgiSistemi.Mobil.Services
             }
         }
 
+        public async Task<(bool CakismaVar, string? Mesaj)> CakismaKontrolu(DateTime tarih, int sureDakika, int? karsiTarafId)
+        {
+            try
+            {
+                var url = $"{BaseUrl}randevular/cakisma-kontrolu" +
+                          $"?tarih={Uri.EscapeDataString(tarih.ToString("o"))}" +
+                          $"&sureDakika={sureDakika}";
+                if (karsiTarafId.HasValue)
+                    url += $"&karsiTarafKullaniciId={karsiTarafId.Value}";
+
+                var response = await GetAsync(url);
+                if (!response.IsSuccessStatusCode) return (false, null);
+
+                var body = await response.Content.ReadAsStringAsync();
+                using var doc = JsonDocument.Parse(body);
+                var cakisma = doc.RootElement.GetProperty("cakismaVar").GetBoolean();
+                var mesaj = doc.RootElement.TryGetProperty("mesaj", out var m) ? m.GetString() : null;
+                return (cakisma, mesaj);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[CAKISMA HATASI]: {ex.Message}");
+                return (false, null);
+            }
+        }
+
         public async Task<bool> Onayla(int randevuId)
         {
             try

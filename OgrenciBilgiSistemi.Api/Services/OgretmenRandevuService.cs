@@ -45,18 +45,36 @@ namespace OgrenciBilgiSistemi.Api.Services
 
         public async Task<int> Ekle(int ogretmenId, DateTime tarih, TimeSpan baslangic, TimeSpan bitis)
         {
+            // Aynı öğretmenin aynı tarihte zaman aralığı çakışan başka bir slot'u var mı?
+            const string cakismaQuery = @"
+                SELECT COUNT(*) FROM OgretmenRandevular
+                WHERE OgretmenKullaniciId = @ogretmenId AND IsDeleted = 0
+                  AND Tarih = @tarih
+                  AND @baslangic < BitisSaati AND @bitis > BaslangicSaati";
+
+            await using var conn = new SqlConnection(ConnectionString);
+            await conn.OpenAsync();
+
+            await using (var cakismaCmd = new SqlCommand(cakismaQuery, conn))
+            {
+                cakismaCmd.Parameters.AddWithValue("@ogretmenId", ogretmenId);
+                cakismaCmd.Parameters.AddWithValue("@tarih", tarih.Date);
+                cakismaCmd.Parameters.AddWithValue("@baslangic", baslangic);
+                cakismaCmd.Parameters.AddWithValue("@bitis", bitis);
+                if ((int)(await cakismaCmd.ExecuteScalarAsync())! > 0)
+                    throw new InvalidOperationException("Bu zaman aralığında zaten bir slot tanımlanmış.");
+            }
+
             const string query = @"
                 INSERT INTO OgretmenRandevular (OgretmenKullaniciId, Tarih, BaslangicSaati, BitisSaati, IsDeleted)
                 OUTPUT INSERTED.OgretmenRandevuId
                 VALUES (@ogretmenId, @tarih, @baslangic, @bitis, 0)";
 
-            await using var conn = new SqlConnection(ConnectionString);
             await using var cmd = new SqlCommand(query, conn);
             cmd.Parameters.AddWithValue("@ogretmenId", ogretmenId);
             cmd.Parameters.AddWithValue("@tarih", tarih.Date);
             cmd.Parameters.AddWithValue("@baslangic", baslangic);
             cmd.Parameters.AddWithValue("@bitis", bitis);
-            await conn.OpenAsync();
             return (int)(await cmd.ExecuteScalarAsync())!;
         }
 
@@ -88,7 +106,9 @@ namespace OgrenciBilgiSistemi.Api.Services
                           WHERE r.OgretmenKullaniciId = t.OgretmenKullaniciId
                             AND r.IsDeleted = 0 AND r.Durum IN (0, 1)
                             AND CAST(r.RandevuTarihi AS DATE) = t.Tarih
-                            AND CAST(r.RandevuTarihi AS TIME) = t.BaslangicSaati
+                            AND CAST(r.RandevuTarihi AS TIME) < t.BitisSaati
+                            AND DATEADD(MINUTE, r.SureDakika, r.RandevuTarihi) >
+                                DATEADD(MINUTE, DATEDIFF(MINUTE, 0, t.BaslangicSaati), CAST(t.Tarih AS datetime))
                       )
                     ORDER BY t.Tarih, t.BaslangicSaati";
 

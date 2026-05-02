@@ -122,50 +122,73 @@ namespace OgrenciBilgiSistemi.Api.Services
 
         public async Task<int> OgretmenRandevuOlustur(int ogretmenId, int veliId, int? ogrenciId, DateTime tarih, int sureDakika, string? not)
         {
-            if (await CakismaVarMi(ogretmenId, tarih, sureDakika))
-                throw new InvalidOperationException("Bu zaman aralığında zaten bir randevunuz bulunmaktadır.");
+            var cakisma = await CakismaMesaji(ogretmenId, veliId, tarih, sureDakika);
+            if (cakisma is not null) throw new InvalidOperationException(cakisma);
 
             return await RandevuEkle(ogretmenId, veliId, ogrenciId, tarih, sureDakika, not,
-                ogretmenTarafindanOlusturuldu: true, durum: (int)RandevuDurumu.Onaylandi);
+                ogretmenTarafindanOlusturuldu: true, durum: (int)RandevuDurumu.Beklemede);
         }
 
         public async Task<int> VeliRandevuOlustur(int veliId, int ogretmenId, int? ogrenciId, DateTime tarih, int sureDakika, string? not)
         {
-            if (await CakismaVarMi(ogretmenId, tarih, sureDakika))
-                throw new InvalidOperationException("Öğretmenin bu zaman aralığında zaten bir randevusu bulunmaktadır.");
+            var cakisma = await CakismaMesaji(ogretmenId, veliId, tarih, sureDakika);
+            if (cakisma is not null) throw new InvalidOperationException(cakisma);
 
             return await RandevuEkle(ogretmenId, veliId, ogrenciId, tarih, sureDakika, not,
                 ogretmenTarafindanOlusturuldu: false, durum: (int)RandevuDurumu.Beklemede);
         }
 
-        private async Task<bool> CakismaVarMi(int ogretmenId, DateTime tarih, int sureDakika)
+        // Hem öğretmen hem veli takviminde aynı zaman aralığında onaylanmış/bekleyen randevu varsa
+        // çakışan tarafın Türkçe mesajını döndürür; çakışma yoksa null döner.
+        private async Task<string?> CakismaMesaji(int ogretmenId, int veliId, DateTime tarih, int sureDakika)
         {
             const string query = @"
-                SELECT COUNT(*) FROM Randevular
-                WHERE OgretmenKullaniciId = @ogretmenId AND IsDeleted = 0
-                  AND Durum IN (0, 1)
+                SELECT TOP 1
+                  CASE WHEN OgretmenKullaniciId = @ogretmenId THEN 'ogretmen'
+                       WHEN VeliKullaniciId    = @veliId    THEN 'veli'
+                  END AS Taraf
+                FROM Randevular
+                WHERE IsDeleted = 0 AND Durum IN (0, 1)
+                  AND (OgretmenKullaniciId = @ogretmenId OR VeliKullaniciId = @veliId)
                   AND @tarih < DATEADD(MINUTE, SureDakika, RandevuTarihi)
                   AND DATEADD(MINUTE, @sure, @tarih) > RandevuTarihi";
 
             await using var conn = new SqlConnection(ConnectionString);
             await using var cmd = new SqlCommand(query, conn);
             cmd.Parameters.AddWithValue("@ogretmenId", ogretmenId);
+            cmd.Parameters.AddWithValue("@veliId", veliId);
             cmd.Parameters.AddWithValue("@tarih", tarih);
             cmd.Parameters.AddWithValue("@sure", sureDakika);
             await conn.OpenAsync();
-            return (int)(await cmd.ExecuteScalarAsync())! > 0;
+            var taraf = (string?)await cmd.ExecuteScalarAsync();
+            return taraf switch
+            {
+                "ogretmen" => "Öğretmenin bu zaman aralığında zaten bir randevusu bulunmaktadır.",
+                "veli"     => "Velinin bu zaman aralığında zaten bir randevusu bulunmaktadır.",
+                _ => null
+            };
         }
 
-        public async Task<bool> DurumGuncelle(int randevuId, int ogretmenId, RandevuDurumu yeniDurum)
+        // Mobil ve diğer servislerin POST öncesi kontrol için kullanabileceği public sarmalayıcı.
+        public Task<string?> CakismaMesajiAl(int ogretmenId, int veliId, DateTime tarih, int sureDakika)
+            => CakismaMesaji(ogretmenId, veliId, tarih, sureDakika);
+
+        // Karşı tarafın oluşturduğu beklemedeki randevuyu onaylar/reddeder.
+        // Öğretmen yalnızca velinin oluşturduğu (OgretmenTarafindanOlusturuldu = 0),
+        // veli yalnızca öğretmenin oluşturduğu (OgretmenTarafindanOlusturuldu = 1) randevuya işlem yapabilir.
+        public async Task<bool> DurumGuncelle(int randevuId, int kullaniciId, string rol, RandevuDurumu yeniDurum)
         {
             const string query = @"
                 UPDATE Randevular SET Durum = @durum, GuncellenmeTarihi = GETDATE()
-                WHERE RandevuId = @id AND OgretmenKullaniciId = @ogretmenId AND IsDeleted = 0";
+                WHERE RandevuId = @id AND IsDeleted = 0
+                  AND ((@rol = 'Ogretmen' AND OgretmenKullaniciId = @kullaniciId AND OgretmenTarafindanOlusturuldu = 0)
+                    OR (@rol = 'Veli' AND VeliKullaniciId = @kullaniciId AND OgretmenTarafindanOlusturuldu = 1))";
 
             await using var conn = new SqlConnection(ConnectionString);
             await using var cmd = new SqlCommand(query, conn);
             cmd.Parameters.AddWithValue("@id", randevuId);
-            cmd.Parameters.AddWithValue("@ogretmenId", ogretmenId);
+            cmd.Parameters.AddWithValue("@kullaniciId", kullaniciId);
+            cmd.Parameters.AddWithValue("@rol", rol);
             cmd.Parameters.AddWithValue("@durum", (int)yeniDurum);
             await conn.OpenAsync();
             return await cmd.ExecuteNonQueryAsync() > 0;

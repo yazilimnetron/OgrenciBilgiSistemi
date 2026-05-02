@@ -86,7 +86,9 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                     DurumIkon.Text = "\u23F3";
                     DurumLabel.Text = "Beklemede";
                     DurumLabel.TextColor = Color.FromArgb("#F39C12");
-                    DurumAciklama.Text = "Öğretmen onayı bekleniyor";
+                    DurumAciklama.Text = _randevu.OgretmenTarafindanOlusturuldu
+                        ? "Veli onayı bekleniyor"
+                        : "Öğretmen onayı bekleniyor";
                     break;
                 case 1: // Onaylandi
                     DurumIkon.Text = "\u2705";
@@ -124,12 +126,18 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             ReddetButton.IsVisible = false;
             IptalButton.IsVisible = false;
 
-            if (_randevu.Durum == 0 && KullaniciOturum.OgretmenMi)
+            // Karşı tarafın oluşturduğu beklemedeki randevu için onay/red butonları:
+            // Öğretmen yalnızca velinin oluşturduğu randevuyu, veli yalnızca öğretmenin oluşturduğu randevuyu işleyebilir
+            if (_randevu.Durum == 0)
             {
-                // Öğretmen bekleyen randevuyu onaylayabilir/reddedebilir
-                AksiyonPanel.IsVisible = true;
-                OnaylaButton.IsVisible = true;
-                ReddetButton.IsVisible = true;
+                var veliOnaylayabilir = KullaniciOturum.VeliMi && _randevu.OgretmenTarafindanOlusturuldu;
+                var ogretmenOnaylayabilir = KullaniciOturum.OgretmenMi && !_randevu.OgretmenTarafindanOlusturuldu;
+                if (veliOnaylayabilir || ogretmenOnaylayabilir)
+                {
+                    AksiyonPanel.IsVisible = true;
+                    OnaylaButton.IsVisible = true;
+                    ReddetButton.IsVisible = true;
+                }
             }
 
             if (_randevu.Durum == 0 || _randevu.Durum == 1)

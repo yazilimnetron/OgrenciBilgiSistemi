@@ -44,8 +44,15 @@ namespace OgrenciBilgiSistemi.Api.Controllers
             if (dto.Tarih.Date < DateTime.Today)
                 return BadRequest("Geçmiş tarih seçilemez.");
 
-            var id = await _ogretmenRandevuService.Ekle(KullaniciId, dto.Tarih, baslangic, bitis);
-            return Ok(new { ogretmenRandevuId = id });
+            try
+            {
+                var id = await _ogretmenRandevuService.Ekle(KullaniciId, dto.Tarih, baslangic, bitis);
+                return Ok(new { ogretmenRandevuId = id });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { mesaj = ex.Message });
+            }
         }
 
         [HttpDelete("{id}")]
