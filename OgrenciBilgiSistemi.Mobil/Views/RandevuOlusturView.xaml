@@ -58,7 +58,7 @@
                                 <Label Grid.Column="0" Text="&#x1F50D;" FontSize="14"
                                        HorizontalOptions="Center" VerticalOptions="Center" TextColor="#7F8C8D" />
                                 <Entry x:Name="SinifAramaEntry" Grid.Column="1"
-                                       Placeholder="Sınıf ara (ör. 5/A)" PlaceholderColor="#95A5A6"
+                                       Placeholder="Sınıf veya öğrenci ara" PlaceholderColor="#95A5A6"
                                        FontSize="13" TextColor="#2C3E50"
                                        TextChanged="OnSinifAramaDegisti" />
                             </Grid>
@@ -130,7 +130,11 @@
                     <VerticalStackLayout Spacing="10">
                         <Label Text="Tarih ve Saat" FontSize="13" FontAttributes="Bold" TextColor="#7F8C8D" />
                         <DatePicker x:Name="TarihSecici" FontSize="14" TextColor="#2C3E50" />
-                        <TimePicker x:Name="SaatSecici" FontSize="14" TextColor="#2C3E50" />
+                        <Grid ColumnDefinitions="*, Auto, *" ColumnSpacing="10">
+                            <TimePicker Grid.Column="0" x:Name="BaslangicSaati" FontSize="14" TextColor="#2C3E50" />
+                            <Label Grid.Column="1" Text="-" FontSize="18" TextColor="#95A5A6" VerticalOptions="Center" />
+                            <TimePicker Grid.Column="2" x:Name="BitisSaati" FontSize="14" TextColor="#2C3E50" />
+                        </Grid>
                     </VerticalStackLayout>
                 </Border>
 

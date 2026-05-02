@@ -33,6 +33,8 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             _ogretmenListeService = Application.Current.MainPage.Handler.MauiContext.Services.GetService<OgretmenListeService>();
 
             TarihSecici.MinimumDate = DateTime.Today;
+            BaslangicSaati.Time = new TimeSpan(9, 0, 0);
+            BitisSaati.Time = new TimeSpan(9, 30, 0);
         }
 
         protected override async void OnAppearing()
@@ -120,19 +122,31 @@ namespace OgrenciBilgiSistemi.Mobil.Views
 
         private void ListeyiUygula(bool secimTemizle = true)
         {
-            var kaynak = BenimSinifimCheckBox.IsChecked ? _kendiSinifGrubu : _digerSiniflarGruplari;
-            var sinifArama = (SinifAramaEntry?.Text ?? "").Trim();
+            var arama = (SinifAramaEntry?.Text ?? "").Trim();
 
             List<OgrenciGrubu> hedef;
-            if (string.IsNullOrEmpty(sinifArama))
+            if (string.IsNullOrEmpty(arama))
             {
-                hedef = kaynak;
+                // Arama boşken checkbox varsayılan görünümü belirler
+                hedef = BenimSinifimCheckBox.IsChecked ? _kendiSinifGrubu : _digerSiniflarGruplari;
             }
             else
             {
-                hedef = kaynak
-                    .Where(g => g.Any(o =>
-                        (o.SinifAdi ?? "").Contains(sinifArama, StringComparison.CurrentCultureIgnoreCase)))
+                // Arama doluysa checkbox'a bakılmaz; tüm öğrenciler hem ad hem sınıf üzerinden taranır
+                hedef = _kendiSinifGrubu.Concat(_digerSiniflarGruplari)
+                    .Select(g =>
+                    {
+                        var eslesenler = g
+                            .Where(o =>
+                                (o.OgrenciAdSoyad ?? "").Contains(arama, StringComparison.CurrentCultureIgnoreCase)
+                                || (o.SinifAdi ?? "").Contains(arama, StringComparison.CurrentCultureIgnoreCase))
+                            .ToList();
+                        return eslesenler.Count > 0
+                            ? new OgrenciGrubu(g.BaslikAdi, g.KendiSinifi, eslesenler)
+                            : null;
+                    })
+                    .Where(g => g != null)
+                    .Cast<OgrenciGrubu>()
                     .ToList();
             }
 
@@ -289,10 +303,27 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                         return;
                     }
 
+                    if (BitisSaati.Time <= BaslangicSaati.Time)
+                    {
+                        await DisplayAlert("Uyarı", "Bitiş saati başlangıç saatinden sonra olmalı.", "Tamam");
+                        return;
+                    }
+
                     _karsiTarafId = _seciliOgrenci.VeliId;
                     ogrenciId = _seciliOgrenci.OgrenciId;
-                    randevuTarihi = TarihSecici.Date + SaatSecici.Time;
-                    sureDakika = 30;
+                    randevuTarihi = TarihSecici.Date + BaslangicSaati.Time;
+                    sureDakika = (int)(BitisSaati.Time - BaslangicSaati.Time).TotalMinutes;
+
+                    // POST öncesi client-side çakışma kontrolü — sunucu hatasından önce uyarı verir
+                    var (cakismaVar, cakismaMesaji) = await _randevuService.CakismaKontrolu(
+                        randevuTarihi, sureDakika, _karsiTarafId);
+                    if (cakismaVar)
+                    {
+                        await DisplayAlert("Çakışma",
+                            cakismaMesaji ?? "Bu zaman aralığında zaten bir randevu bulunmaktadır.",
+                            "Tamam");
+                        return;
+                    }
                 }
 
                 string not = string.IsNullOrWhiteSpace(NotEditor.Text) ? null : NotEditor.Text.Trim();
