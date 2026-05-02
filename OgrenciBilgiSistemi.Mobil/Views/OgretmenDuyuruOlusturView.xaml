@@ -23,7 +23,7 @@
         </Border>
 
         <ScrollView Grid.Row="1">
-            <Border Margin="15,-15,15,15" StrokeShape="RoundRectangle 20" StrokeThickness="0" BackgroundColor="White">
+            <Border Margin="15,20,15,15" StrokeShape="RoundRectangle 20" StrokeThickness="0" BackgroundColor="White">
                 <Border.Shadow>
                     <Shadow Brush="Black" Offset="0,10" Radius="20" Opacity="0.08" />
                 </Border.Shadow>

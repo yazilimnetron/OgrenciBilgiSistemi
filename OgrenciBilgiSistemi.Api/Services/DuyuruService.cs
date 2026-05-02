@@ -32,12 +32,15 @@ namespace OgrenciBilgiSistemi.Api.Services
                 OUTPUT INSERTED.DuyuruId
                 VALUES (@olusturanId, @hedef, @baslik, @icerik, GETDATE(), 0)";
 
+            // Öğretmen-öğrenci eşlemesi OgretmenProfiller.BirimId = Ogrenciler.BirimId üzerinden.
             const string hedefVeliler = @"
                 SELECT DISTINCT o.VeliId
                 FROM Ogrenciler o
+                INNER JOIN OgretmenProfiller op ON op.BirimId = o.BirimId AND op.KullaniciId = @ogretmenId
                 INNER JOIN Kullanicilar v       ON v.KullaniciId  = o.VeliId
                 INNER JOIN VeliProfiller vp     ON vp.KullaniciId = v.KullaniciId
-                WHERE o.OgretmenId = @ogretmenId AND o.OgrenciDurum = 1 AND o.VeliId IS NOT NULL
+                WHERE o.OgrenciDurum = 1 AND o.VeliId IS NOT NULL
+                  AND op.OgretmenDurum = 1
                   AND v.KullaniciDurum = 1 AND vp.VeliDurum = 1";
 
             await using var conn = new SqlConnection(ConnectionString);
@@ -82,6 +85,8 @@ namespace OgrenciBilgiSistemi.Api.Services
         // ve admin tarafından yayınlanan tüm-veliler duyurularını getirir.
         public async Task<List<DuyuruModel>> VeliDuyurulariGetir(int veliId, int sayfaNo = 1, int sayfaBoyutu = 20)
         {
+            // Veli için: kendi çocuğu olduğu öğrencilerin biriminde aktif olan öğretmenin yayınladığı
+            // duyurular (Hedef=1) + admin tarafından tüm velilere yayınlanan duyurular (Hedef=2).
             const string query = @"
                 SELECT d.DuyuruId, d.OlusturanKullaniciId, d.Hedef, d.Baslik, d.Icerik, d.OlusturulmaTarihi,
                        k.KullaniciAdi AS OlusturanAdSoyad
@@ -91,8 +96,10 @@ namespace OgrenciBilgiSistemi.Api.Services
                   AND ( d.Hedef = 2
                      OR (d.Hedef = 1 AND EXISTS (
                             SELECT 1 FROM Ogrenciler o
+                            INNER JOIN OgretmenProfiller op ON op.BirimId = o.BirimId
                             WHERE o.VeliId = @veliId
-                              AND o.OgretmenId = d.OlusturanKullaniciId
+                              AND op.KullaniciId = d.OlusturanKullaniciId
+                              AND op.OgretmenDurum = 1
                               AND o.OgrenciDurum = 1)))
                 ORDER BY d.OlusturulmaTarihi DESC
                 OFFSET @offset ROWS FETCH NEXT @boyut ROWS ONLY";

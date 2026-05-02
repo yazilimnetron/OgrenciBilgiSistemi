@@ -72,15 +72,18 @@ namespace OgrenciBilgiSistemi.Services.Implementations
         {
             if (hedef == DuyuruHedefi.OgretmenKendiOgrencileri)
             {
-                return await _db.Ogrenciler
-                    .Where(o => o.OgretmenId == olusturanId
-                                && o.OgrenciDurum
-                                && o.VeliId != null
-                                && o.Veli != null
-                                && o.Veli.KullaniciDurum)
-                    .Select(o => o.VeliId!.Value)
-                    .Distinct()
-                    .ToListAsync(ct);
+                // Öğretmen-öğrenci eşlemesi OgretmenProfiller.BirimId = Ogrenciler.BirimId üzerinden.
+                return await (from o in _db.Ogrenciler
+                              join op in _db.OgretmenProfiller on o.BirimId equals op.BirimId
+                              where op.KullaniciId == olusturanId
+                                    && op.OgretmenDurum
+                                    && o.OgrenciDurum
+                                    && o.VeliId != null
+                                    && o.Veli != null
+                                    && o.Veli.KullaniciDurum
+                              select o.VeliId!.Value)
+                              .Distinct()
+                              .ToListAsync(ct);
             }
 
             return await _db.Kullanicilar
