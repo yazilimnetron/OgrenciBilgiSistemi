@@ -50,16 +50,32 @@ namespace OgrenciBilgiSistemi.Mobil.Views
         }
 
         private async void OnOgrencilerTapped(object sender, TappedEventArgs e)
-            => await YakindaUyarisi();
+        {
+            var service = Servis<OgrenciService>();
+            if (service is null) return;
+            await Navigation.PushAsync(new AdminOgrenciListeView(service));
+        }
 
         private async void OnOgretmenlerTapped(object sender, TappedEventArgs e)
-            => await YakindaUyarisi();
+        {
+            var service = Servis<OgretmenListeService>();
+            if (service is null) return;
+            await Navigation.PushAsync(new AdminOgretmenListeView(service));
+        }
 
         private async void OnSiniflarTapped(object sender, TappedEventArgs e)
-            => await YakindaUyarisi();
+        {
+            var service = Servis<SinifService>();
+            if (service is null) return;
+            await Navigation.PushAsync(new AdminSinifListeView(service));
+        }
 
         private async void OnVelilerTapped(object sender, TappedEventArgs e)
-            => await YakindaUyarisi();
+        {
+            var service = Servis<VeliListeService>();
+            if (service is null) return;
+            await Navigation.PushAsync(new AdminVeliListeView(service));
+        }
 
         private async void OnYemekhaneTapped(object sender, TappedEventArgs e)
             => await YakindaUyarisi();
@@ -69,5 +85,8 @@ namespace OgrenciBilgiSistemi.Mobil.Views
 
         private Task YakindaUyarisi()
             => DisplayAlert("Bilgi", "Bu özellik yakında eklenecek.", "Tamam");
+
+        private static T? Servis<T>() where T : class
+            => Application.Current?.MainPage?.Handler?.MauiContext?.Services.GetService<T>();
     }
 }

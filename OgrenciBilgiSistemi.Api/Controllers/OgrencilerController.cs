@@ -81,7 +81,7 @@ namespace OgrenciBilgiSistemi.Api.Controllers
         public async Task<IActionResult> TumOgrencileriGetir()
         {
             var rol = User.FindFirst("rol")?.Value;
-            if (rol != "Ogretmen")
+            if (rol != "Ogretmen" && rol != "Admin" && rol != "GenelAdmin")
                 return Forbid();
 
             try
