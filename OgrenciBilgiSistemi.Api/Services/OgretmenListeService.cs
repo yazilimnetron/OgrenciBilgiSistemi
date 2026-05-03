@@ -21,7 +21,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                 SELECT k.KullaniciId, k.KullaniciAdi
                 FROM Kullanicilar k
                 INNER JOIN OgretmenProfiller op ON k.KullaniciId = op.KullaniciId
-                WHERE k.KullaniciDurum = 1 AND k.Rol = 2 AND op.OgretmenDurum = 1
+                WHERE op.OgretmenDurum = 1
                 ORDER BY k.KullaniciAdi";
 
             await using var conn = new SqlConnection(ConnectionString);

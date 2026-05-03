@@ -3,11 +3,11 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:OgrenciBilgiSistemi.Mobil.Views"
              x:Class="OgrenciBilgiSistemi.Mobil.Views.AdminSinifOgrenciListeView"
-             Title="Sınıf Öğrencileri"
+             Title="Sınıf Yoklama"
              Shell.NavBarIsVisible="False"
              BackgroundColor="#F0F2F5">
 
-    <Grid RowDefinitions="125, *">
+    <Grid RowDefinitions="125, Auto, Auto, *">
 
         <Border Grid.Row="0" StrokeThickness="0" BackgroundColor="#8E44AD" VerticalOptions="FillAndExpand">
             <Border.Shadow>
@@ -22,28 +22,78 @@
             </Grid>
         </Border>
 
-        <CollectionView Grid.Row="1" x:Name="OgrenciCollection" Margin="15,10" SelectionMode="None">
+        <!-- Tarih seçici -->
+        <Border Grid.Row="1" Margin="15,-15,15,8" StrokeShape="RoundRectangle 14" StrokeThickness="0"
+                BackgroundColor="White" Padding="14,10">
+            <Border.Shadow>
+                <Shadow Brush="Black" Offset="0,4" Radius="10" Opacity="0.06" />
+            </Border.Shadow>
+            <Grid ColumnDefinitions="Auto, *">
+                <Label Grid.Column="0" Text="📅 Tarih:" FontSize="14" FontFamily="OpenSansSemibold"
+                       TextColor="#2C3E50" VerticalOptions="Center" Margin="0,0,10,0" />
+                <DatePicker Grid.Column="1" x:Name="TarihSecici" Format="d MMMM yyyy"
+                            FontSize="14" TextColor="#2C3E50"
+                            DateSelected="OnTarihSecildi" />
+            </Grid>
+        </Border>
+
+        <!-- Ders saati başlık satırı -->
+        <Grid Grid.Row="2" Margin="15,4,15,8" ColumnDefinitions="*, 240">
+            <Label Grid.Column="0" Text="Öğrenci" FontSize="11" FontFamily="OpenSansSemibold"
+                   TextColor="#7F8C8D" VerticalOptions="Center" />
+            <Grid Grid.Column="1" ColumnDefinitions="*,*,*,*,*,*,*,*" ColumnSpacing="2">
+                <Label Grid.Column="0" Text="1" FontSize="10" TextColor="#7F8C8D" HorizontalTextAlignment="Center" FontFamily="OpenSansSemibold" />
+                <Label Grid.Column="1" Text="2" FontSize="10" TextColor="#7F8C8D" HorizontalTextAlignment="Center" FontFamily="OpenSansSemibold" />
+                <Label Grid.Column="2" Text="3" FontSize="10" TextColor="#7F8C8D" HorizontalTextAlignment="Center" FontFamily="OpenSansSemibold" />
+                <Label Grid.Column="3" Text="4" FontSize="10" TextColor="#7F8C8D" HorizontalTextAlignment="Center" FontFamily="OpenSansSemibold" />
+                <Label Grid.Column="4" Text="5" FontSize="10" TextColor="#7F8C8D" HorizontalTextAlignment="Center" FontFamily="OpenSansSemibold" />
+                <Label Grid.Column="5" Text="6" FontSize="10" TextColor="#7F8C8D" HorizontalTextAlignment="Center" FontFamily="OpenSansSemibold" />
+                <Label Grid.Column="6" Text="7" FontSize="10" TextColor="#7F8C8D" HorizontalTextAlignment="Center" FontFamily="OpenSansSemibold" />
+                <Label Grid.Column="7" Text="8" FontSize="10" TextColor="#7F8C8D" HorizontalTextAlignment="Center" FontFamily="OpenSansSemibold" />
+            </Grid>
+        </Grid>
+
+        <CollectionView Grid.Row="3" x:Name="OgrenciCollection" Margin="15,0,15,10" SelectionMode="None">
             <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Vertical" ItemSpacing="8" />
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="6" />
             </CollectionView.ItemsLayout>
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Border StrokeShape="RoundRectangle 14" StrokeThickness="0" Padding="14"
+                    <Border StrokeShape="RoundRectangle 12" StrokeThickness="0" Padding="12,10"
                             BackgroundColor="White">
                         <Border.Shadow>
-                            <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.05" />
+                            <Shadow Brush="Black" Offset="0,2" Radius="5" Opacity="0.05" />
                         </Border.Shadow>
-                        <Grid ColumnDefinitions="4, *, Auto" ColumnSpacing="12">
-                            <BoxView Grid.Column="0" BackgroundColor="#8E44AD" WidthRequest="4"
-                                     VerticalOptions="Fill" HorizontalOptions="Center">
-                                <BoxView.Clip>
-                                    <RoundRectangleGeometry CornerRadius="2" Rect="0,0,4,60" />
-                                </BoxView.Clip>
-                            </BoxView>
-                            <VerticalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
-                                <Label Text="{Binding OgrenciAdSoyad}" FontSize="15" FontFamily="OpenSansSemibold" TextColor="#2C3E50" />
-                                <Label Text="{Binding OgrenciNo, StringFormat='Öğrenci No: {0}'}" FontSize="12" TextColor="#7F8C8D" />
+                        <Grid ColumnDefinitions="*, 240" RowDefinitions="Auto, Auto" RowSpacing="3">
+                            <!-- Sol: öğrenci bilgisi -->
+                            <VerticalStackLayout Grid.Column="0" Grid.Row="0" Grid.RowSpan="2" Spacing="2" VerticalOptions="Center">
+                                <Label Text="{Binding OgrenciAdSoyad}" FontSize="13"
+                                       FontFamily="OpenSansSemibold" TextColor="#2C3E50"
+                                       LineBreakMode="TailTruncation" />
+                                <Label Text="{Binding OgretmenSatiri}" FontSize="10" TextColor="#95A5A6" />
                             </VerticalStackLayout>
+
+                            <!-- Sağ: 8 ders rozeti -->
+                            <Grid Grid.Column="1" Grid.Row="0" Grid.RowSpan="2"
+                                  ColumnDefinitions="*,*,*,*,*,*,*,*" ColumnSpacing="2"
+                                  VerticalOptions="Center">
+                                <Border Grid.Column="0" StrokeShape="RoundRectangle 5" StrokeThickness="0"
+                                        BackgroundColor="{Binding Ders1Renk}" HeightRequest="22" />
+                                <Border Grid.Column="1" StrokeShape="RoundRectangle 5" StrokeThickness="0"
+                                        BackgroundColor="{Binding Ders2Renk}" HeightRequest="22" />
+                                <Border Grid.Column="2" StrokeShape="RoundRectangle 5" StrokeThickness="0"
+                                        BackgroundColor="{Binding Ders3Renk}" HeightRequest="22" />
+                                <Border Grid.Column="3" StrokeShape="RoundRectangle 5" StrokeThickness="0"
+                                        BackgroundColor="{Binding Ders4Renk}" HeightRequest="22" />
+                                <Border Grid.Column="4" StrokeShape="RoundRectangle 5" StrokeThickness="0"
+                                        BackgroundColor="{Binding Ders5Renk}" HeightRequest="22" />
+                                <Border Grid.Column="5" StrokeShape="RoundRectangle 5" StrokeThickness="0"
+                                        BackgroundColor="{Binding Ders6Renk}" HeightRequest="22" />
+                                <Border Grid.Column="6" StrokeShape="RoundRectangle 5" StrokeThickness="0"
+                                        BackgroundColor="{Binding Ders7Renk}" HeightRequest="22" />
+                                <Border Grid.Column="7" StrokeShape="RoundRectangle 5" StrokeThickness="0"
+                                        BackgroundColor="{Binding Ders8Renk}" HeightRequest="22" />
+                            </Grid>
                         </Grid>
                     </Border>
                 </DataTemplate>
@@ -53,6 +103,43 @@
                     <Label x:Name="BosDurumLabel" Text="Yükleniyor..." FontSize="16" TextColor="#95A5A6" HorizontalOptions="Center" />
                 </VerticalStackLayout>
             </CollectionView.EmptyView>
+            <CollectionView.Footer>
+                <!-- Renk açıklaması -->
+                <Grid ColumnDefinitions="*,*,*,*" RowDefinitions="Auto,Auto" RowSpacing="6" ColumnSpacing="6" Margin="0,12,0,0">
+                    <HorizontalStackLayout Grid.Row="0" Grid.Column="0" Spacing="4">
+                        <Border WidthRequest="14" HeightRequest="14" StrokeShape="RoundRectangle 3" StrokeThickness="0" BackgroundColor="#27AE60" />
+                        <Label Text="Geldi" FontSize="10" TextColor="#7F8C8D" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Grid.Row="0" Grid.Column="1" Spacing="4">
+                        <Border WidthRequest="14" HeightRequest="14" StrokeShape="RoundRectangle 3" StrokeThickness="0" BackgroundColor="#E74C3C" />
+                        <Label Text="Gelmedi" FontSize="10" TextColor="#7F8C8D" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Grid.Row="0" Grid.Column="2" Spacing="4">
+                        <Border WidthRequest="14" HeightRequest="14" StrokeShape="RoundRectangle 3" StrokeThickness="0" BackgroundColor="#F39C12" />
+                        <Label Text="Geç" FontSize="10" TextColor="#7F8C8D" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Grid.Row="0" Grid.Column="3" Spacing="4">
+                        <Border WidthRequest="14" HeightRequest="14" StrokeShape="RoundRectangle 3" StrokeThickness="0" BackgroundColor="#3498DB" />
+                        <Label Text="İzinli" FontSize="10" TextColor="#7F8C8D" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Grid.Row="1" Grid.Column="0" Spacing="4">
+                        <Border WidthRequest="14" HeightRequest="14" StrokeShape="RoundRectangle 3" StrokeThickness="0" BackgroundColor="#9B59B6" />
+                        <Label Text="Raporlu" FontSize="10" TextColor="#7F8C8D" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Grid.Row="1" Grid.Column="1" Spacing="4">
+                        <Border WidthRequest="14" HeightRequest="14" StrokeShape="RoundRectangle 3" StrokeThickness="0" BackgroundColor="#7F8C8D" />
+                        <Label Text="Nöbetçi" FontSize="10" TextColor="#7F8C8D" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Grid.Row="1" Grid.Column="2" Spacing="4">
+                        <Border WidthRequest="14" HeightRequest="14" StrokeShape="RoundRectangle 3" StrokeThickness="0" BackgroundColor="#34495E" />
+                        <Label Text="Görevli" FontSize="10" TextColor="#7F8C8D" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Grid.Row="1" Grid.Column="3" Spacing="4">
+                        <Border WidthRequest="14" HeightRequest="14" StrokeShape="RoundRectangle 3" StrokeThickness="0" BackgroundColor="#ECF0F1" />
+                        <Label Text="Yok" FontSize="10" TextColor="#7F8C8D" VerticalOptions="Center" />
+                    </HorizontalStackLayout>
+                </Grid>
+            </CollectionView.Footer>
         </CollectionView>
     </Grid>
 </ContentPage>

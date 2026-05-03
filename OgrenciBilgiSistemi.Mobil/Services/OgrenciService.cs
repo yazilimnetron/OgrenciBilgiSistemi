@@ -64,6 +64,28 @@ namespace OgrenciBilgiSistemi.Mobil.Services
         }
 
         /// <summary>
+        /// Bir sınıfın belirli bir tarihteki tüm öğrenci yoklama özetini getirir.
+        /// </summary>
+        public async Task<List<SinifYoklamaOzet>> SinifYoklamaOzetiGetirAsync(int sinifId, DateTime tarih)
+        {
+            try
+            {
+                var url = $"{BaseUrl}ogrenciler/sinif-yoklama/{sinifId}?tarih={tarih:yyyy-MM-dd}";
+                var response = await GetAsync(url);
+                if (!response.IsSuccessStatusCode)
+                    return new List<SinifYoklamaOzet>();
+
+                return await response.Content.ReadFromJsonAsync<List<SinifYoklamaOzet>>(_jsonOptions)
+                    ?? new List<SinifYoklamaOzet>();
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[SinifYoklamaOzeti HATASI]: {ex.Message}");
+                return new List<SinifYoklamaOzet>();
+            }
+        }
+
+        /// <summary>
         /// Öğrencinin veli, servis ve sınıf gibi tüm detaylı bilgilerini getirir.
         /// </summary>
         public async Task<OgrenciDetay?> OgrenciDetayGetirAsync(int ogrenciId)

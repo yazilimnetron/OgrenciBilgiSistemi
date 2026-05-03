@@ -1,6 +1,5 @@
 using Microsoft.Data.SqlClient;
 using OgrenciBilgiSistemi.Api.Models;
-using OgrenciBilgiSistemi.Shared.Enums;
 using OgrenciBilgiSistemi.Shared.Services;
 
 namespace OgrenciBilgiSistemi.Api.Services
@@ -17,7 +16,7 @@ namespace OgrenciBilgiSistemi.Api.Services
         private string ConnectionString => _tenantBaglami.ConnectionString;
 
         /// <summary>
-        /// Aktif velileri (Kullanicilar.Rol=Veli + VeliProfiller aktif) listeler.
+        /// Aktif velileri (VeliProfiller.VeliDurum=1) listeler.
         /// </summary>
         public async Task<List<VeliListeModel>> AktifVelileriGetirAsync()
         {
@@ -27,16 +26,13 @@ namespace OgrenciBilgiSistemi.Api.Services
                 SELECT k.KullaniciId, k.KullaniciAdi, k.Telefon
                 FROM Kullanicilar k
                 INNER JOIN VeliProfiller vp ON k.KullaniciId = vp.KullaniciId
-                WHERE k.KullaniciDurum = 1
-                  AND k.Rol = @veliRol
-                  AND vp.VeliDurum = 1
+                WHERE vp.VeliDurum = 1
                 ORDER BY k.KullaniciAdi";
 
             try
             {
                 await using var conn = new SqlConnection(ConnectionString);
                 await using var cmd = new SqlCommand(query, conn);
-                cmd.Parameters.AddWithValue("@veliRol", (int)KullaniciRolu.Veli);
 
                 await conn.OpenAsync();
                 await using var reader = await cmd.ExecuteReaderAsync();

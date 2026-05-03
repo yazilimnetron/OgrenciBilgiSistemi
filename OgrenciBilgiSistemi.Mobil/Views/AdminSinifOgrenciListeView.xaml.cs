@@ -6,6 +6,7 @@ namespace OgrenciBilgiSistemi.Mobil.Views
     {
         private readonly OgrenciService _ogrenciService;
         private readonly int _sinifId;
+        private bool _yuklendi;
 
         public AdminSinifOgrenciListeView(OgrenciService ogrenciService, int sinifId, string sinifAdi)
         {
@@ -13,25 +14,46 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             _ogrenciService = ogrenciService;
             _sinifId = sinifId;
             SinifAdiLabel.Text = string.IsNullOrWhiteSpace(sinifAdi) ? "Sınıf" : sinifAdi;
+            TarihSecici.Date = DateTime.Today;
         }
 
         protected override async void OnAppearing()
         {
             base.OnAppearing();
+            if (_yuklendi) return;
+            _yuklendi = true;
+            await YoklamaYukle(TarihSecici.Date);
+        }
 
+        private async void OnTarihSecildi(object sender, DateChangedEventArgs e)
+        {
+            if (!_yuklendi) return;
+            await YoklamaYukle(e.NewDate);
+        }
+
+        private async Task YoklamaYukle(DateTime tarih)
+        {
             try
             {
-                var liste = await _ogrenciService.SinifaGoreOgrencileriGetirAsync(_sinifId);
+                BosDurumLabel.Text = "Yükleniyor...";
+                OgrenciCollection.ItemsSource = null;
+
+                var liste = await _ogrenciService.SinifYoklamaOzetiGetirAsync(_sinifId, tarih);
                 OgrenciCollection.ItemsSource = liste;
-                AltBaslikLabel.Text = $"{liste.Count} öğrenci";
+
+                var yoklananSayi = liste.Count(o => o.KullaniciId.HasValue);
+                AltBaslikLabel.Text = liste.Count == 0
+                    ? "Öğrenci bulunamadı"
+                    : $"{liste.Count} öğrenci · {yoklananSayi} yoklama kaydı";
 
                 if (liste.Count == 0)
                     BosDurumLabel.Text = "Bu sınıfta kayıtlı öğrenci yok.";
             }
             catch (Exception ex)
             {
-                System.Diagnostics.Debug.WriteLine($"AdminSinifOgrenciListe Yükleme Hatası: {ex.Message}");
+                System.Diagnostics.Debug.WriteLine($"AdminSinifYoklama Yükleme Hatası: {ex.Message}");
                 BosDurumLabel.Text = "Veriler yüklenemedi.";
+                AltBaslikLabel.Text = "";
             }
         }
     }

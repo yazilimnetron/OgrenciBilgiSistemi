@@ -95,6 +95,29 @@ namespace OgrenciBilgiSistemi.Api.Controllers
             }
         }
 
+        /// <summary>
+        /// Bir sınıfın belirli bir tarihteki tüm öğrenci yoklama özetini döner.
+        /// Her öğrenci için 8 ders durumu ve yoklamayı yapan öğretmen bilgisi.
+        /// </summary>
+        [HttpGet("sinif-yoklama/{sinifId}")]
+        public async Task<IActionResult> SinifYoklamaOzeti(int sinifId, [FromQuery] DateTime? tarih)
+        {
+            var rol = User.FindFirst("rol")?.Value;
+            if (rol != "Ogretmen" && rol != "Admin" && rol != "GenelAdmin")
+                return Forbid();
+
+            try
+            {
+                var seciliTarih = tarih?.Date ?? DateTime.Today;
+                var ozet = await _ogrenciService.SinifYoklamaOzetiGetirAsync(sinifId, seciliTarih);
+                return Ok(ozet);
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { error = "Sınıf yoklama özeti alınırken bir hata oluştu." });
+            }
+        }
+
         // 1. Sınıf ID'sine göre öğrenci listesini getirir — öğretmen veya admin
         [HttpGet("class/{sinifId}")]
         public async Task<IActionResult> SinifaGoreGetir(int sinifId)

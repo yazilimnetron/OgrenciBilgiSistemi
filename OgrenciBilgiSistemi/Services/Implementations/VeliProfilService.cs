@@ -24,6 +24,7 @@ namespace OgrenciBilgiSistemi.Services.Implementations
             var query = _db.VeliProfiller
                 .Include(v => v.Kullanici)
                 .AsNoTracking()
+                .Where(v => v.VeliDurum)
                 .AsQueryable();
 
             if (!string.IsNullOrWhiteSpace(searchString))

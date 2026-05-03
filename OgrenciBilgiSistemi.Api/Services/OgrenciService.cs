@@ -86,7 +86,7 @@ namespace OgrenciBilgiSistemi.Api.Services
                            O.BirimId, O.VeliId, B.BirimAd AS SinifAdi
                     FROM Ogrenciler O
                     LEFT JOIN Birimler B ON O.BirimId = B.BirimId
-                    WHERE O.OgrenciDurum = 1 AND O.VeliId IS NOT NULL
+                    WHERE O.OgrenciDurum = 1
                     ORDER BY O.BirimId, O.OgrenciNo";
 
                 await using var cmd = new SqlCommand(query, conn);
@@ -197,6 +197,72 @@ namespace OgrenciBilgiSistemi.Api.Services
                 throw new InvalidOperationException("Öğrenci bilgisi alınamadı.", ex);
             }
             return null;
+        }
+
+        /// <summary>
+        /// Bir sınıfın belirli bir tarihteki tüm öğrenci yoklama özetini getirir.
+        /// Her öğrenci için 8 ders durumu ve yoklamayı yapan öğretmen bilgisi döner.
+        /// Yoklama hiç alınmamışsa Ders1-8 alanları null olur.
+        /// </summary>
+        public async Task<List<SinifYoklamaOzetModel>> SinifYoklamaOzetiGetirAsync(int sinifId, DateTime tarih)
+        {
+            var liste = new List<SinifYoklamaOzetModel>();
+
+            // Tarih aralığı: tarih günü başlangıcı (00:00) - ertesi gün başlangıcı
+            var gunBaslangic = tarih.Date;
+            var gunSonu = gunBaslangic.AddDays(1);
+
+            const string query = @"
+                SELECT o.OgrenciId, o.OgrenciAdSoyad, o.OgrenciNo,
+                       sy.Ders1, sy.Ders2, sy.Ders3, sy.Ders4,
+                       sy.Ders5, sy.Ders6, sy.Ders7, sy.Ders8,
+                       sy.KullaniciId, k.KullaniciAdi
+                FROM Ogrenciler o
+                LEFT JOIN SinifYoklamalar sy
+                    ON sy.OgrenciId = o.OgrenciId
+                    AND sy.OlusturulmaTarihi >= @gunBaslangic
+                    AND sy.OlusturulmaTarihi < @gunSonu
+                LEFT JOIN Kullanicilar k ON k.KullaniciId = sy.KullaniciId
+                WHERE o.BirimId = @sinifId AND o.OgrenciDurum = 1
+                ORDER BY o.OgrenciNo";
+
+            try
+            {
+                await using var conn = new SqlConnection(ConnectionString);
+                await using var cmd = new SqlCommand(query, conn);
+                cmd.Parameters.AddWithValue("@sinifId", sinifId);
+                cmd.Parameters.AddWithValue("@gunBaslangic", gunBaslangic);
+                cmd.Parameters.AddWithValue("@gunSonu", gunSonu);
+
+                await conn.OpenAsync();
+                await using var reader = await cmd.ExecuteReaderAsync();
+
+                while (await reader.ReadAsync())
+                {
+                    liste.Add(new SinifYoklamaOzetModel
+                    {
+                        OgrenciId = (int)reader["OgrenciId"],
+                        OgrenciAdSoyad = reader["OgrenciAdSoyad"]?.ToString() ?? string.Empty,
+                        OgrenciNo = (int)reader["OgrenciNo"],
+                        Ders1 = reader["Ders1"] as int?,
+                        Ders2 = reader["Ders2"] as int?,
+                        Ders3 = reader["Ders3"] as int?,
+                        Ders4 = reader["Ders4"] as int?,
+                        Ders5 = reader["Ders5"] as int?,
+                        Ders6 = reader["Ders6"] as int?,
+                        Ders7 = reader["Ders7"] as int?,
+                        Ders8 = reader["Ders8"] as int?,
+                        KullaniciId = reader["KullaniciId"] as int?,
+                        KullaniciAdi = reader["KullaniciAdi"] as string
+                    });
+                }
+            }
+            catch (SqlException ex)
+            {
+                throw new InvalidOperationException("Sınıf yoklama özeti alınamadı.", ex);
+            }
+
+            return liste;
         }
 
         public async Task<Dictionary<int, int>> MevcutYoklamaGetirAsync(int sinifId, int dersNumarasi)

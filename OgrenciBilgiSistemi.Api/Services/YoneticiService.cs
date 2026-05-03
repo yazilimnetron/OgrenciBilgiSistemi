@@ -25,19 +25,23 @@ namespace OgrenciBilgiSistemi.Api.Services
             var bugun = DateTime.Today;
             var yarin = bugun.AddDays(1);
 
+            // Sayım sorguları MVC tarafıyla uyumlu kriterler kullanır:
+            // - Öğrenci: OgrenciDurum=1 (HomeController.DashboardStats ve OgrenciService liste filtresi)
+            // - Öğretmen: OgretmenProfiller.OgretmenDurum=1 (OgretmenProfilService default Aktif filtresi)
+            // - Veli: VeliProfiller.VeliDurum=1 (her iki taraf aktif velileri sayar)
             const string query = @"
                 SELECT
                     (SELECT COUNT(*) FROM Ogrenciler
                         WHERE OgrenciDurum = 1) AS ToplamOgrenci,
 
-                    (SELECT COUNT(*) FROM Kullanicilar
-                        WHERE Rol = @ogretmenRol AND KullaniciDurum = 1) AS ToplamOgretmen,
+                    (SELECT COUNT(*) FROM OgretmenProfiller
+                        WHERE OgretmenDurum = 1) AS ToplamOgretmen,
 
                     (SELECT COUNT(*) FROM Birimler
                         WHERE BirimSinifMi = 1 AND BirimDurum = 1) AS ToplamSinif,
 
-                    (SELECT COUNT(*) FROM Kullanicilar
-                        WHERE Rol = @veliRol AND KullaniciDurum = 1) AS ToplamVeli,
+                    (SELECT COUNT(*) FROM VeliProfiller
+                        WHERE VeliDurum = 1) AS ToplamVeli,
 
                     (SELECT COUNT(*) FROM OgrenciDetaylar
                         WHERE IstasyonTipi = @yemekhaneTipi
@@ -60,8 +64,6 @@ namespace OgrenciBilgiSistemi.Api.Services
                 await using var conn = new SqlConnection(ConnectionString);
                 await using var cmd = new SqlCommand(query, conn);
 
-                cmd.Parameters.AddWithValue("@ogretmenRol", (int)KullaniciRolu.Ogretmen);
-                cmd.Parameters.AddWithValue("@veliRol", (int)KullaniciRolu.Veli);
                 cmd.Parameters.AddWithValue("@yemekhaneTipi", (short)IstasyonTipi.Yemekhane);
                 cmd.Parameters.AddWithValue("@anaKapiTipi", (short)IstasyonTipi.AnaKapi);
                 cmd.Parameters.AddWithValue("@bugun", bugun);
