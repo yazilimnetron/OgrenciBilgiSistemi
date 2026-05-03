@@ -95,12 +95,12 @@ namespace OgrenciBilgiSistemi.Api.Controllers
             }
         }
 
-        // 1. Sınıf ID'sine göre öğrenci listesini getirir — yalnızca öğretmen
+        // 1. Sınıf ID'sine göre öğrenci listesini getirir — öğretmen veya admin
         [HttpGet("class/{sinifId}")]
         public async Task<IActionResult> SinifaGoreGetir(int sinifId)
         {
             var rol = User.FindFirst("rol")?.Value;
-            if (rol != "Ogretmen")
+            if (rol != "Ogretmen" && rol != "Admin" && rol != "GenelAdmin")
                 return Forbid();
 
             try

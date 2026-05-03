@@ -2,8 +2,8 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              xmlns:views="clr-namespace:OgrenciBilgiSistemi.Mobil.Views"
-             x:Class="OgrenciBilgiSistemi.Mobil.Views.AdminSinifListeView"
-             Title="Sınıflar"
+             x:Class="OgrenciBilgiSistemi.Mobil.Views.AdminSinifOgrenciListeView"
+             Title="Sınıf Öğrencileri"
              Shell.NavBarIsVisible="False"
              BackgroundColor="#F0F2F5">
 
@@ -16,13 +16,13 @@
             <Grid>
                 <views:AnaBaslikView x:Name="MyHeader" ShowBack="True" ShowProfile="False" />
                 <VerticalStackLayout Spacing="2" VerticalOptions="End" HorizontalOptions="Center" Margin="20,0,20,15">
-                    <Label Text="Sınıflar" FontSize="18" FontFamily="OpenSansSemibold" TextColor="White" HorizontalTextAlignment="Center" />
+                    <Label x:Name="SinifAdiLabel" Text="" FontSize="18" FontFamily="OpenSansSemibold" TextColor="White" HorizontalTextAlignment="Center" />
                     <Label x:Name="AltBaslikLabel" Text="" FontSize="14" TextColor="White" Opacity="0.8" HorizontalTextAlignment="Center" />
                 </VerticalStackLayout>
             </Grid>
         </Border>
 
-        <CollectionView Grid.Row="1" x:Name="SinifCollection" Margin="15,10" SelectionMode="None">
+        <CollectionView Grid.Row="1" x:Name="OgrenciCollection" Margin="15,10" SelectionMode="None">
             <CollectionView.ItemsLayout>
                 <LinearItemsLayout Orientation="Vertical" ItemSpacing="8" />
             </CollectionView.ItemsLayout>
@@ -33,9 +33,6 @@
                         <Border.Shadow>
                             <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.05" />
                         </Border.Shadow>
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Tapped="OnSinifTapped" CommandParameter="{Binding .}" />
-                        </Border.GestureRecognizers>
                         <Grid ColumnDefinitions="4, *, Auto" ColumnSpacing="12">
                             <BoxView Grid.Column="0" BackgroundColor="#8E44AD" WidthRequest="4"
                                      VerticalOptions="Fill" HorizontalOptions="Center">
@@ -43,15 +40,10 @@
                                     <RoundRectangleGeometry CornerRadius="2" Rect="0,0,4,60" />
                                 </BoxView.Clip>
                             </BoxView>
-                            <Label Grid.Column="1" Text="{Binding SinifVerisi.BirimAd}"
-                                   FontSize="15" FontFamily="OpenSansSemibold" TextColor="#2C3E50"
-                                   VerticalOptions="Center" />
-                            <Border Grid.Column="2" StrokeShape="RoundRectangle 12" StrokeThickness="0"
-                                    BackgroundColor="#F4ECF7" Padding="10,4" VerticalOptions="Center">
-                                <Label Text="{Binding OgrenciSayisi, StringFormat='{0} öğrenci'}"
-                                       FontSize="12" TextColor="#8E44AD"
-                                       FontFamily="OpenSansSemibold" />
-                            </Border>
+                            <VerticalStackLayout Grid.Column="1" Spacing="4" VerticalOptions="Center">
+                                <Label Text="{Binding OgrenciAdSoyad}" FontSize="15" FontFamily="OpenSansSemibold" TextColor="#2C3E50" />
+                                <Label Text="{Binding OgrenciNo, StringFormat='Öğrenci No: {0}'}" FontSize="12" TextColor="#7F8C8D" />
+                            </VerticalStackLayout>
                         </Grid>
                     </Border>
                 </DataTemplate>

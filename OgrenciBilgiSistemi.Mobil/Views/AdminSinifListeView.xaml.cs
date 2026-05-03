@@ -1,4 +1,5 @@
 using OgrenciBilgiSistemi.Mobil.Services;
+using OgrenciBilgiSistemi.Mobil.ViewModels;
 
 namespace OgrenciBilgiSistemi.Mobil.Views
 {
@@ -29,6 +30,27 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             {
                 System.Diagnostics.Debug.WriteLine($"AdminSinifListe Yükleme Hatası: {ex.Message}");
                 BosDurumLabel.Text = "Veriler yüklenemedi.";
+            }
+        }
+
+        private async void OnSinifTapped(object sender, TappedEventArgs e)
+        {
+            try
+            {
+                if (e.Parameter is not SinifGorunumModel secilen) return;
+
+                var ogrenciService = Application.Current?.MainPage?.Handler?.MauiContext?
+                    .Services.GetService<OgrenciService>();
+                if (ogrenciService is null) return;
+
+                await Navigation.PushAsync(new AdminSinifOgrenciListeView(
+                    ogrenciService,
+                    secilen.SinifVerisi.BirimId,
+                    secilen.Ad));
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"AdminSinifListe Sınıf Tıklama Hatası: {ex.Message}");
             }
         }
     }
