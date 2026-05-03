@@ -126,25 +126,22 @@ namespace OgrenciBilgiSistemi.Mobil.Views
             ReddetButton.IsVisible = false;
             IptalButton.IsVisible = false;
 
-            // Karşı tarafın oluşturduğu beklemedeki randevu için onay/red butonları:
-            // Öğretmen yalnızca velinin oluşturduğu randevuyu, veli yalnızca öğretmenin oluşturduğu randevuyu işleyebilir
-            if (_randevu.Durum == 0)
-            {
-                var veliOnaylayabilir = KullaniciOturum.VeliMi && _randevu.OgretmenTarafindanOlusturuldu;
-                var ogretmenOnaylayabilir = KullaniciOturum.OgretmenMi && !_randevu.OgretmenTarafindanOlusturuldu;
-                if (veliOnaylayabilir || ogretmenOnaylayabilir)
-                {
-                    AksiyonPanel.IsVisible = true;
-                    OnaylaButton.IsVisible = true;
-                    ReddetButton.IsVisible = true;
-                }
-            }
+            if (_randevu.Durum != 0) return;
+            if (!KullaniciOturum.VeliMi && !KullaniciOturum.OgretmenMi) return;
 
-            if (_randevu.Durum == 0 || _randevu.Durum == 1)
+            bool olusturucuMu =
+                (KullaniciOturum.VeliMi && !_randevu.OgretmenTarafindanOlusturuldu) ||
+                (KullaniciOturum.OgretmenMi && _randevu.OgretmenTarafindanOlusturuldu);
+
+            AksiyonPanel.IsVisible = true;
+            if (olusturucuMu)
             {
-                // Her iki taraf bekleyen veya onaylanan randevuyu iptal edebilir
-                AksiyonPanel.IsVisible = true;
                 IptalButton.IsVisible = true;
+            }
+            else
+            {
+                OnaylaButton.IsVisible = true;
+                ReddetButton.IsVisible = true;
             }
         }
 
