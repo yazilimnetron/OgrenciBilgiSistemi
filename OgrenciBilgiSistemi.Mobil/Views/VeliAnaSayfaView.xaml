@@ -86,18 +86,27 @@
         </Border>
 
         <!-- Duyurular butonu -->
-        <Border Grid.Row="2" Margin="15,0,15,10" StrokeShape="RoundRectangle 14" StrokeThickness="0"
-                BackgroundColor="#16A085" Padding="12,10" HeightRequest="42">
-            <Border.GestureRecognizers>
-                <TapGestureRecognizer Tapped="OnDuyurularTapped" />
-            </Border.GestureRecognizers>
-            <Grid ColumnDefinitions="Auto, *, Auto" VerticalOptions="Center">
-                <Label Grid.Column="0" Text="&#x1F4E2;" FontSize="18" VerticalOptions="Center" />
-                <Label Grid.Column="1" Text="Duyurular" FontSize="14" TextColor="White"
-                       FontFamily="OpenSansSemibold" Margin="10,0,0,0" VerticalOptions="Center" />
-                <Label Grid.Column="2" Text="&#x2192;" FontSize="18" TextColor="White" VerticalOptions="Center" />
-            </Grid>
-        </Border>
+        <Grid Grid.Row="2" Margin="15,0,15,10">
+            <Border StrokeShape="RoundRectangle 14" StrokeThickness="0"
+                    BackgroundColor="#16A085" Padding="12,10" HeightRequest="42">
+                <Border.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="OnDuyurularTapped" />
+                </Border.GestureRecognizers>
+                <Grid ColumnDefinitions="Auto, *, Auto" VerticalOptions="Center">
+                    <Label Grid.Column="0" Text="&#x1F4E2;" FontSize="18" VerticalOptions="Center" />
+                    <Label Grid.Column="1" Text="Duyurular" FontSize="14" TextColor="White"
+                           FontFamily="OpenSansSemibold" Margin="10,0,0,0" VerticalOptions="Center" />
+                    <Label Grid.Column="2" Text="&#x2192;" FontSize="18" TextColor="White" VerticalOptions="Center" />
+                </Grid>
+            </Border>
+            <Border x:Name="DuyuruBadge" StrokeShape="RoundRectangle 8" StrokeThickness="0"
+                    BackgroundColor="#E74C3C" WidthRequest="16" HeightRequest="16"
+                    HorizontalOptions="End" VerticalOptions="Start" Margin="0,-6,-6,0"
+                    IsVisible="False">
+                <Label x:Name="DuyuruSayiLabel" Text="" FontSize="8" TextColor="White"
+                       HorizontalOptions="Center" VerticalOptions="Center" />
+            </Border>
+        </Grid>
 
         <!-- Çocuk listesi -->
         <CollectionView x:Name="CocukCollection" Grid.Row="3" Margin="15,0" SelectionMode="None">

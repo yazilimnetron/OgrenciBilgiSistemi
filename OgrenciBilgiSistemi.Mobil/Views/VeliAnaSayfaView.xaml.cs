@@ -7,14 +7,16 @@ namespace OgrenciBilgiSistemi.Mobil.Views
     {
         private readonly VeliService _veliService;
         private readonly BildirimService _bildirimService;
+        private readonly DuyuruService _duyuruService;
 
-        public VeliAnaSayfaView(VeliService veliService, BildirimService bildirimService)
+        public VeliAnaSayfaView(VeliService veliService, BildirimService bildirimService, DuyuruService duyuruService)
         {
             try
             {
                 InitializeComponent();
                 _veliService = veliService;
                 _bildirimService = bildirimService;
+                _duyuruService = duyuruService;
             }
             catch (Exception ex)
             {
@@ -36,8 +38,9 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                     ? $"{cocuklar.Count} çocuk kayıtlı"
                     : "Kayıtlı öğrenci bulunamadı";
 
-                // Okunmamış bildirim sayısını güncelle
+                // Okunmamış bildirim ve duyuru sayılarını güncelle
                 await BildirimBadgeGuncelle();
+                await DuyuruBadgeGuncelle();
             }
             catch (Exception ex)
             {
@@ -59,6 +62,24 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                 else
                 {
                     BildirimBadge.IsVisible = false;
+                }
+            }
+            catch { }
+        }
+
+        private async Task DuyuruBadgeGuncelle()
+        {
+            try
+            {
+                var sayi = await _duyuruService.OkunmamisSayisiGetir();
+                if (sayi > 0)
+                {
+                    DuyuruBadge.IsVisible = true;
+                    DuyuruSayiLabel.Text = sayi > 9 ? "9+" : sayi.ToString();
+                }
+                else
+                {
+                    DuyuruBadge.IsVisible = false;
                 }
             }
             catch { }
