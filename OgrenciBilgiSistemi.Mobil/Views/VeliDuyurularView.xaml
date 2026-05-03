@@ -7,7 +7,7 @@
              Shell.NavBarIsVisible="False"
              BackgroundColor="#F0F2F5">
 
-    <Grid RowDefinitions="125, *">
+    <Grid RowDefinitions="125, Auto, *">
 
         <Border Grid.Row="0" StrokeThickness="0" BackgroundColor="#16A085" VerticalOptions="FillAndExpand">
             <Border.Shadow>
@@ -17,29 +17,58 @@
                 <views:AnaBaslikView x:Name="MyHeader" ShowBack="True" ShowProfile="False" />
                 <VerticalStackLayout Spacing="2" VerticalOptions="End" HorizontalOptions="Center" Margin="20,0,20,15">
                     <Label Text="Duyurular" FontSize="18" FontFamily="OpenSansSemibold" TextColor="White" HorizontalTextAlignment="Center" />
-                    <Label Text="Öğretmen ve okul duyuruları" FontSize="14" TextColor="White" Opacity="0.8" HorizontalTextAlignment="Center" />
+                    <Label x:Name="AltBaslikLabel" Text="" FontSize="14" TextColor="White" Opacity="0.8" HorizontalTextAlignment="Center" />
                 </VerticalStackLayout>
             </Grid>
         </Border>
 
-        <CollectionView Grid.Row="1" x:Name="DuyuruCollection" Margin="15,10" SelectionMode="None">
+        <!-- Tümünü okundu işaretle -->
+        <Border Grid.Row="1" Margin="15,-15,15,10" HeightRequest="48" StrokeShape="RoundRectangle 24"
+                StrokeThickness="0" BackgroundColor="White">
+            <Border.Shadow>
+                <Shadow Brush="Black" Offset="0,10" Radius="20" Opacity="0.08" />
+            </Border.Shadow>
+            <Border.GestureRecognizers>
+                <TapGestureRecognizer Tapped="OnTumunuOkunduClicked" />
+            </Border.GestureRecognizers>
+            <HorizontalStackLayout HorizontalOptions="Center" VerticalOptions="Center" Spacing="8">
+                <Label Text="Tümünü Okundu İşaretle" FontSize="14" FontFamily="OpenSansSemibold" TextColor="#16A085" VerticalOptions="Center" />
+            </HorizontalStackLayout>
+        </Border>
+
+        <CollectionView Grid.Row="2" x:Name="DuyuruCollection" Margin="15,0" SelectionMode="None">
             <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Vertical" ItemSpacing="10" />
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="8" />
             </CollectionView.ItemsLayout>
             <CollectionView.ItemTemplate>
                 <DataTemplate>
-                    <Border StrokeShape="RoundRectangle 16" StrokeThickness="0" BackgroundColor="White" Padding="16">
+                    <Border StrokeShape="RoundRectangle 14" StrokeThickness="0" Padding="14"
+                            BackgroundColor="{Binding ArkaplanRenk}">
                         <Border.Shadow>
-                            <Shadow Brush="Black" Offset="0,2" Radius="8" Opacity="0.06" />
+                            <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.05" />
                         </Border.Shadow>
-                        <VerticalStackLayout Spacing="8">
-                            <Label Text="{Binding Baslik}" FontSize="16" FontFamily="OpenSansSemibold" TextColor="#2C3E50" />
-                            <Grid ColumnDefinitions="Auto, *, Auto">
-                                <Label Grid.Column="0" Text="{Binding OlusturanAdSoyad}" FontSize="12" TextColor="#16A085" />
-                                <Label Grid.Column="2" Text="{Binding TarihMetni}" FontSize="12" TextColor="#95A5A6" />
-                            </Grid>
-                            <Label Text="{Binding Icerik}" FontSize="13" TextColor="#34495E" LineBreakMode="WordWrap" />
-                        </VerticalStackLayout>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnDuyuruTapped" CommandParameter="{Binding .}" />
+                        </Border.GestureRecognizers>
+                        <Grid ColumnDefinitions="4, *, Auto" ColumnSpacing="12">
+                            <BoxView Grid.Column="0" BackgroundColor="{Binding SolCizgiRenk}" WidthRequest="4"
+                                     VerticalOptions="Fill" HorizontalOptions="Center">
+                                <BoxView.Clip>
+                                    <RoundRectangleGeometry CornerRadius="2" Rect="0,0,4,80" />
+                                </BoxView.Clip>
+                            </BoxView>
+                            <VerticalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
+                                <Label Text="{Binding Duyuru.Baslik}" FontSize="16" FontFamily="OpenSansSemibold" TextColor="#2C3E50" />
+                                <Grid ColumnDefinitions="Auto, *, Auto">
+                                    <Label Grid.Column="0" Text="{Binding Duyuru.OlusturanAdSoyad}" FontSize="12" TextColor="#16A085" />
+                                    <Label Grid.Column="2" Text="{Binding Duyuru.TarihMetni}" FontSize="12" TextColor="#95A5A6" />
+                                </Grid>
+                                <Label Text="{Binding Duyuru.Icerik}" FontSize="13" TextColor="#34495E" LineBreakMode="WordWrap" />
+                            </VerticalStackLayout>
+                            <BoxView Grid.Column="2" WidthRequest="10" HeightRequest="10" CornerRadius="5"
+                                     BackgroundColor="#E67E22" VerticalOptions="Center"
+                                     IsVisible="{Binding OkunmadiMi}" />
+                        </Grid>
                     </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>

@@ -36,6 +36,7 @@ namespace OgrenciBilgiSistemi.Data
         public DbSet<OgretmenRandevuModel> OgretmenRandevular { get; set; }
         public DbSet<BildirimModel> Bildirimler { get; set; }
         public DbSet<DuyuruModel> Duyurular { get; set; }
+        public DbSet<DuyuruOkumaModel> DuyuruOkumalari { get; set; }
         public DbSet<SmsGonderimGecmisiModel> SmsGonderimGecmisleri { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -443,6 +444,32 @@ namespace OgrenciBilgiSistemi.Data
             modelBuilder.Entity<DuyuruModel>()
                 .HasIndex(d => d.OlusturanKullaniciId)
                 .HasDatabaseName("IX_Duyurular_Olusturan");
+
+            // =========================
+            // DUYURU OKUMA
+            // =========================
+
+            modelBuilder.Entity<DuyuruOkumaModel>()
+                .HasOne(o => o.Duyuru)
+                .WithMany()
+                .HasForeignKey(o => o.DuyuruId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<DuyuruOkumaModel>()
+                .HasOne(o => o.Kullanici)
+                .WithMany()
+                .HasForeignKey(o => o.KullaniciId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Aynı (DuyuruId, KullaniciId) için tek satır — idempotent okundu işareti
+            modelBuilder.Entity<DuyuruOkumaModel>()
+                .HasIndex(o => new { o.DuyuruId, o.KullaniciId })
+                .IsUnique()
+                .HasDatabaseName("IX_DuyuruOkumalar_Duyuru_Kullanici_Unique");
+
+            modelBuilder.Entity<DuyuruOkumaModel>()
+                .HasIndex(o => o.KullaniciId)
+                .HasDatabaseName("IX_DuyuruOkumalar_Kullanici");
 
             // =========================
             // SMS GONDERIM GECMISI

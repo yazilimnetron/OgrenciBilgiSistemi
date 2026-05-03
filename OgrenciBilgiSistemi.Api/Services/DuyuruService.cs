@@ -89,9 +89,11 @@ namespace OgrenciBilgiSistemi.Api.Services
             // duyurular (Hedef=1) + admin tarafından tüm velilere yayınlanan duyurular (Hedef=2).
             const string query = @"
                 SELECT d.DuyuruId, d.OlusturanKullaniciId, d.Hedef, d.Baslik, d.Icerik, d.OlusturulmaTarihi,
-                       k.KullaniciAdi AS OlusturanAdSoyad
+                       k.KullaniciAdi AS OlusturanAdSoyad,
+                       CAST(CASE WHEN okuma.DuyuruOkumaId IS NULL THEN 0 ELSE 1 END AS BIT) AS Okundu
                 FROM Duyurular d
                 INNER JOIN Kullanicilar k ON k.KullaniciId = d.OlusturanKullaniciId
+                LEFT JOIN DuyuruOkumalari okuma ON okuma.DuyuruId = d.DuyuruId AND okuma.KullaniciId = @veliId
                 WHERE d.IsDeleted = 0
                   AND ( d.Hedef = 2
                      OR (d.Hedef = 1 AND EXISTS (
@@ -123,10 +125,104 @@ namespace OgrenciBilgiSistemi.Api.Services
                     Hedef = reader.GetInt32(reader.GetOrdinal("Hedef")),
                     Baslik = reader.GetString(reader.GetOrdinal("Baslik")),
                     Icerik = reader.GetString(reader.GetOrdinal("Icerik")),
-                    OlusturulmaTarihi = reader.GetDateTime(reader.GetOrdinal("OlusturulmaTarihi"))
+                    OlusturulmaTarihi = reader.GetDateTime(reader.GetOrdinal("OlusturulmaTarihi")),
+                    Okundu = reader.GetBoolean(reader.GetOrdinal("Okundu"))
                 });
             }
             return liste;
+        }
+
+        // Veli için bir duyuruyu okundu olarak işaretler. Yetki kontrolü:
+        // duyuru, VeliDuyurulariGetir filtreleriyle aynı şekilde veliye erişilebilir olmalı.
+        // Idempotent — aynı (DuyuruId, KullaniciId) çifti için tekrar çağrılırsa duplicate satır oluşturmaz.
+        public async Task<bool> OkunduIsaretle(int duyuruId, int veliId)
+        {
+            const string query = @"
+                DECLARE @erisim INT = (
+                    SELECT CASE WHEN EXISTS (
+                        SELECT 1 FROM Duyurular d
+                        WHERE d.DuyuruId = @duyuruId AND d.IsDeleted = 0
+                          AND ( d.Hedef = 2
+                             OR (d.Hedef = 1 AND EXISTS (
+                                    SELECT 1 FROM Ogrenciler o
+                                    INNER JOIN OgretmenProfiller op ON op.BirimId = o.BirimId
+                                    WHERE o.VeliId = @veliId
+                                      AND op.KullaniciId = d.OlusturanKullaniciId
+                                      AND op.OgretmenDurum = 1
+                                      AND o.OgrenciDurum = 1)))
+                    ) THEN 1 ELSE 0 END
+                );
+
+                IF @erisim = 1
+                BEGIN
+                    -- Eşzamanlı çağrılar için: INSERT ... WHERE NOT EXISTS atomik ve unique index ile uyumlu
+                    INSERT INTO DuyuruOkumalari (DuyuruId, KullaniciId, OkunduTarihi)
+                    SELECT @duyuruId, @veliId, GETDATE()
+                    WHERE NOT EXISTS (
+                        SELECT 1 FROM DuyuruOkumalari
+                        WHERE DuyuruId = @duyuruId AND KullaniciId = @veliId
+                    );
+                END
+
+                SELECT @erisim;";
+
+            await using var conn = new SqlConnection(ConnectionString);
+            await using var cmd = new SqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@duyuruId", duyuruId);
+            cmd.Parameters.AddWithValue("@veliId", veliId);
+            await conn.OpenAsync();
+            var sonuc = await cmd.ExecuteScalarAsync();
+            return sonuc is int i && i == 1;
+        }
+
+        // Veliye görünen tüm okunmamış duyurular için tek seferde okuma kaydı oluşturur.
+        public async Task<int> TumunuOkunduIsaretle(int veliId)
+        {
+            const string query = @"
+                INSERT INTO DuyuruOkumalari (DuyuruId, KullaniciId, OkunduTarihi)
+                SELECT d.DuyuruId, @veliId, GETDATE()
+                FROM Duyurular d
+                LEFT JOIN DuyuruOkumalari okuma ON okuma.DuyuruId = d.DuyuruId AND okuma.KullaniciId = @veliId
+                WHERE d.IsDeleted = 0
+                  AND okuma.DuyuruOkumaId IS NULL
+                  AND ( d.Hedef = 2
+                     OR (d.Hedef = 1 AND EXISTS (
+                            SELECT 1 FROM Ogrenciler o
+                            INNER JOIN OgretmenProfiller op ON op.BirimId = o.BirimId
+                            WHERE o.VeliId = @veliId
+                              AND op.KullaniciId = d.OlusturanKullaniciId
+                              AND op.OgretmenDurum = 1
+                              AND o.OgrenciDurum = 1)));";
+
+            await using var conn = new SqlConnection(ConnectionString);
+            await using var cmd = new SqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@veliId", veliId);
+            await conn.OpenAsync();
+            return await cmd.ExecuteNonQueryAsync();
+        }
+
+        public async Task<int> OkunmamisSayisi(int veliId)
+        {
+            const string query = @"
+                SELECT COUNT(*)
+                FROM Duyurular d
+                LEFT JOIN DuyuruOkumalari okuma ON okuma.DuyuruId = d.DuyuruId AND okuma.KullaniciId = @veliId
+                WHERE d.IsDeleted = 0
+                  AND okuma.DuyuruOkumaId IS NULL
+                  AND ( d.Hedef = 2
+                     OR (d.Hedef = 1 AND EXISTS (
+                            SELECT 1 FROM Ogrenciler o
+                            INNER JOIN OgretmenProfiller op ON op.BirimId = o.BirimId
+                            WHERE o.VeliId = @veliId
+                              AND op.KullaniciId = d.OlusturanKullaniciId
+                              AND op.OgretmenDurum = 1
+                              AND o.OgrenciDurum = 1)));";
+
+            await using var conn = new SqlConnection(ConnectionString);
+            await using var cmd = new SqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@veliId", veliId);
+            await conn.OpenAsync();
+            return (int)(await cmd.ExecuteScalarAsync())!;
         }
 
         public async Task<DuyuruModel?> DuyuruGetir(int duyuruId)

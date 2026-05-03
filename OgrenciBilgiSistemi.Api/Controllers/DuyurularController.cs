@@ -52,5 +52,30 @@ namespace OgrenciBilgiSistemi.Api.Controllers
             if (duyuru is null) return NotFound();
             return Ok(duyuru);
         }
+
+        [HttpPut("{id}/okundu")]
+        public async Task<IActionResult> OkunduIsaretle(int id)
+        {
+            if (Rol != "Veli") return Forbid();
+            var basarili = await _duyuruService.OkunduIsaretle(id, KullaniciId);
+            if (!basarili) return NotFound();
+            return Ok(new { mesaj = "Duyuru okundu olarak işaretlendi." });
+        }
+
+        [HttpPut("tumunu-okundu")]
+        public async Task<IActionResult> TumunuOkundu()
+        {
+            if (Rol != "Veli") return Forbid();
+            await _duyuruService.TumunuOkunduIsaretle(KullaniciId);
+            return Ok(new { mesaj = "Tüm duyurular okundu olarak işaretlendi." });
+        }
+
+        [HttpGet("okunmamis-sayisi")]
+        public async Task<IActionResult> OkunmamisSayisi()
+        {
+            if (Rol != "Veli") return Forbid();
+            var sayi = await _duyuruService.OkunmamisSayisi(KullaniciId);
+            return Ok(new { sayi });
+        }
     }
 }

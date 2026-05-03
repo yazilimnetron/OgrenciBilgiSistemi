@@ -20,6 +20,42 @@ namespace OgrenciBilgiSistemi.Mobil.Services
             return JsonSerializer.Deserialize<List<Duyuru>>(body, _jsonOptions) ?? new();
         }
 
+        public async Task<bool> OkunduIsaretle(int duyuruId)
+        {
+            try
+            {
+                var response = await PutAsync($"{BaseUrl}duyurular/{duyuruId}/okundu", null);
+                return response.IsSuccessStatusCode;
+            }
+            catch { return false; }
+        }
+
+        public async Task<bool> TumunuOkunduIsaretle()
+        {
+            try
+            {
+                var response = await PutAsync($"{BaseUrl}duyurular/tumunu-okundu", null);
+                return response.IsSuccessStatusCode;
+            }
+            catch { return false; }
+        }
+
+        public async Task<int> OkunmamisSayisiGetir()
+        {
+            try
+            {
+                var response = await GetAsync($"{BaseUrl}duyurular/okunmamis-sayisi");
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    var result = JsonSerializer.Deserialize<JsonElement>(json, _jsonOptions);
+                    return result.GetProperty("sayi").GetInt32();
+                }
+            }
+            catch { }
+            return 0;
+        }
+
         public async Task<(bool Basarili, string? HataMesaji)> Olustur(string baslik, string icerik)
         {
             try

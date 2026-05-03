@@ -9,5 +9,6 @@ namespace OgrenciBilgiSistemi.Api.Models
         public string Baslik { get; set; } = string.Empty;
         public string Icerik { get; set; } = string.Empty;
         public DateTime OlusturulmaTarihi { get; set; }
+        public bool Okundu { get; set; }
     }
 }
