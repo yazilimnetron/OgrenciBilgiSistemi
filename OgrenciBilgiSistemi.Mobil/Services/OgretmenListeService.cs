@@ -22,5 +22,23 @@ namespace OgrenciBilgiSistemi.Mobil.Services
             }
             return new();
         }
+
+        public async Task<OgretmenDetay?> OgretmenDetayGetir(int kullaniciId)
+        {
+            try
+            {
+                var response = await GetAsync($"{BaseUrl}ogretmenler/{kullaniciId}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonSerializer.Deserialize<OgretmenDetay>(json, _jsonOptions);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[OGRETMEN DETAY HATASI]: {ex.Message}");
+            }
+            return null;
+        }
     }
 }

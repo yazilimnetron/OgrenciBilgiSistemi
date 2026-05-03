@@ -54,5 +54,73 @@ namespace OgrenciBilgiSistemi.Api.Services
 
             return liste;
         }
+
+        public async Task<VeliDetayModel?> VeliDetayGetirAsync(int kullaniciId)
+        {
+            const string veliQuery = @"
+                SELECT k.KullaniciId, k.KullaniciAdi, k.Telefon,
+                       vp.VeliEmail, vp.VeliAdres, vp.VeliMeslek, vp.VeliIsYeri,
+                       vp.VeliYakinlik, vp.VeliDurum
+                FROM Kullanicilar k
+                INNER JOIN VeliProfiller vp ON k.KullaniciId = vp.KullaniciId
+                WHERE k.KullaniciId = @id";
+
+            const string ogrenciQuery = @"
+                SELECT o.OgrenciId, o.OgrenciAdSoyad, o.OgrenciNo, b.BirimAd
+                FROM Ogrenciler o
+                LEFT JOIN Birimler b ON o.BirimId = b.BirimId
+                WHERE o.VeliId = @id AND o.OgrenciDurum = 1
+                ORDER BY o.OgrenciNo";
+
+            try
+            {
+                await using var conn = new SqlConnection(ConnectionString);
+                await conn.OpenAsync();
+
+                VeliDetayModel? veli;
+                await using (var cmd = new SqlCommand(veliQuery, conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", kullaniciId);
+                    await using var reader = await cmd.ExecuteReaderAsync();
+                    if (!await reader.ReadAsync())
+                        return null;
+
+                    veli = new VeliDetayModel
+                    {
+                        KullaniciId = (int)reader["KullaniciId"],
+                        KullaniciAdi = reader["KullaniciAdi"]?.ToString() ?? string.Empty,
+                        Telefon = reader["Telefon"] as string,
+                        VeliEmail = reader["VeliEmail"] as string,
+                        VeliAdres = reader["VeliAdres"] as string,
+                        VeliMeslek = reader["VeliMeslek"] as string,
+                        VeliIsYeri = reader["VeliIsYeri"] as string,
+                        VeliYakinlik = reader["VeliYakinlik"] as int?,
+                        VeliDurum = reader["VeliDurum"] != DBNull.Value && (bool)reader["VeliDurum"]
+                    };
+                }
+
+                await using (var cmd = new SqlCommand(ogrenciQuery, conn))
+                {
+                    cmd.Parameters.AddWithValue("@id", kullaniciId);
+                    await using var reader = await cmd.ExecuteReaderAsync();
+                    while (await reader.ReadAsync())
+                    {
+                        veli.Cocuklar.Add(new VeliDetayOgrenciModel
+                        {
+                            OgrenciId = (int)reader["OgrenciId"],
+                            OgrenciAdSoyad = reader["OgrenciAdSoyad"]?.ToString() ?? string.Empty,
+                            OgrenciNo = (int)reader["OgrenciNo"],
+                            BirimAd = reader["BirimAd"] as string
+                        });
+                    }
+                }
+
+                return veli;
+            }
+            catch (SqlException ex)
+            {
+                throw new InvalidOperationException("Veli detayı alınamadı.", ex);
+            }
+        }
     }
 }

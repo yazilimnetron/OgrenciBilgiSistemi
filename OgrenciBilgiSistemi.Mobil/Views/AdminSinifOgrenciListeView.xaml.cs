@@ -1,3 +1,4 @@
+using OgrenciBilgiSistemi.Mobil.Models;
 using OgrenciBilgiSistemi.Mobil.Services;
 
 namespace OgrenciBilgiSistemi.Mobil.Views
@@ -55,6 +56,12 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                 BosDurumLabel.Text = "Veriler yüklenemedi.";
                 AltBaslikLabel.Text = "";
             }
+        }
+
+        private async void OnOgrenciSecildi(object sender, TappedEventArgs e)
+        {
+            if ((sender as Border)?.BindingContext is SinifYoklamaOzet item && item.OgrenciId > 0)
+                await Navigation.PushAsync(new OgrenciDetayView(item.OgrenciId, _ogrenciService));
         }
     }
 }

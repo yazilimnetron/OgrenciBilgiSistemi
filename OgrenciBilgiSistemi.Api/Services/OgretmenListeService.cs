@@ -39,5 +39,38 @@ namespace OgrenciBilgiSistemi.Api.Services
             }
             return liste;
         }
+
+        public async Task<OgretmenDetayModel?> OgretmenDetayGetirAsync(int kullaniciId)
+        {
+            const string query = @"
+                SELECT k.KullaniciId, k.KullaniciAdi, k.Telefon,
+                       op.Email, op.GorselPath, op.BirimId, op.OgretmenDurum,
+                       b.BirimAd
+                FROM Kullanicilar k
+                INNER JOIN OgretmenProfiller op ON k.KullaniciId = op.KullaniciId
+                LEFT JOIN Birimler b ON op.BirimId = b.BirimId
+                WHERE k.KullaniciId = @id";
+
+            await using var conn = new SqlConnection(ConnectionString);
+            await using var cmd = new SqlCommand(query, conn);
+            cmd.Parameters.AddWithValue("@id", kullaniciId);
+            await conn.OpenAsync();
+
+            await using var reader = await cmd.ExecuteReaderAsync();
+            if (!await reader.ReadAsync())
+                return null;
+
+            return new OgretmenDetayModel
+            {
+                KullaniciId = (int)reader["KullaniciId"],
+                KullaniciAdi = reader["KullaniciAdi"]?.ToString() ?? string.Empty,
+                Telefon = reader["Telefon"] as string,
+                Email = reader["Email"] as string,
+                GorselPath = reader["GorselPath"] as string,
+                BirimId = reader["BirimId"] as int?,
+                BirimAd = reader["BirimAd"] as string,
+                OgretmenDurum = reader["OgretmenDurum"] != DBNull.Value && (bool)reader["OgretmenDurum"]
+            };
+        }
     }
 }

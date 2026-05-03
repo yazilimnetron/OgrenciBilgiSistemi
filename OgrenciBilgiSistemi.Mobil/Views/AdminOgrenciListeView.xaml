@@ -33,6 +33,9 @@
                         <Border.Shadow>
                             <Shadow Brush="Black" Offset="0,2" Radius="6" Opacity="0.05" />
                         </Border.Shadow>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Tapped="OnOgrenciSecildi" />
+                        </Border.GestureRecognizers>
                         <Grid ColumnDefinitions="4, *, Auto" ColumnSpacing="12">
                             <BoxView Grid.Column="0" BackgroundColor="#1F4E79" WidthRequest="4"
                                      VerticalOptions="Fill" HorizontalOptions="Center">

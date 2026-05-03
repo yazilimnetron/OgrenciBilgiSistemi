@@ -394,6 +394,8 @@ namespace OgrenciBilgiSistemi.Api.Controllers
                     break;
 
                 case "Ogretmen":
+                case "Admin":
+                case "GenelAdmin":
                     break; // Tüm öğrencilere erişebilir
 
                 default:

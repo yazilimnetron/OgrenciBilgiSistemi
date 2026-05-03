@@ -1,3 +1,4 @@
+using OgrenciBilgiSistemi.Mobil.Models;
 using OgrenciBilgiSistemi.Mobil.Services;
 
 namespace OgrenciBilgiSistemi.Mobil.Views
@@ -30,6 +31,12 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                 System.Diagnostics.Debug.WriteLine($"AdminOgrenciListe Yükleme Hatası: {ex.Message}");
                 BosDurumLabel.Text = "Veriler yüklenemedi.";
             }
+        }
+
+        private async void OnOgrenciSecildi(object sender, TappedEventArgs e)
+        {
+            if ((sender as Border)?.BindingContext is Ogrenci ogrenci)
+                await Navigation.PushAsync(new OgrenciDetayView(ogrenci.OgrenciId, _ogrenciService));
         }
     }
 }

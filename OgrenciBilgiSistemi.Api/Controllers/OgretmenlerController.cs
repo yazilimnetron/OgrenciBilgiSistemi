@@ -22,5 +22,15 @@ namespace OgrenciBilgiSistemi.Api.Controllers
             var liste = await _ogretmenListeService.AktifOgretmenleriGetir();
             return Ok(liste);
         }
+
+        [HttpGet("{id}")]
+        [Authorize(Policy = "AdminOnly")]
+        public async Task<IActionResult> OgretmenDetay(int id)
+        {
+            var detay = await _ogretmenListeService.OgretmenDetayGetirAsync(id);
+            if (detay is null)
+                return NotFound(new { message = $"{id} numaralı öğretmen bulunamadı." });
+            return Ok(detay);
+        }
     }
 }

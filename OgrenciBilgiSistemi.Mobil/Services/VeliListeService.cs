@@ -22,5 +22,23 @@ namespace OgrenciBilgiSistemi.Mobil.Services
             }
             return new();
         }
+
+        public async Task<VeliDetay?> VeliDetayGetir(int kullaniciId)
+        {
+            try
+            {
+                var response = await GetAsync($"{BaseUrl}veliler/{kullaniciId}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var json = await response.Content.ReadAsStringAsync();
+                    return JsonSerializer.Deserialize<VeliDetay>(json, _jsonOptions);
+                }
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"[VELI DETAY HATASI]: {ex.Message}");
+            }
+            return null;
+        }
     }
 }

@@ -1,3 +1,4 @@
+using OgrenciBilgiSistemi.Mobil.Models;
 using OgrenciBilgiSistemi.Mobil.Services;
 
 namespace OgrenciBilgiSistemi.Mobil.Views
@@ -30,6 +31,12 @@ namespace OgrenciBilgiSistemi.Mobil.Views
                 System.Diagnostics.Debug.WriteLine($"AdminOgretmenListe Yükleme Hatası: {ex.Message}");
                 BosDurumLabel.Text = "Veriler yüklenemedi.";
             }
+        }
+
+        private async void OnOgretmenSecildi(object sender, TappedEventArgs e)
+        {
+            if ((sender as Border)?.BindingContext is OgretmenBilgi ogretmen)
+                await Navigation.PushAsync(new AdminOgretmenDetayView(ogretmen.KullaniciId, _ogretmenListeService));
         }
     }
 }
