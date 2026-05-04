@@ -38,7 +38,7 @@ namespace OgrenciBilgiSistemi.Mobil.Services
 
                     bool guncelle = await page.DisplayAlert(
                         "Güncelleme Var",
-                        $"Yeni sürüm ({enYeniStr}) yayınlandı. Şimdi güncellemek ister misiniz?",
+                        "Yeni sürüm yayınlandı. Şimdi güncellemek ister misiniz?",
                         "Güncelle",
                         "Sonra");
 

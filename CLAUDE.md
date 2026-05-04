@@ -1,79 +1,103 @@
-# OgrenciBilgiSistemi - Geliştirici Kılavuzu
+# CLAUDE.md - OgrenciBilgiSistemi
 
-Bu proje; Web Yönetim (MVC), Mobil API ve Mobil Uygulama'dan oluşan Öğrenci Bilgi Sistemidir. Tüm projeler bu repoda yönetilir.
+Multi-tenant okul yönetim sistemi. Web paneli + REST API + MAUI mobil. Her okul ayrı SQL DB. ZKTeco kart okuyucu entegrasyonu.
 
-## Teknoloji Yığını
-- **Dil:** C# (.NET 9)
-- **Web:** ASP.NET Core MVC (Monolith - Ana Proje)
-- **API:** ASP.NET Core Web API (Mobil Backend + JWT)
-- **Donanım:** ZKTeco Biometric SDK (COM Interop)
-- **ORM:** Entity Framework Core (SQL Server)
+## Çözüm (5 proje)
 
-## Proje Yapısı
-- `OgrenciBilgiSistemi`: Ana web portalı, tüm Business ve DataAccess mantığını içinde barındırır.
-- `OgrenciBilgiSistemi.Api`: Mobil uygulama için JWT tabanlı servisler.
-- `OgrenciBilgiSistemi.Mobil`: .NET MAUI mobil uygulama (Android/iOS).
-- `OgrenciBilgiSistemi.Shared`: Projeler arası paylaşılan enum tanımları.
+```
+OgrenciBilgiSistemi/         → MVC paneli (EF Core, ZKTeco, SignalR)
+OgrenciBilgiSistemi.Api/     → REST API (JWT, ham SQL)
+OgrenciBilgiSistemi.Mobil/   → MAUI (Android + iOS)
+OgrenciBilgiSistemi.Shared/  → Ortak modeller (TenantBaglami, OkulBilgiAyari)
+OgrenciBilgiSistemi.Sms/     → SMS (ilksms.com)
+```
 
-## Önemli Komutlar
+Her projenin **kendi CLAUDE.md**'si vardır — detaylar oradadır.
 
-### Derleme ve Çalıştırma
-- **Kritik:** ZKTeco SDK uyumu için projeler **x86** platformunda derlenmelidir.
-- Çözümü derle: `dotnet build OgrenciBilgiSistemi.sln`
-- Web Portalını çalıştır: `dotnet run --project OgrenciBilgiSistemi/OgrenciBilgiSistemi.csproj`
-- API'yi çalıştır: `dotnet run --project OgrenciBilgiSistemi.Api/OgrenciBilgiSistemi.Api.csproj`
+## Bağımlılık Grafiği
 
-### Veritabanı İşlemleri
-*Komutlar `OgrenciBilgiSistemi/` dizininden çalıştırılmalıdır.*
-- Yeni Migration: `dotnet ef migrations add [Isim]`
-- Veritabanı Güncelle: `dotnet ef database update`
+```
+MVC, Api  → Shared, Sms
+Mobil     → Shared (HTTP üzerinden Api'ye)
+```
 
-## Kodlama Standartları
+**MVC ↔ API arasında doğrudan referans YOK.** Aynı DB'yi paylaşırlar.
 
-### İsimlendirme
-- **Dil:** Tüm sınıf, metot, property ve değişken isimleri Türkçe olur
-- **Suffix'ler değişmez:** Service, Model, ViewModel, DTO, Controller, Repository, Interface (I prefix dahil)
-- **Framework isimleri değişmez:** DbContext, HttpClient, IActionResult vs.
-- **Büyük/Küçük Harf:** Sınıf ve metotlarda PascalCase, değişkenlerde camelCase
-- **Yorum satırları:** Türkçe yazılır
-- **Proje arası tutarlılık:** MVC ve API arasında aynı isimler kullanılır
+## MVC vs API
 
-### Mimari
-- **Katman sırası:** Models → AppDbContext → Services → Controllers → Views
-- **Dependency Injection:** Program.cs veya Business katmanındaki Dependency Resolver üzerinden yönetilir
-- **Interface:** Her Service için karşılık gelen bir Interface tanımlanır
+| | MVC | API |
+|---|---|---|
+| Auth | Cookie | JWT Bearer |
+| Tenant | Cookie/Session | JWT `okulKodu` claim |
+| DB | EF Core | Raw `SqlClient` |
+| Authorize | Global FallbackPolicy | Manuel `[Authorize]` |
+| Background svc | 5 | 1 |
 
-### Asenkron Programlama
-- Veritabanı ve dış kaynak işlemlerinde mutlaka async/await kullanılır
-- Metot isimleri Async suffix almaz: `OgrenciGetir()`, `OgrenciGetirAsync()` değil
-- Task döndüren metotlarda ConfigureAwait(false) kullanılmaz (ASP.NET Core)
+## Multi-Tenancy
 
-### Hata Yönetimi
-- İş mantığı hataları Business katmanında yakalanır
-- Controller'larda try/catch yerine global exception middleware kullanılır
-- Anlamlı hata mesajları Türkçe döndürülür
+- Tenant listesi: `appsettings.json` → `Okullar[]`.
+- DbContext **per-request connection string** alır.
+- Migration sadece MVC'de; deploy için idempotent script üretip her DB'de çalıştır.
 
-### Veritabanı
-- Fiziksel silme yapılmaz, `IsDeleted` bayrağı kullanılır (Soft-Delete)
-- Global query filter aktiftir, silinmiş kayıtlar otomatik filtrelenir
-- Migration isimleri Türkçe ve açıklayıcı olur: `OgrenciTablosuEklendi`
-- Tüm DB işlemleri async olur
+## Genel Yasaklar
 
-### Güvenlik
-- Web'de Cookie (8 saat), API'de JWT kimlik doğrulama kullanılır
-- Yüklenen dosyalar magic bytes kontrolünden geçirilir
-- Dosyalar `wwwroot/uploads` dizinine kaydedilir
+- ❌ MVC ↔ API `ProjectReference` ile bağlama.
+- ❌ API'de EF Core, MVC'de raw SQL.
+- ❌ `DbContextPool` / `AddDbContextPool`.
+- ❌ Tenant context olmadan DB sorgusu.
+- ❌ ZKTeco çağrısını MVC dışından yapma.
+- ❌ MVC için Any CPU / x64 build (ZKTeco COM 32-bit → **x86 zorunlu**).
+- ❌ Soft delete'li entity'leri (`RandevuModel`, `OgretmenRandevuModel`, `BildirimModel`, `DuyuruModel`) `Remove()` ile silme → `IsDeleted = true`.
+- ❌ Hassas veri (TC, şifre, kart UID, JWT secret, telefon, SMS içeriği) loglama veya commit.
+- ❌ JWT secret'ı versiyona giren config'e yazma → env variable.
+- ❌ Mobil'de hassas veriyi `Preferences`'a koyma → `SecureStorage`.
 
-### Donanım
-- ZKTeco cihaz bağlantıları yalnızca `ZKTecoService` üzerinden yönetilir
-- `SemaphoreSlim` ile eşzamanlılık kontrol edilir
-- x86 platform zorunluluğu unutulmamalıdır
+## Konfigürasyon
 
-## Geliştirme Akışı
-- Yeni bir özellik eklerken sırasıyla: `Models` → `AppDbContext` → `Services` → `Controllers` → `Views` adımlarını izleyin.
+`Okullar[]` ve `SmsAyarlari` MVC + API'de aynı.
 
-## Proje Yapısı ve Alt Yapılandırmalar
-Bu proje hiyerarşik yapıdadır ve her katman kendi özel `CLAUDE.md` dosyasına sahiptir:
-- `OgrenciBilgiSistemi/`: Ana web portalı ve iş mantığı. (Özel kurallar için `./OgrenciBilgiSistemi/CLAUDE.md` dosyasına bakınız.)
-- `OgrenciBilgiSistemi.Api/`: Mobil backend ve JWT işlemleri. (Özel kurallar için `./OgrenciBilgiSistemi.Api/CLAUDE.md` dosyasına bakınız.)
-- `OgrenciBilgiSistemi.Mobil/`: .NET MAUI mobil uygulama. (Özel kurallar için `./OgrenciBilgiSistemi.Mobil/CLAUDE.md` dosyasına bakınız.)
+| Sadece | Anahtar |
+|---|---|
+| MVC | `GenelAdmin` (hash'li, DB'de değil) |
+| API | `Jwt`, `Cors:AllowedOrigins`, `MvcWwwRootPath` |
+| Mobil | `KayitSunucuUrl` (embedded resource) |
+
+## Komutlar
+
+```bash
+# Çalıştır
+dotnet run --project OgrenciBilgiSistemi/OgrenciBilgiSistemi.csproj
+dotnet run --project OgrenciBilgiSistemi.Api/OgrenciBilgiSistemi.Api.csproj
+dotnet build OgrenciBilgiSistemi.Mobil -t:Run -f net9.0-android
+
+# Migration (sadece MVC)
+dotnet ef migrations add <Isim> --project OgrenciBilgiSistemi/OgrenciBilgiSistemi.csproj
+dotnet ef database update --project OgrenciBilgiSistemi/OgrenciBilgiSistemi.csproj
+dotnet ef migrations script --idempotent --project OgrenciBilgiSistemi/OgrenciBilgiSistemi.csproj
+```
+
+## Naming
+
+- Entity: `*Model` · Service: `I*Service`/`*Service` · View: `*View` · Hub/Filter/Middleware: aynı suffix
+- DbSet/tablo: çoğul Türkçe (`Ogrenciler`)
+- Kod dili: Türkçe (sınıf, method, namespace dahil)
+
+## Dağıtım
+
+- MVC + API → tek IIS, **x86 app pool**. API, MVC'nin `wwwroot/uploads`'unu serve eder.
+- Mobil → Google Play / App Store, API'ye HTTPS.
+- Her okul için ayrı SQL Server DB.
+
+## Önemli Davranışlar
+
+- **`AppDbContext.IncludePasifOgrenciler`** flag'i çoğu entity'de global query filter'ı kontrol eder. Pasif öğrenci raporu için `true` yap.
+- **Profil tabloları** (`VeliProfilModel`, `ServisProfilModel`, `OgretmenProfilModel`): PK = `KullaniciId`.
+- **Menu seed**: 34 menü (Id 1-34), yeni eklerken Id 35'ten başla.
+- **SMS retry** her iki backend'de de bağımsız hosted service olarak var.
+
+## İlk Bakış Sırası
+
+1. `ANALIZ_RAPORU.md`
+2. `OgrenciBilgiSistemi/Data/AppDbContext.cs`
+3. Her iki `Program.cs`
+4. İlgili projenin `CLAUDE.md`'si

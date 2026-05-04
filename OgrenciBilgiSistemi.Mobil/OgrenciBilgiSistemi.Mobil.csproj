@@ -12,7 +12,7 @@
 		<ApplicationTitle>OgrenciBilgiSistemi</ApplicationTitle>
 
 		<ApplicationDisplayVersion>2.5</ApplicationDisplayVersion>
-		<ApplicationVersion>25</ApplicationVersion>
+		<ApplicationVersion>50</ApplicationVersion>
 	</PropertyGroup>
 
 	<!-- Platform versiyonları -->
